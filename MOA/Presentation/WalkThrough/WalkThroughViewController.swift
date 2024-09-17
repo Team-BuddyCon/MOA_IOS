@@ -8,7 +8,26 @@
 import UIKit
 import SnapKit
 
+private struct WalkThroughPageItem {
+    let imgRes: String
+    let title: String
+    let description: String
+}
+
 final class WalkThroughViewController: UIViewController {
+    
+    private let pageItems: [WalkThroughPageItem] = [
+        WalkThroughPageItem(
+            imgRes: WALKTHROUGH_BANNER1_IMGRES,
+            title: WALKTHROUGH_BANNER1_TITLE,
+            description: WALKTHROUGH_BANNER1_DESCRIPTION
+        ),
+        WalkThroughPageItem(
+            imgRes: WALKTHROUGH_BANNER2_IMGRES,
+            title: WALKTHROUGH_BANNER2_TITLE,
+            description: WALKTHROUGH_BANNER2_DESCRIPTION
+        )
+    ]
     
     var currentPage: Int = 0 {
         didSet {
@@ -24,10 +43,13 @@ final class WalkThroughViewController: UIViewController {
         layout.scrollDirection = .horizontal
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.showsHorizontalScrollIndicator = false
         collectionView.delegate = self
         collectionView.dataSource = self
-        collectionView.backgroundColor = .blue
-        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "UICollectionViewCell")
+        collectionView.register(
+            WalkThroughPageViewCell.self,
+            forCellWithReuseIdentifier: WalkThroughPageViewCell.idendifier
+        )
         return collectionView
     }()
     
@@ -64,48 +86,63 @@ private extension WalkThroughViewController {
         }
         
         pagerCollectionView.snp.makeConstraints {
-            $0.horizontalEdges.equalToSuperview().inset(20)
-            $0.height.equalTo(pagerCollectionView.snp.width).multipliedBy(431/335)
+            $0.horizontalEdges.equalToSuperview()
+            $0.height.equalTo(pagerCollectionView.snp.width).multipliedBy(431.0/375.0)
             $0.centerY.equalToSuperview().offset(-14)
         }
         
         skipButton.snp.makeConstraints {
             $0.left.equalToSuperview().inset(28)
-            $0.bottom.equalToSuperview().inset(29)
+            $0.bottom.equalToSuperview().inset(45.5)
         }
         
         nextButton.snp.makeConstraints {
             $0.right.equalToSuperview().inset(28)
-            $0.bottom.equalToSuperview().inset(29)
+            $0.bottom.equalToSuperview().inset(45.5)
         }
     }
 }
 
 extension WalkThroughViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        2
+        pageItems.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        if let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "UICollectionViewCell", for: indexPath) as? UICollectionViewCell {
-            cell.backgroundColor = indexPath.row == 0 ? .red : .black
+        let item = pageItems[indexPath.row]
+        if let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: WalkThroughPageViewCell.idendifier,
+            for: indexPath
+        ) as? WalkThroughPageViewCell {
+            cell.imageView.image = UIImage(named: item.imgRes)
+            cell.titleLabel.text = item.title
+            cell.descLabel.setTextWithLineHeight(
+                text: item.description,
+                font: pretendard_medium, 
+                size: 14.0,
+                lineSpacing: 19.6
+            )
             return cell
         }
+        
         return UICollectionViewCell()
     }
 }
 
 extension WalkThroughViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let width = UIScreen.main.bounds.width - 40
-        return CGSize(width: width, height: width * 335 / 431)
+        let width = UIScreen.main.bounds.width
+        return CGSize(width: width, height: width * 431 / 375.0)
     }
 
-    // -halfwith .. halfwidth -> 0
-    // halfwidth .. width + halfwidth -> 1
+    /**
+     스크롤 뷰 드래그 종료 시 page 결정
+     - -halfwith .. halfwidth -> 0 page
+     - halfwidth .. width + halfwidth -> 1 page
+     - ...
+     */
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        let width = UIScreen.main.bounds.width - 40
-        print("\(width) \(scrollView.contentOffset.x) \(scrollView.contentOffset.x / width)")
+        let width = UIScreen.main.bounds.width
         currentPage = Int(round(scrollView.contentOffset.x / width))
     }
 }
