@@ -24,13 +24,6 @@ class SplashViewController: UIViewController {
             $0.center.equalToSuperview()
             $0.size.equalTo(97)
         }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
-            let walkThroughVC = WalkThroughViewController()
-            walkThroughVC.modalTransitionStyle = .crossDissolve
-            walkThroughVC.modalPresentationStyle = .fullScreen
-            self?.present(walkThroughVC, animated: true)
-        }
     }
 }
 
