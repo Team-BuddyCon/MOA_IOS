@@ -33,6 +33,7 @@ final class WalkThroughViewController: UIViewController {
         didSet {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
+                pageIndicator.index = currentPage
                 pagerCollectionView.scrollToItem(at: IndexPath(row: self.currentPage, section: 0), at: .centeredHorizontally, animated: false)
             }
         }
@@ -51,6 +52,11 @@ final class WalkThroughViewController: UIViewController {
             forCellWithReuseIdentifier: WalkThroughPageViewCell.idendifier
         )
         return collectionView
+    }()
+    
+    private lazy var pageIndicator: WalkThroughPageIndicator = {
+        let indicator = WalkThroughPageIndicator(size: pageItems.count)
+        return indicator
     }()
     
     private lazy var skipButton: UIButton = {
@@ -81,7 +87,7 @@ private extension WalkThroughViewController {
     func setupAppearance() {
         view.backgroundColor = .white
         
-        [pagerCollectionView, skipButton, nextButton].forEach {
+        [pagerCollectionView, pageIndicator, skipButton, nextButton].forEach {
             view.addSubview($0)
         }
         
@@ -89,6 +95,12 @@ private extension WalkThroughViewController {
             $0.horizontalEdges.equalToSuperview()
             $0.height.equalTo(pagerCollectionView.snp.width).multipliedBy(431.0/375.0)
             $0.centerY.equalToSuperview().offset(-14)
+        }
+        
+        pageIndicator.snp.makeConstraints {
+            $0.bottom.equalTo(skipButton.snp.top).offset(-51)
+            $0.centerX.equalToSuperview()
+            $0.height.equalTo(8)
         }
         
         skipButton.snp.makeConstraints {
