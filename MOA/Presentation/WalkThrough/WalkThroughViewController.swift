@@ -182,7 +182,7 @@ private extension WalkThroughViewController {
     }
     
     @objc func tapNextButton() {
-        
+        currentPage += 1
     }
     
     @objc func tapStartButton() {
