@@ -94,7 +94,7 @@ private extension WalkThroughViewController {
         pagerCollectionView.snp.makeConstraints {
             $0.horizontalEdges.equalToSuperview()
             $0.height.equalTo(pagerCollectionView.snp.width).multipliedBy(431.0/375.0)
-            $0.centerY.equalToSuperview().offset(-14)
+            $0.centerY.equalToSuperview().offset(-49)
         }
         
         pageIndicator.snp.makeConstraints {
