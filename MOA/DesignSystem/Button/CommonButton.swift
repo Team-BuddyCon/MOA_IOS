@@ -17,17 +17,7 @@ enum ButtonStatus {
 final class CommonButton: UIButton {
     var status: ButtonStatus = .active {
         didSet {
-            switch status {
-            case .active:
-                backgroundColor = .pink100
-                titleLabel?.textColor = .white
-            case .disabled:
-                backgroundColor = .grey40
-                titleLabel?.textColor = .grey60
-            case .cancel:
-                backgroundColor = .grey30
-                titleLabel?.textColor = .grey70
-            }
+            updateStatus()
         }
     }
     
@@ -41,9 +31,24 @@ final class CommonButton: UIButton {
         self.layer.cornerRadius = 12.0
         self.setTitle(title, for: .normal)
         self.titleLabel?.font = UIFont(name: fontName, size: fontSize)
+        updateStatus()
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+    }
+    
+    func updateStatus() {
+        switch status {
+        case .active:
+            backgroundColor = .pink100
+            titleLabel?.textColor = .white
+        case .disabled:
+            backgroundColor = .grey40
+            titleLabel?.textColor = .grey60
+        case .cancel:
+            backgroundColor = .grey30
+            titleLabel?.textColor = .grey70
+        }
     }
 }

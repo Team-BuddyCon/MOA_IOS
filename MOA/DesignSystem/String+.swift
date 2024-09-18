@@ -18,6 +18,9 @@ let pretendard_regular = "Pretendard-Regular"
 let pretendard_semibold = "Pretendard-SemiBold"
 let pretendard_thin = "Pretendard-Thin"
 
+// MARK: Common
+let LETS_START = "시작하기"
+
 // MARK: Design System
 let dday_end = "만료"
 let dday_format = "D-%d"

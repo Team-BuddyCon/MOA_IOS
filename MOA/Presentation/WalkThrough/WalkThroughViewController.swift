@@ -36,6 +36,10 @@ final class WalkThroughViewController: UIViewController {
                 pageIndicator.index = currentPage
                 pagerCollectionView.scrollToItem(at: IndexPath(row: self.currentPage, section: 0), at: .centeredHorizontally, animated: false)
             }
+            
+            skipButton.isHidden = currentPage == pageItems.endIndex-1
+            nextButton.isHidden = currentPage == pageItems.endIndex-1
+            startButton.isHidden = currentPage != pageItems.endIndex-1
         }
     }
     
@@ -77,6 +81,13 @@ final class WalkThroughViewController: UIViewController {
         return button
     }()
     
+    private lazy var startButton: CommonButton = {
+        let button = CommonButton(title: LETS_START, fontSize: 16.0)
+        button.isHidden = true
+        button.addTarget(self, action: #selector(tapStartButton), for: .touchUpInside)
+        return button
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupAppearance()
@@ -87,14 +98,14 @@ private extension WalkThroughViewController {
     func setupAppearance() {
         view.backgroundColor = .white
         
-        [pagerCollectionView, pageIndicator, skipButton, nextButton].forEach {
+        [pagerCollectionView, pageIndicator, skipButton, nextButton, startButton].forEach {
             view.addSubview($0)
         }
         
         pagerCollectionView.snp.makeConstraints {
             $0.horizontalEdges.equalToSuperview()
             $0.height.equalTo(pagerCollectionView.snp.width).multipliedBy(431.0/375.0)
-            $0.centerY.equalToSuperview().offset(-49)
+            $0.centerY.equalToSuperview().offset(-(14.5))
         }
         
         pageIndicator.snp.makeConstraints {
@@ -111,6 +122,12 @@ private extension WalkThroughViewController {
         nextButton.snp.makeConstraints {
             $0.right.equalToSuperview().inset(28)
             $0.bottom.equalToSuperview().inset(45.5)
+        }
+        
+        startButton.snp.makeConstraints {
+            $0.bottom.equalToSuperview().inset(34)
+            $0.horizontalEdges.equalToSuperview().inset(20)
+            $0.height.equalTo(54)
         }
     }
 }
@@ -165,6 +182,10 @@ private extension WalkThroughViewController {
     }
     
     @objc func tapNextButton() {
-        print("tapNextButton")
+        
+    }
+    
+    @objc func tapStartButton() {
+        
     }
 }
