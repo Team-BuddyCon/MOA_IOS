@@ -178,7 +178,7 @@ extension WalkThroughViewController: UICollectionViewDelegateFlowLayout {
 
 private extension WalkThroughViewController {
     @objc func tapSkipButton() {
-        print("tapSkipButton")
+        UIApplication.shared.setRootViewController(vc: LoginViewController())
     }
     
     @objc func tapNextButton() {
@@ -186,6 +186,6 @@ private extension WalkThroughViewController {
     }
     
     @objc func tapStartButton() {
-        
+        UIApplication.shared.setRootViewController(vc: LoginViewController())
     }
 }
