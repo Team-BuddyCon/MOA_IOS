@@ -35,3 +35,7 @@ let WALKTHROUGH_BANNER1_DESCRIPTION = "흩어져 있는 기프티콘을 한곳�
 let WALKTHROUGH_BANNER2_IMGRES = "WalkThroughBanner2"
 let WALKTHROUGH_BANNER2_TITLE = "사용처를 한눈에 확인해요"
 let WALKTHROUGH_BANNER2_DESCRIPTION = "지도를 통해 근처에서 기프티콘\n사용 가능한 매장을 확인해요"
+
+// MARK: Login
+let LOGIN_ICON = "LoginIcon"
+let KAKAO_LOGIN_BUTTON_IMAGES = "KakaoLoginButton"
