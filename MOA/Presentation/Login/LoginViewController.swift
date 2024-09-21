@@ -44,7 +44,7 @@ private extension LoginViewController {
         kakaoLoginButton.snp.makeConstraints {
             $0.height.equalTo(54)
             $0.horizontalEdges.equalToSuperview().inset(20)
-            $0.bottom.equalToSuperview().inset(34)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(11.5)
         }
     }
 }

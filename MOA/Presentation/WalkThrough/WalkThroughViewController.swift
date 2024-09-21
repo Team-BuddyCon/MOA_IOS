@@ -105,7 +105,7 @@ private extension WalkThroughViewController {
         pagerCollectionView.snp.makeConstraints {
             $0.horizontalEdges.equalToSuperview()
             $0.height.equalTo(pagerCollectionView.snp.width).multipliedBy(431.0/375.0)
-            $0.centerY.equalToSuperview().offset(-(14.5))
+            $0.centerY.equalToSuperview().offset(-(19.5))
         }
         
         pageIndicator.snp.makeConstraints {
@@ -116,16 +116,16 @@ private extension WalkThroughViewController {
         
         skipButton.snp.makeConstraints {
             $0.left.equalToSuperview().inset(28)
-            $0.bottom.equalToSuperview().inset(45.5)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(11.5)
         }
         
         nextButton.snp.makeConstraints {
             $0.right.equalToSuperview().inset(28)
-            $0.bottom.equalToSuperview().inset(45.5)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(11.5)
         }
         
         startButton.snp.makeConstraints {
-            $0.bottom.equalToSuperview().inset(34)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(11.5)
             $0.horizontalEdges.equalToSuperview().inset(20)
             $0.height.equalTo(54)
         }
