@@ -25,6 +25,7 @@ final class LoginViewController: BaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupAppearance()
+        setupData()
     }
 }
 
@@ -46,5 +47,9 @@ private extension LoginViewController {
             $0.horizontalEdges.equalToSuperview().inset(20)
             $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(11.5)
         }
+    }
+    
+    func setupData() {
+        UserPreferences.setIsNeededShowLogin(isShow: true)
     }
 }
