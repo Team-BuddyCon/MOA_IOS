@@ -17,6 +17,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.rootViewController = SplashViewController()
         window?.makeKeyAndVisible()
         
+        let isNeededShowLogin = UserPreferences.getIsNeededShowLogin()
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
             guard let self = self else { return }
             guard let window = self.window else { return }
@@ -25,7 +27,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 duration: 0.5,
                 options: [.transitionCrossDissolve],
                 animations: {
-                    window.rootViewController = WalkThroughViewController()
+                    window.rootViewController = isNeededShowLogin ? LoginViewController() : WalkThroughViewController()
                 }
             )
         }
