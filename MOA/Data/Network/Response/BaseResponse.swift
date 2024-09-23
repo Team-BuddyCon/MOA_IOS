@@ -6,3 +6,8 @@
 //
 
 import Foundation
+
+protocol BaseResponse: Decodable {
+    var status: Int { get set }
+    var message: String { get set }
+}
