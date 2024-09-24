@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum NetworkMethod {
+enum NetworkMethod: String {
     case GET
     case POST
     case PUT
