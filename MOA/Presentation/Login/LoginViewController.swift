@@ -19,8 +19,11 @@ final class LoginViewController: BaseViewController {
     private lazy var kakaoLoginButton: UIButton = {
         let button = UIButton()
         button.setBackgroundImage(UIImage(named: KAKAO_LOGIN_BUTTON_IMAGES), for: .normal)
+        button.addTarget(self, action: #selector(tapKakaoLogin), for: .touchUpInside)
         return button
     }()
+    
+    let loginViewModel = LoginViewModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,5 +54,11 @@ private extension LoginViewController {
     
     func setupData() {
         UserPreferences.setIsNeededShowLogin(isShow: true)
+    }
+}
+
+private extension LoginViewController {
+    @objc func tapKakaoLogin() {
+        loginViewModel.loginBykakao()
     }
 }

@@ -1,0 +1,10 @@
+//
+//  Config.xcconfig
+//  MOA
+//
+//  Created by 오원석 on 9/27/24.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+KAKAO_API_KEY = bf03c19812c2592749f57575c7991802
