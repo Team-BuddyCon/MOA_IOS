@@ -24,6 +24,7 @@ class SplashViewController: UIViewController {
             $0.center.equalToSuperview()
             $0.size.equalTo(97)
         }
+
     }
 }
 
