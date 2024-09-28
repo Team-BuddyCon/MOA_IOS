@@ -6,6 +6,12 @@
 //
 
 import UIKit
+import KakaoSDKUser
+import KakaoSDKCommon
+import KakaoSDKAuth
+import RxKakaoSDKAuth
+import RxKakaoSDKUser
+import RxKakaoSDKCommon
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
@@ -30,6 +36,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     window.rootViewController = isNeededShowLogin ? LoginViewController() : WalkThroughViewController()
                 }
             )
+        }
+    }
+    
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        if let url = URLContexts.first?.url {
+            if AuthApi.isKakaoTalkLoginUrl(url) {
+                _ = AuthController.rx.handleOpenUrl(url: url)
+            }
         }
     }
 }
