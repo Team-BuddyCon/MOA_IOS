@@ -10,23 +10,18 @@ import RxSwift
 import RxCocoa
 
 final class NetworkManager {
-    
-    private let session = URLSession.shared
-    let shared = NetworkManager()
-    
+    static let shared = NetworkManager()
     private init() {}
     
     func request<T: BaseResponse> (
-        service: NetworkService,
-        method: NetworkMethod,
-        query: [String: String?] = [:],
-        body: [String: Any] = [:]
+        request: BaseRequest
     ) -> Observable<Result<T, URLError>> {
-        guard var components = URLComponents(string: UrlProvider.getUrl(service: service)) else {
+        let url = UrlProvider.getDomainUrl(domain: request.domain) + request.path
+        guard var components = URLComponents(string: url) else {
             return .just(.failure(URLError(.badURL)))
         }
         
-        components.queryItems = query.map {
+        components.queryItems = request.query.map {
             URLQueryItem(name: $0.key, value: $0.value)
         }
         
@@ -34,14 +29,14 @@ final class NetworkManager {
             return .just(.failure(URLError(.badURL)))
         }
         
-        var request = URLRequest(url: url)
-        request.httpMethod = method.rawValue
+        var urlReqeuset = URLRequest(url: url)
+        urlReqeuset.httpMethod = request.method.rawValue
         
-        if method != .GET {
-            request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+        if request.method != .GET {
+            urlReqeuset.httpBody = try? JSONSerialization.data(withJSONObject: request.body, options: [])
         }
 
-        return session.rx.data(request: request)
+        return URLSession.shared.rx.data(request: urlReqeuset)
             .map { data in
                 guard let response = try? JSONDecoder().decode(T.self, from: data) else {
                     return .failure(URLError(.cannotParseResponse))
