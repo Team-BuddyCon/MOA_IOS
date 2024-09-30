@@ -21,10 +21,12 @@ final class NetworkManager {
             return .just(.failure(URLError(.badURL)))
         }
         
-        components.queryItems = request.query.map {
-            URLQueryItem(name: $0.key, value: $0.value)
+        if !request.query.isEmpty {
+            components.queryItems = request.query.map {
+                URLQueryItem(name: $0.key, value: $0.value)
+            }
         }
-        
+
         guard let url = components.url else {
             return .just(.failure(URLError(.badURL)))
         }
@@ -34,6 +36,7 @@ final class NetworkManager {
         
         if request.method != .GET {
             urlReqeuset.httpBody = try? JSONSerialization.data(withJSONObject: request.body, options: [])
+            urlReqeuset.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
 
         return URLSession.shared.rx.data(request: urlReqeuset)
@@ -42,7 +45,8 @@ final class NetworkManager {
                     return .failure(URLError(.cannotParseResponse))
                 }
                 return .success(response)
-            }.catch { _ in
+            }.catch { error in
+                print("network error \(error)")
                 return .just(.failure(URLError(.cannotLoadFromNetwork)))
             }
     }

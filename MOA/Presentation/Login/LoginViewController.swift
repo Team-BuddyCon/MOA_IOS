@@ -23,7 +23,7 @@ final class LoginViewController: BaseViewController {
         return button
     }()
     
-    let loginViewModel = LoginViewModel()
+    let loginViewModel = LoginViewModel(authService: AuthService.shared)
     
     override func viewDidLoad() {
         super.viewDidLoad()
