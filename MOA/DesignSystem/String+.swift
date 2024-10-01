@@ -7,17 +7,6 @@
 
 import Foundation
 
-// MARK: Font
-let pretendard_black = "Pretendard-Black"
-let pretendard_bold = "Pretendard-Bold"
-let pretendard_extrabold = "Pretendard-ExtraBold"
-let pretendard_extraLight = "Pretendard-ExtraLight"
-let pretendard_light = "Pretendard-Light"
-let pretendard_medium = "Pretendard-Medium"
-let pretendard_regular = "Pretendard-Regular"
-let pretendard_semibold = "Pretendard-SemiBold"
-let pretendard_thin = "Pretendard-Thin"
-
 // MARK: Common
 let LETS_START = "시작하기"
 
@@ -39,3 +28,6 @@ let WALKTHROUGH_BANNER2_DESCRIPTION = "지도를 통해 근처에서 기프티�
 // MARK: Login
 let LOGIN_ICON = "LoginIcon"
 let KAKAO_LOGIN_BUTTON_IMAGES = "KakaoLoginButton"
+
+// MARK: SignUp
+let SIGNUP_TITLE = "회원가입"

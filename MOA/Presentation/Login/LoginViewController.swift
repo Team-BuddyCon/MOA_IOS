@@ -60,12 +60,14 @@ private extension LoginViewController {
         loginViewModel.tokenInfoDriver
             .drive { token in
                 print("login sccuess \(token)")
+                self.navigationController?.pushViewController(SignUpViewController(), animated: true)
             }.disposed(by: disposeBag)
     }
 }
 
 private extension LoginViewController {
     @objc func tapKakaoLogin() {
-        loginViewModel.loginBykakao()
+        self.navigationController?.pushViewController(SignUpViewController(), animated: true)
+        //loginViewModel.loginBykakao()
     }
 }
