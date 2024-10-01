@@ -7,6 +7,8 @@
 
 import Foundation
 import RxSwift
+import RxRelay
+import RxCocoa
 import KakaoSDKUser
 import KakaoSDKCommon
 import KakaoSDKAuth
@@ -14,11 +16,16 @@ import RxKakaoSDKAuth
 import RxKakaoSDKUser
 import RxKakaoSDKCommon
 
+private let TEST_ACCESS_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJpZCI6MSwiaWF0IjoxNzE3ODQ1MDAzLCJleHAiOjE3MjM4OTMwMDN9.wNxFHkYU7vyFIh5ErZem18_WUSDV8hdlINzcqOZdrzrplQpAaMj8ZDax6OpWzqmrftPTCV4z2sjT7Rz6SEFdRw"
+
 final class LoginViewModel: BaseViewModel {
     private let authService: AuthServiceProtocol
+    private let tokenInfoRelay = PublishRelay<AuthToken>()
+    let tokenInfoDriver: Driver<AuthToken>
     
     init(authService: AuthServiceProtocol) {
         self.authService = authService
+        tokenInfoDriver = tokenInfoRelay.asDriver(onErrorJustReturn: AuthToken())
     }
     
     func loginBykakao() {
@@ -34,9 +41,7 @@ final class LoginViewModel: BaseViewModel {
                         age: nil
                     )
                 }.subscribe(
-                    onNext: { result in
-                        print("loginWithKakakoTalk success \(result)")
-                    },
+                    onNext: handleLoginResult(result:),
                     onError: { error in
                         print("loginWithKakakoTalk error \(error)")
                     }
@@ -53,22 +58,27 @@ final class LoginViewModel: BaseViewModel {
                         age: nil
                     )
                 }.subscribe(
-                    onNext: { result in
-                        print("loginWithKakakoTalk success \(result)")
-                    },
+                    onNext: handleLoginResult(result:),
                     onError: { error in
                         print("loginWithKakakoTalk error \(error)")
                     }
                 ).disposed(by: disposeBag)
-//            UserApi.shared.rx.loginWithKakaoAccount()
-//                .subscribe(
-//                    onNext: { oauthToken in
-//                        print("loginWithKakaoAccount success \(oauthToken)")
-//                    },
-//                    onError: { error in
-//                        print("loginWithKakaoAccount error \(error)")
-//                    }
-//                ).disposed(by: disposeBag)
+        }
+    }
+    
+    func handleLoginResult(result: Result<AuthLoginResponse, URLError>) {
+        switch result {
+        case .success(let response):
+            print("handleLoginResult success \(response)")
+            break
+        case .failure(let error):
+            tokenInfoRelay.accept(
+                AuthToken(
+                    accessToken: TEST_ACCESS_TOKEN,
+                    accessTokenExpiresIn: Date().add(offset: 7).timeInMills
+                )
+            )
+            break
         }
     }
 }

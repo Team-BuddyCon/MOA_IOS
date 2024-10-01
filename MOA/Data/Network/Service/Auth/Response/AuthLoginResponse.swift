@@ -12,11 +12,20 @@ struct AuthLoginResponse: BaseResponse {
     var message: String
     let tokenInfo: AuthTokenInfo
     
-    class AuthTokenInfo: Decodable {
+    struct AuthTokenInfo: Decodable {
         let accessToken: String
         let refreshToken: String
         let accessTokenExpiresIn: Int
         let isFirstLogin: Bool
+        
+        func toModel() -> AuthToken {
+            AuthToken(
+                accessToken: accessToken,
+                refreshToken: refreshToken,
+                accessTokenExpiresIn: accessTokenExpiresIn,
+                isFirstLogin: isFirstLogin
+            )
+        }
     }
     
     enum CodingKeys: String, CodingKey {

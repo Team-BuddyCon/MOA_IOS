@@ -7,6 +7,8 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxRelay
 
 final class LoginViewController: BaseViewController {
     
@@ -54,6 +56,11 @@ private extension LoginViewController {
     
     func setupData() {
         UserPreferences.setIsNeededShowLogin(isShow: true)
+        
+        loginViewModel.tokenInfoDriver
+            .drive { token in
+                print("login sccuess \(token)")
+            }.disposed(by: disposeBag)
     }
 }
 
