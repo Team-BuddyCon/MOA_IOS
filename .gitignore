@@ -2,6 +2,7 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,swift,swiftpackagemanager,git,xcode,cocoapods,objective-c
 
 *.xcconfig
+MOA/*.xcconfig
 
 ### CocoaPods ###
 ## CocoaPods GitIgnore Template
