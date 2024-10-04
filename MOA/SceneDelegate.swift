@@ -33,7 +33,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 duration: 0.5,
                 options: [.transitionCrossDissolve],
                 animations: {
-                    window.rootViewController = isNeededShowLogin ? LoginViewController() : WalkThroughViewController()
+                    window.rootViewController = isNeededShowLogin ? UINavigationController(rootViewController: LoginViewController()) : WalkThroughViewController()
                 }
             )
         }
