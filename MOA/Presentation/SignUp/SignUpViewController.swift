@@ -109,46 +109,38 @@ private extension SignUpViewController {
     }
     
     func subscribe() {
-        allSignUpCheckBox.checkState
-            .distinctUntilChanged()
-            .drive { [weak self] check in
-                guard let self = self else { return }
-                if !check && termsOfUseSignUpCheckBox.isCheckedRelay.value != privacyPolicySignUpCheckBox.isCheckedRelay.value { return }
-                termsOfUseSignUpCheckBox.isCheckedRelay.accept(check)
-                privacyPolicySignUpCheckBox.isCheckedRelay.accept(check)
-            }.disposed(by: disposeBag)
-        
-        termsOfUseSignUpCheckBox.checkState
-            .distinctUntilChanged()
-            .drive { [weak self] check in
-                guard let self = self else { return }
-                
-                if check && privacyPolicySignUpCheckBox.isCheckedRelay.value {
-                    allSignUpCheckBox.isCheckedRelay.accept(true)
-                } else if !check && !privacyPolicySignUpCheckBox.isCheckedRelay.value {
-                    allSignUpCheckBox.isCheckedRelay.accept(false)
-                } else {
-                    if allSignUpCheckBox.isCheckedRelay.value {
-                        allSignUpCheckBox.isCheckedRelay.accept(false)
-                    }
+        allSignUpCheckBox.tap
+            .subscribe(
+                onNext: { [weak self] _ in
+                    guard let self = self else { return }
+                    let check = allSignUpCheckBox.isChecked.value
+                    allSignUpCheckBox.isChecked.accept(!check)
+                    termsOfUseSignUpCheckBox.isChecked.accept(!check)
+                    privacyPolicySignUpCheckBox.isChecked.accept(!check)
                 }
-            }.disposed(by: disposeBag)
-        
-        privacyPolicySignUpCheckBox.checkState
-            .distinctUntilChanged()
-            .drive { [weak self] check in
-                guard let self = self else { return }
-                
-                if check && termsOfUseSignUpCheckBox.isCheckedRelay.value {
-                    allSignUpCheckBox.isCheckedRelay.accept(true)
-                } else if !check && !termsOfUseSignUpCheckBox.isCheckedRelay.value {
-                    allSignUpCheckBox.isCheckedRelay.accept(false)
-                } else {
-                    if allSignUpCheckBox.isCheckedRelay.value {
-                        allSignUpCheckBox.isCheckedRelay.accept(false)
-                    }
+            ).disposed(by: disposeBag)
+            
+        termsOfUseSignUpCheckBox.tap
+            .subscribe(
+                onNext: { [weak self] _ in
+                    guard let self = self else { return }
+                    let termsOfUseCheck = termsOfUseSignUpCheckBox.isChecked.value
+                    let privacyPolicyCheck = privacyPolicySignUpCheckBox.isChecked.value
+                    termsOfUseSignUpCheckBox.isChecked.accept(!termsOfUseCheck)
+                    allSignUpCheckBox.isChecked.accept(!termsOfUseCheck && privacyPolicyCheck)
                 }
-            }.disposed(by: disposeBag)
+            ).disposed(by: disposeBag)
+        
+        privacyPolicySignUpCheckBox.tap
+            .subscribe(
+                onNext: { [weak self] _ in
+                    guard let self = self else { return }
+                    let termsOfUseCheck = termsOfUseSignUpCheckBox.isChecked.value
+                    let privacyPolicyCheck = privacyPolicySignUpCheckBox.isChecked.value
+                    privacyPolicySignUpCheckBox.isChecked.accept(!privacyPolicyCheck)
+                    allSignUpCheckBox.isChecked.accept(termsOfUseCheck && !privacyPolicyCheck)
+                }
+            ).disposed(by: disposeBag)
     }
 }
 

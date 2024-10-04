@@ -33,17 +33,16 @@ final class SignUpCheckBox: UIView {
         return button
     }()
     
-    var isCheckedRelay: BehaviorRelay<Bool>
-    var checkState: Driver<Bool>
+    var isChecked = BehaviorRelay<Bool>(value: false)
+    var tap: ControlEvent<Void>
     
     init(
         frame: CGRect,
         text: String,
         hasMore: Bool = false
     ) {
-        isCheckedRelay = checkButton.isChecked
-        checkState = isCheckedRelay.asDriver(onErrorJustReturn: false)
-        
+        isChecked = checkButton.isChecked
+        tap = checkButton.rx.tap
         super.init(frame: frame)
         textLabel.text = text
         detailButton.isHidden = !hasMore
@@ -52,9 +51,8 @@ final class SignUpCheckBox: UIView {
     }
     
     required init?(coder: NSCoder) {
-        isCheckedRelay = checkButton.isChecked
-        checkState = isCheckedRelay.asDriver(onErrorJustReturn: false)
-        
+        isChecked = checkButton.isChecked
+        tap = checkButton.rx.tap
         super.init(coder: coder)
         setupApperance()
         subscribe()
@@ -89,16 +87,7 @@ final class SignUpCheckBox: UIView {
     }
     
     private func subscribe() {
-        checkButton.rx.tap
-            .subscribe(
-                onNext: { [weak self] _ in
-                    guard let self = self else { return }
-                    let check = self.checkButton.isChecked.value
-                    self.checkButton.isChecked.accept(!check)
-                }
-            ).disposed(by: disposeBag)
-        
-        checkButton.isChecked
+        isChecked
             .bind(to: checkButton.rx.isChecked)
             .disposed(by: disposeBag)
     }
