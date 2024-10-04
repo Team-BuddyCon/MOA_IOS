@@ -7,6 +7,9 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxRelay
+import RxCocoa
 
 enum ButtonStatus {
     case active
@@ -15,11 +18,9 @@ enum ButtonStatus {
 }
 
 final class CommonButton: UIButton {
-    var status: ButtonStatus = .active {
-        didSet {
-            updateStatus()
-        }
-    }
+    
+    private let disposeBag = DisposeBag()
+    var status = BehaviorRelay<ButtonStatus>(value: .active)
     
     init(
         frame: CGRect = .zero,
@@ -36,19 +37,25 @@ final class CommonButton: UIButton {
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+        updateStatus()
     }
     
     func updateStatus() {
-        switch status {
-        case .active:
-            backgroundColor = .pink100
-            titleLabel?.textColor = .white
-        case .disabled:
-            backgroundColor = .grey40
-            titleLabel?.textColor = .grey60
-        case .cancel:
-            backgroundColor = .grey30
-            titleLabel?.textColor = .grey70
-        }
+        status.asDriver()
+            .drive { [weak self] status in
+                guard let self = self else { return }
+                switch status {
+                case .active:
+                    backgroundColor = .pink100
+                    titleLabel?.textColor = .white
+                case .disabled:
+                    backgroundColor = .grey40
+                    titleLabel?.textColor = .grey60
+                case .cancel:
+                    backgroundColor = .grey30
+                    titleLabel?.textColor = .grey70
+                }
+            }
+            .disposed(by: disposeBag)
     }
 }
