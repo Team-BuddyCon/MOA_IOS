@@ -36,6 +36,7 @@ let SIGNUP_TERMS_GUIDE_TITLE = "모아의 서비스\n이용약관에 동의해�
 let SIGNUP_AGREE_TO_ALL = "전체 동의하기"
 let SIGNUP_AGREE_TO_TERMS_OF_USE = "[필수] 이용약관 동의"
 let SIGNUP_AGREE_TO_PRIVACY_POLICY = "[필수] 개인정보 처리방침 동의"
+let SIGNUP_COMPLETE = "회원가입 완료"
 
 // MARK: Resource
 // Font

@@ -45,6 +45,11 @@ final class SignUpViewController: BaseViewController {
         return view
     }()
     
+    private let completeButton: CommonButton = {
+        let button = CommonButton(title: SIGNUP_COMPLETE, fontName: pretendard_medium)
+        return button
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupAppearance()
@@ -60,7 +65,8 @@ private extension SignUpViewController {
             allSignUpCheckBox,
             termsOfUseSignUpCheckBox,
             privacyPolicySignUpCheckBox,
-            dividerView
+            dividerView,
+            completeButton
         ].forEach {
             view.addSubview($0)
         }
@@ -92,6 +98,12 @@ private extension SignUpViewController {
             $0.top.equalTo(termsOfUseSignUpCheckBox.snp.bottom).offset(16)
             $0.horizontalEdges.equalToSuperview().inset(20)
             $0.height.equalTo(24)
+        }
+        
+        completeButton.snp.makeConstraints {
+            $0.horizontalEdges.equalToSuperview().inset(20)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(11.5)
+            $0.height.equalTo(54)
         }
     }
     
@@ -141,6 +153,13 @@ private extension SignUpViewController {
                     allSignUpCheckBox.isChecked.accept(termsOfUseCheck && !privacyPolicyCheck)
                 }
             ).disposed(by: disposeBag)
+        
+        allSignUpCheckBox.isChecked
+            .asDriver()
+            .drive { [weak self] check in
+                guard let self = self else { return }
+                completeButton.status.accept(check ? .active : .disabled)
+            }.disposed(by: disposeBag)
     }
 }
 
