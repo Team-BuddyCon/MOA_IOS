@@ -45,14 +45,15 @@ final class SignUpViewController: BaseViewController {
         return view
     }()
     
-    private let completeButton: CommonButton = {
+    private lazy var completeButton: CommonButton = {
         let button = CommonButton(title: SIGNUP_COMPLETE, fontName: pretendard_medium)
+        button.addTarget(self, action: #selector(tapCompletButton), for: .touchUpInside)
         return button
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        MOALogger.logd("tapKakaoLogin")
+        MOALogger.logd("viewDidLoad")
         setupAppearance()
         subscribe()
     }
@@ -167,5 +168,12 @@ private extension SignUpViewController {
 private extension SignUpViewController {
     @objc func tapBackButton() {
         navigationController?.popViewController(animated: true)
+    }
+    
+    @objc func tapCompletButton() {
+        let viewController = SignUpCompleteViewController(name: "오원석")
+        viewController.modalPresentationStyle = .fullScreen
+        viewController.modalTransitionStyle = .crossDissolve
+        present(viewController, animated: true)
     }
 }
