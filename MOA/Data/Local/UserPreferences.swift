@@ -14,10 +14,13 @@ final class UserPreferences {
     private init() {}
     
     static func getIsNeededShowLogin() -> Bool {
-        UserDefaults.standard.bool(forKey: IS_NEEDED_SHOW_LOGIN)
+        let isShow = UserDefaults.standard.bool(forKey: IS_NEEDED_SHOW_LOGIN)
+        MOALogger.logd("\(isShow)")
+        return isShow
     }
     
     static func setIsNeededShowLogin(isShow: Bool) {
+        MOALogger.logd("\(isShow)")
         UserDefaults.standard.set(isShow, forKey: IS_NEEDED_SHOW_LOGIN)
     }
 }

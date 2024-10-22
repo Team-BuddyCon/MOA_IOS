@@ -32,7 +32,10 @@ final class LoginViewModel: BaseViewModel {
         if UserApi.isKakaoTalkLoginAvailable() {
             Observable.zip(UserApi.shared.rx.loginWithKakaoTalk(), UserApi.shared.rx.me().asObservable())
                 .flatMap { [weak self] (oauthToken, user) -> Observable<Result<AuthLoginResponse, URLError>> in
-                    guard let self = self else { return .just(.failure(URLError(.unknown))) }
+                    guard let self = self else {
+                        MOALogger.loge("\(URLError.Code.unknown.rawValue)")
+                        return .just(.failure(URLError(.unknown)))
+                    }
                     return authService.login(
                         oauthAccessToken: oauthToken.accessToken,
                         nickname: user.kakaoAccount?.profile?.nickname ?? "",
@@ -43,13 +46,16 @@ final class LoginViewModel: BaseViewModel {
                 }.subscribe(
                     onNext: handleLoginResult(result:),
                     onError: { error in
-                        print("loginWithKakakoTalk error \(error)")
+                        MOALogger.loge("\(error)")
                     }
                 ).disposed(by: disposeBag)
         } else {
             Observable.zip(UserApi.shared.rx.loginWithKakaoAccount(), UserApi.shared.rx.me().asObservable())
                 .flatMap { [weak self] (oauthToken, user) -> Observable<Result<AuthLoginResponse, URLError>> in
-                    guard let self = self else { return .just(.failure(URLError(.unknown))) }
+                    guard let self = self else { 
+                        MOALogger.loge("\(URLError.Code.unknown.rawValue)")
+                        return .just(.failure(URLError(.unknown)))
+                    }
                     return authService.login(
                         oauthAccessToken: oauthToken.accessToken,
                         nickname: user.kakaoAccount?.profile?.nickname ?? "",
@@ -60,7 +66,7 @@ final class LoginViewModel: BaseViewModel {
                 }.subscribe(
                     onNext: handleLoginResult(result:),
                     onError: { error in
-                        print("loginWithKakakoTalk error \(error)")
+                        MOALogger.loge("\(error)")
                     }
                 ).disposed(by: disposeBag)
         }
@@ -69,8 +75,7 @@ final class LoginViewModel: BaseViewModel {
     func handleLoginResult(result: Result<AuthLoginResponse, URLError>) {
         switch result {
         case .success(let response):
-            print("handleLoginResult success \(response)")
-            break
+            MOALogger.logi("\(response)")
         case .failure(let error):
             tokenInfoRelay.accept(
                 AuthToken(
@@ -78,7 +83,6 @@ final class LoginViewModel: BaseViewModel {
                     accessTokenExpiresIn: Date().add(offset: 7).timeInMills
                 )
             )
-            break
         }
     }
 }

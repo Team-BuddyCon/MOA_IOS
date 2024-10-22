@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-class SplashViewController: UIViewController {
+class SplashViewController: BaseViewController {
     
     private let iconImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: "SplashIcon"))
@@ -17,6 +17,7 @@ class SplashViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        MOALogger.logd("viewDidLoad")
         view.backgroundColor = .pink100
         view.addSubview(iconImageView)
         

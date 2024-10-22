@@ -90,6 +90,7 @@ final class WalkThroughViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        MOALogger.logd("viewDidLoad")
         setupAppearance()
     }
 }
@@ -178,14 +179,17 @@ extension WalkThroughViewController: UICollectionViewDelegateFlowLayout {
 
 private extension WalkThroughViewController {
     @objc func tapSkipButton() {
-        UIApplication.shared.setRootViewController(vc: LoginViewController())
+        MOALogger.logd("tapSkipButton")
+        UIApplication.shared.setRootViewController(viewController: LoginViewController())
     }
     
     @objc func tapNextButton() {
+        MOALogger.logd("tapNextButton")
         currentPage += 1
     }
     
     @objc func tapStartButton() {
-        UIApplication.shared.setRootViewController(vc: LoginViewController())
+        MOALogger.logd("tapStartButton")
+        UIApplication.shared.setRootViewController(viewController: LoginViewController())
     }
 }

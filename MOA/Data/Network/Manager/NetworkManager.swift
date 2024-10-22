@@ -18,6 +18,7 @@ final class NetworkManager {
     ) -> Observable<Result<T, URLError>> {
         let url = UrlProvider.getDomainUrl(domain: request.domain) + request.path
         guard var components = URLComponents(string: url) else {
+            MOALogger.loge(String(URLError.Code.badURL.rawValue))
             return .just(.failure(URLError(.badURL)))
         }
         
@@ -28,6 +29,7 @@ final class NetworkManager {
         }
 
         guard let url = components.url else {
+            MOALogger.loge(String(URLError.Code.badURL.rawValue))
             return .just(.failure(URLError(.badURL)))
         }
         
@@ -42,11 +44,13 @@ final class NetworkManager {
         return URLSession.shared.rx.data(request: urlReqeuset)
             .map { data in
                 guard let response = try? JSONDecoder().decode(T.self, from: data) else {
+                    MOALogger.loge(String(URLError.Code.cannotParseResponse.rawValue))
                     return .failure(URLError(.cannotParseResponse))
                 }
                 return .success(response)
             }.catch { error in
-                print("network error \(error)")
+                MOALogger.loge(String(URLError.Code.cannotLoadFromNetwork.rawValue))
+                MOALogger.loge(error.localizedDescription)
                 return .just(.failure(URLError(.cannotLoadFromNetwork)))
             }
     }
