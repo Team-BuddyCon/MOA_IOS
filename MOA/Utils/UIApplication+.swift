@@ -8,10 +8,11 @@
 import UIKit
 
 extension UIApplication {
-    func setRootViewController(vc: UIViewController) {
+    func setRootViewController(viewController: UIViewController) {
+        MOALogger.logd("\(viewController)")
         if let windowScene = connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first(where: { $0.isKeyWindow }) {
-            window.rootViewController = vc
+            window.rootViewController = UINavigationController(rootViewController: viewController)
         }
     }
 }

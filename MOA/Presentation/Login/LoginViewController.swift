@@ -29,6 +29,7 @@ final class LoginViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        MOALogger.logd("viewDidLoad")
         setupAppearance()
         setupData()
     }
@@ -56,10 +57,9 @@ private extension LoginViewController {
     
     func setupData() {
         UserPreferences.setIsNeededShowLogin(isShow: true)
-        
         loginViewModel.tokenInfoDriver
             .drive { token in
-                print("login sccuess \(token)")
+                MOALogger.logi("\(token)")
                 self.navigationController?.pushViewController(SignUpViewController(), animated: true)
             }.disposed(by: disposeBag)
     }
@@ -67,6 +67,7 @@ private extension LoginViewController {
 
 private extension LoginViewController {
     @objc func tapKakaoLogin() {
+        MOALogger.logd("tapKakaoLogin")
         self.navigationController?.pushViewController(SignUpViewController(), animated: true)
         //loginViewModel.loginBykakao()
     }

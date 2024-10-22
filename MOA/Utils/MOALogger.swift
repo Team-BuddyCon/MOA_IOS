@@ -8,7 +8,7 @@
 import Foundation
 import OSLog
 
-struct Logging {
+struct MOALogger {
     private static let logger = Logger()
     
     static func logd(
