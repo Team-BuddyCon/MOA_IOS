@@ -17,7 +17,7 @@ class SplashViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        MOALogger.logd("viewDidLoad")
+        MOALogger.logd()
         view.backgroundColor = .pink100
         view.addSubview(iconImageView)
         

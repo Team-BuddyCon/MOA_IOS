@@ -53,7 +53,7 @@ final class SignUpViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        MOALogger.logd("viewDidLoad")
+        MOALogger.logd()
         setupAppearance()
         subscribe()
     }

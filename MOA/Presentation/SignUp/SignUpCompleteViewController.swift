@@ -60,7 +60,7 @@ final class SignUpCompleteViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        MOALogger.logd("viewDidLoad")
+        MOALogger.logd()
         setupAppearance()
     }
     
@@ -96,6 +96,6 @@ final class SignUpCompleteViewController: BaseViewController {
     }
     
     @objc func tapStartButton() {
-        MOALogger.logd("tapStartButton")
+        MOALogger.logd()
     }
 }
