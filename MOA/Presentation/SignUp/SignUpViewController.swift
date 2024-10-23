@@ -30,12 +30,17 @@ final class SignUpViewController: BaseViewController {
     }()
     
     private lazy var termsOfUseSignUpCheckBox: SignUpCheckBox = {
-        let checkBox = SignUpCheckBox(frame: .zero,text: SIGNUP_AGREE_TO_TERMS_OF_USE, hasMore: true)
+        let checkBox = SignUpCheckBox(frame: .zero,text: SIGNUP_AGREE_TO_TERMS_OF_USE, hasMore: true) {
+            let vc = SignUpWebViewController()
+            self.present(vc, animated: true)
+        }
         return checkBox
     }()
     
     private lazy var privacyPolicySignUpCheckBox: SignUpCheckBox = {
-        let checkBox = SignUpCheckBox(frame: .zero,text: SIGNUP_AGREE_TO_PRIVACY_POLICY, hasMore: true)
+        let checkBox = SignUpCheckBox(frame: .zero,text: SIGNUP_AGREE_TO_PRIVACY_POLICY, hasMore: true) {
+            
+        }
         return checkBox
     }()
     

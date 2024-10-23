@@ -33,19 +33,24 @@ final class SignUpCheckBox: UIView {
         return button
     }()
     
+    var tapDetailClosure: (() -> Void)?
     var isChecked = BehaviorRelay<Bool>(value: false)
     var tap: ControlEvent<Void>
     
     init(
         frame: CGRect,
         text: String,
-        hasMore: Bool = false
+        hasMore: Bool = false,
+        onDetailClosure: @escaping () -> Void = {}
     ) {
         isChecked = checkButton.isChecked
         tap = checkButton.rx.tap
+        
         super.init(frame: frame)
         textLabel.text = text
         detailButton.isHidden = !hasMore
+        tapDetailClosure = onDetailClosure
+        
         setupApperance()
         subscribe()
     }
@@ -93,6 +98,7 @@ final class SignUpCheckBox: UIView {
     }
     
     @objc func tapDetailButton() {
-        print("tapDetailButton")
+        MOALogger.logd()
+        tapDetailClosure?()
     }
 }
