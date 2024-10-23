@@ -29,7 +29,7 @@ final class LoginViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        MOALogger.logd("viewDidLoad")
+        MOALogger.logd()
         setupAppearance()
         setupData()
     }
@@ -67,7 +67,7 @@ private extension LoginViewController {
 
 private extension LoginViewController {
     @objc func tapKakaoLogin() {
-        MOALogger.logd("tapKakaoLogin")
+        MOALogger.logd()
         self.navigationController?.pushViewController(SignUpViewController(), animated: true)
         //loginViewModel.loginBykakao()
     }

@@ -37,6 +37,11 @@ let SIGNUP_AGREE_TO_ALL = "전체 동의하기"
 let SIGNUP_AGREE_TO_TERMS_OF_USE = "[필수] 이용약관 동의"
 let SIGNUP_AGREE_TO_PRIVACY_POLICY = "[필수] 개인정보 처리방침 동의"
 let SIGNUP_COMPLETE = "회원가입 완료"
+let SIGNUP_COMPLETE_TITLE = "회원가입 완료!"
+let SIGNUP_COMPLETE_SUBTITLE_FORMAT = "MOA의 소중한 회원이 되신 %@님,\n만나서 반가워요!"
+
+
+
 
 // MARK: Resource
 // Font
@@ -54,3 +59,4 @@ let pretendard_thin = "Pretendard-Thin"
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"
 let CHECK_BUTTON_IMAGE_ASSET = "CheckButton"
 let FORWARD_BUTTON_IMAGE_ASSET = "ForwardButton"
+let SIGNUP_COMPLETE_ICON_ASSET = "SignUpCompleteIcon"

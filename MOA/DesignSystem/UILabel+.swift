@@ -32,4 +32,20 @@ extension UILabel {
         
         attributedText = attributedString
     }
+    
+    /**
+        부분 색상 적용
+        startIndex: Inclusive
+        endIndex: exclusive
+     */
+    func setRangeFontColor(
+        text: String,
+        startIndex: Int,
+        endIndex: Int,
+        color: UIColor
+    ) {
+        let attributedStr = NSMutableAttributedString(string: text)
+        attributedStr.addAttribute(.foregroundColor, value: color, range: NSRange(location: startIndex, length: endIndex - startIndex))
+        attributedText = attributedStr
+    }
 }
