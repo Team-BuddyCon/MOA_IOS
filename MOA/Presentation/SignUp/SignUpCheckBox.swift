@@ -33,7 +33,7 @@ final class SignUpCheckBox: UIView {
         return button
     }()
     
-    var tapDetailClosure: (() -> Void)?
+    private var tapDetailClosure: (() -> Void)?
     var isChecked = BehaviorRelay<Bool>(value: false)
     var tap: ControlEvent<Void>
     

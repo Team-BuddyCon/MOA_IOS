@@ -17,10 +17,24 @@ final class SignUpWebViewController: BaseViewController {
         return webView
     }()
     
+    private let barTitle: String
+    private let webUrl: String
+    
+    init(title: String, url: String) {
+        self.barTitle = title
+        self.webUrl = url
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
         setupAppearance()
+        loadWebView()
     }
     
     private func setupAppearance() {
@@ -33,14 +47,17 @@ final class SignUpWebViewController: BaseViewController {
         )
         backButtonItem.tintColor = .grey90
         navigationItem.leftBarButtonItem = backButtonItem
-        navigationItem.title = SIGNUP_TITLE
+        navigationItem.title = barTitle
         
         view.addSubview(webView)
         webView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
+            $0.verticalEdges.equalTo(view.safeAreaLayoutGuide)
+            $0.horizontalEdges.equalToSuperview()
         }
-        
-        let urlComponents = URLComponents(string: "https://scarce-cartoon-27d.notion.site/e09da35361e142b7936c12e38396475e")
+    }
+    
+    private func loadWebView() {
+        let urlComponents = URLComponents(string: webUrl)
         if let url = urlComponents?.url {
             webView.load(URLRequest(url: url))
         }
