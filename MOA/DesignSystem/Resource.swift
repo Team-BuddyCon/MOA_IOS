@@ -34,13 +34,15 @@ let KAKAO_LOGIN_BUTTON_IMAGES = "KakaoLoginButton"
 let SIGNUP_TITLE = "회원가입"
 let SIGNUP_TERMS_GUIDE_TITLE = "모아의 서비스\n이용약관에 동의해주세요"
 let SIGNUP_AGREE_TO_ALL = "전체 동의하기"
+let SIGNUP_MOA_TERMS_OF_USE_TITLE = "모아 이용약관"
+let SIGNUP_PRIVACY_POLICY_TITLE = "개인정보 처리방침"
 let SIGNUP_AGREE_TO_TERMS_OF_USE = "[필수] 이용약관 동의"
 let SIGNUP_AGREE_TO_PRIVACY_POLICY = "[필수] 개인정보 처리방침 동의"
 let SIGNUP_COMPLETE = "회원가입 완료"
 let SIGNUP_COMPLETE_TITLE = "회원가입 완료!"
 let SIGNUP_COMPLETE_SUBTITLE_FORMAT = "MOA의 소중한 회원이 되신 %@님,\n만나서 반가워요!"
-
-
+let SIGNUP_SERVICE_TERMS_URL = "https://scarce-cartoon-27d.notion.site/e09da35361e142b7936c12e38396475e"
+let SIGNUP_PRIVACY_INFORMATION_URL = "https://scarce-cartoon-27d.notion.site/c4e5ff54f9bd434e971a2631d122252c"
 
 
 // MARK: Resource
