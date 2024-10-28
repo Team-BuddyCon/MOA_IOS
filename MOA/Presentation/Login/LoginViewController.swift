@@ -56,7 +56,7 @@ private extension LoginViewController {
     }
     
     func setupData() {
-        UserPreferences.setIsNeededShowLogin(isShow: true)
+        UserPreferences.setShouldEntryLogin()
         loginViewModel.tokenInfoDriver
             .drive { token in
                 MOALogger.logi("\(token)")

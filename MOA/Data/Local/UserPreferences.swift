@@ -7,22 +7,22 @@
 
 import UIKit
 
-private let IS_NEEDED_SHOW_LOGIN = "IS_NEEDED_SHOW_LOGIN"
+private let SHOULD_ENTRY_LOGIN = "SHOULD_ENTRY_LOGIN"
 private let LOGIN_USER_NAME = "LOGIN_USER_NAME"
 
 final class UserPreferences {
     
     private init() {}
     
-    static func getIsNeededShowLogin() -> Bool {
-        let isShow = UserDefaults.standard.bool(forKey: IS_NEEDED_SHOW_LOGIN)
-        MOALogger.logd("\(isShow)")
-        return isShow
+    static func isShouldEntryLogin() -> Bool {
+        let isShould = UserDefaults.standard.bool(forKey: SHOULD_ENTRY_LOGIN)
+        MOALogger.logd("\(isShould)")
+        return isShould
     }
     
-    static func setIsNeededShowLogin(isShow: Bool) {
-        MOALogger.logd("\(isShow)")
-        UserDefaults.standard.set(isShow, forKey: IS_NEEDED_SHOW_LOGIN)
+    static func setShouldEntryLogin() {
+        MOALogger.logd()
+        UserDefaults.standard.set(true, forKey: SHOULD_ENTRY_LOGIN)
     }
     
     static func getLoginUserName() -> String {
