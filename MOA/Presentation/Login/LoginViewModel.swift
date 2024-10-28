@@ -30,45 +30,55 @@ final class LoginViewModel: BaseViewModel {
     
     func loginBykakao() {
         if UserApi.isKakaoTalkLoginAvailable() {
-            Observable.zip(UserApi.shared.rx.loginWithKakaoTalk(), UserApi.shared.rx.me().asObservable())
-                .flatMap { [weak self] (oauthToken, user) -> Observable<Result<AuthLoginResponse, URLError>> in
-                    guard let self = self else {
-                        MOALogger.loge("\(URLError.Code.unknown.rawValue)")
-                        return .just(.failure(URLError(.unknown)))
-                    }
-                    return authService.login(
-                        oauthAccessToken: oauthToken.accessToken,
-                        nickname: user.kakaoAccount?.profile?.nickname ?? "",
-                        email: nil,
-                        gender: nil,
-                        age: nil
-                    )
-                }.subscribe(
-                    onNext: handleLoginResult(result:),
-                    onError: { error in
-                        MOALogger.loge("\(error)")
-                    }
-                ).disposed(by: disposeBag)
+            Observable.zip(
+                UserApi.shared.rx.loginWithKakaoTalk(),
+                UserApi.shared.rx.me().asObservable()
+            ).flatMap { [weak self] (oauthToken, user) -> Observable<Result<AuthLoginResponse, URLError>> in
+                guard let self = self else {
+                    MOALogger.loge("\(URLError.Code.unknown.rawValue)")
+                    return .just(.failure(URLError(.unknown)))
+                }
+                
+                UserPreferences.setLoginUserName(name: user.kakaoAccount?.profile?.nickname)
+                return authService.login(
+                    oauthAccessToken: oauthToken.accessToken,
+                    nickname: user.kakaoAccount?.profile?.nickname ?? "",
+                    email: nil,
+                    gender: nil,
+                    age: nil
+                )
+            }.subscribe(
+                onNext: handleLoginResult(result:),
+                onError: { [weak self] error in
+                    MOALogger.loge("\(error)")
+                    self?.handleLoginResult(result: .failure(URLError(URLError.cannotParseResponse)))
+                }
+            ).disposed(by: disposeBag)
         } else {
-            Observable.zip(UserApi.shared.rx.loginWithKakaoAccount(), UserApi.shared.rx.me().asObservable())
-                .flatMap { [weak self] (oauthToken, user) -> Observable<Result<AuthLoginResponse, URLError>> in
-                    guard let self = self else { 
-                        MOALogger.loge("\(URLError.Code.unknown.rawValue)")
-                        return .just(.failure(URLError(.unknown)))
-                    }
-                    return authService.login(
-                        oauthAccessToken: oauthToken.accessToken,
-                        nickname: user.kakaoAccount?.profile?.nickname ?? "",
-                        email: nil,
-                        gender: nil,
-                        age: nil
-                    )
-                }.subscribe(
-                    onNext: handleLoginResult(result:),
-                    onError: { error in
-                        MOALogger.loge("\(error)")
-                    }
-                ).disposed(by: disposeBag)
+            Observable.zip(
+                UserApi.shared.rx.loginWithKakaoAccount(),
+                UserApi.shared.rx.me().asObservable()
+            ).flatMap { [weak self] (oauthToken, user) -> Observable<Result<AuthLoginResponse, URLError>> in
+                guard let self = self else {
+                    MOALogger.loge("\(URLError.Code.unknown.rawValue)")
+                    return .just(.failure(URLError(.unknown)))
+                }
+                    
+                UserPreferences.setLoginUserName(name: user.kakaoAccount?.profile?.nickname)
+                return authService.login(
+                    oauthAccessToken: oauthToken.accessToken,
+                    nickname: user.kakaoAccount?.profile?.nickname ?? "",
+                    email: nil,
+                    gender: nil,
+                    age: nil
+                )
+            }.subscribe(
+                onNext: handleLoginResult(result:),
+                onError: { [weak self] error in
+                    MOALogger.loge("\(error)")
+                    self?.handleLoginResult(result: .failure(URLError(URLError.cannotParseResponse)))
+                }
+            ).disposed(by: disposeBag)
         }
     }
     
@@ -76,7 +86,16 @@ final class LoginViewModel: BaseViewModel {
         switch result {
         case .success(let response):
             MOALogger.logi("\(response)")
+            tokenInfoRelay.accept(
+                AuthToken(
+                    accessToken: response.tokenInfo.accessToken,
+                    refreshToken: response.tokenInfo.refreshToken,
+                    accessTokenExpiresIn: response.tokenInfo.accessTokenExpiresIn,
+                    isFirstLogin: response.tokenInfo.isFirstLogin
+                )
+            )
         case .failure(let error):
+            MOALogger.loge(error.localizedDescription)
             tokenInfoRelay.accept(
                 AuthToken(
                     accessToken: TEST_ACCESS_TOKEN,

@@ -23,11 +23,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         MOALogger.logd()
         guard let appKey = Bundle.main.infoDictionary?["KakaoApiKey"] as? String else {
-            return true
+            return false
         }
         
         RxKakaoSDK.initSDK(appKey: appKey)
-        
         return true
     }
 

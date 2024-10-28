@@ -177,7 +177,8 @@ private extension SignUpViewController {
     }
     
     @objc func tapCompletButton() {
-        let viewController = SignUpCompleteViewController(name: "오원석")
+        let userName = UserPreferences.getLoginUserName()
+        let viewController = SignUpCompleteViewController(name: userName)
         viewController.modalPresentationStyle = .fullScreen
         viewController.modalTransitionStyle = .crossDissolve
         present(viewController, animated: true)

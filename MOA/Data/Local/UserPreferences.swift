@@ -8,6 +8,7 @@
 import UIKit
 
 private let IS_NEEDED_SHOW_LOGIN = "IS_NEEDED_SHOW_LOGIN"
+private let LOGIN_USER_NAME = "LOGIN_USER_NAME"
 
 final class UserPreferences {
     
@@ -22,5 +23,16 @@ final class UserPreferences {
     static func setIsNeededShowLogin(isShow: Bool) {
         MOALogger.logd("\(isShow)")
         UserDefaults.standard.set(isShow, forKey: IS_NEEDED_SHOW_LOGIN)
+    }
+    
+    static func getLoginUserName() -> String {
+        let userName = UserDefaults.standard.string(forKey: LOGIN_USER_NAME) ?? ""
+        MOALogger.logd(userName)
+        return userName
+    }
+    
+    static func setLoginUserName(name: String?) {
+        MOALogger.logd(name)
+        UserDefaults.standard.set(name, forKey: LOGIN_USER_NAME)
     }
 }
