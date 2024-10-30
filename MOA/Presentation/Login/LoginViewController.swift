@@ -25,13 +25,14 @@ final class LoginViewController: BaseViewController {
         return button
     }()
     
-    let loginViewModel = LoginViewModel(authService: AuthService.shared)
+    private let loginViewModel = LoginViewModel(authService: AuthService.shared)
     
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
+        UserPreferences.setShouldEntryLogin()
         setupAppearance()
-        setupData()
+        subscribeViewModel()
     }
 }
 
@@ -55,12 +56,17 @@ private extension LoginViewController {
         }
     }
     
-    func setupData() {
-        UserPreferences.setShouldEntryLogin()
+    func subscribeViewModel() {
         loginViewModel.tokenInfoDriver
             .drive { token in
                 MOALogger.logi("\(token)")
-                self.navigationController?.pushViewController(SignUpViewController(), animated: true)
+                //self.navigationController?.pushViewController(SignUpViewController(), animated: true)
+            }.disposed(by: disposeBag)
+        
+        loginViewModel.kakaoAuthDriver
+            .drive { kakaoAuth in
+                MOALogger.logi("\(kakaoAuth)")
+                self.navigationController?.pushViewController(SignUpViewController(kakaoAuth: kakaoAuth), animated: true)
             }.disposed(by: disposeBag)
     }
 }
@@ -68,7 +74,7 @@ private extension LoginViewController {
 private extension LoginViewController {
     @objc func tapKakaoLogin() {
         MOALogger.logd()
-        self.navigationController?.pushViewController(SignUpViewController(), animated: true)
-        //loginViewModel.loginBykakao()
+        //self.navigationController?.pushViewController(SignUpViewController(), animated: true)
+        loginViewModel.loginBykakao()
     }
 }

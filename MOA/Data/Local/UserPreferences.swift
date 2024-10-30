@@ -9,6 +9,7 @@ import UIKit
 
 private let SHOULD_ENTRY_LOGIN = "SHOULD_ENTRY_LOGIN"
 private let LOGIN_USER_NAME = "LOGIN_USER_NAME"
+private let MOA_ACCESS_TOKEN = "MOA_ACCESS_TOKEN"
 
 final class UserPreferences {
     
@@ -34,5 +35,16 @@ final class UserPreferences {
     static func setLoginUserName(name: String?) {
         MOALogger.logd(name)
         UserDefaults.standard.set(name, forKey: LOGIN_USER_NAME)
+    }
+    
+    static func getAccessToken() -> String {
+        let accessToken = UserDefaults.standard.string(forKey: MOA_ACCESS_TOKEN) ?? ""
+        MOALogger.logd(accessToken)
+        return accessToken
+    }
+    
+    static func setAccessToken(accessToken: String) {
+        MOALogger.logd(accessToken)
+        UserDefaults.standard.set(accessToken, forKey: MOA_ACCESS_TOKEN)
     }
 }

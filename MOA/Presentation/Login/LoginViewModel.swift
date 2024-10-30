@@ -21,25 +21,55 @@ private let TEST_ACCESS_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJpZCI6MSwiaWF0IjoxNzE3OD
 final class LoginViewModel: BaseViewModel {
     private let authService: AuthServiceProtocol
     private let tokenInfoRelay = PublishRelay<AuthToken>()
-    let tokenInfoDriver: Driver<AuthToken>
+    var tokenInfoDriver: Driver<AuthToken> {
+        tokenInfoRelay.asDriver(onErrorJustReturn: AuthToken())
+    }
+    
+    private let kakaoAuthRelay = PublishRelay<KakaoAuth>()
+    var kakaoAuthDriver: Driver<KakaoAuth> {
+        kakaoAuthRelay.asDriver(onErrorJustReturn: KakaoAuth())
+    }
     
     init(authService: AuthServiceProtocol) {
         self.authService = authService
-        tokenInfoDriver = tokenInfoRelay.asDriver(onErrorJustReturn: AuthToken())
     }
     
     func loginBykakao() {
         if UserApi.isKakaoTalkLoginAvailable() {
+            loginByKakaoTalk()
+        } else {
+            loginByKakaoAccount()
+        }
+    }
+    
+    func loginByKakaoTalk() {
+        if UserPreferences.getAccessToken().isEmpty {
+            Observable.zip(
+                UserApi.shared.rx.loginWithKakaoTalk(),
+                UserApi.shared.rx.me().asObservable()
+            ).subscribe(onNext: { [weak self] (oauthToken, user) in
+                guard let self = self else {
+                    MOALogger.loge()
+                    return
+                }
+                
+                UserPreferences.setLoginUserName(name: user.kakaoAccount?.profile?.nickname)
+                kakaoAuthRelay.accept(
+                    KakaoAuth(
+                        accessToken: oauthToken.accessToken,
+                        profileName: user.kakaoAccount?.profile?.nickname ?? ""
+                    )
+                )
+            }).disposed(by: disposeBag)
+        } else {
             Observable.zip(
                 UserApi.shared.rx.loginWithKakaoTalk(),
                 UserApi.shared.rx.me().asObservable()
             ).flatMap { [weak self] (oauthToken, user) -> Observable<Result<AuthLoginResponse, URLError>> in
                 guard let self = self else {
-                    MOALogger.loge("\(URLError.Code.unknown.rawValue)")
                     return .just(.failure(URLError(.unknown)))
                 }
                 
-                UserPreferences.setLoginUserName(name: user.kakaoAccount?.profile?.nickname)
                 return authService.login(
                     oauthAccessToken: oauthToken.accessToken,
                     nickname: user.kakaoAccount?.profile?.nickname ?? "",
@@ -50,21 +80,39 @@ final class LoginViewModel: BaseViewModel {
             }.subscribe(
                 onNext: handleLoginResult(result:),
                 onError: { [weak self] error in
-                    MOALogger.loge("\(error)")
                     self?.handleLoginResult(result: .failure(URLError(URLError.cannotParseResponse)))
                 }
             ).disposed(by: disposeBag)
+        }
+    }
+    
+    func loginByKakaoAccount() {
+        if UserPreferences.getAccessToken().isEmpty {
+            Observable.zip(
+                UserApi.shared.rx.loginWithKakaoAccount(),
+                UserApi.shared.rx.me().asObservable()
+            ).subscribe(onNext: { [weak self] (oauthToken, user) in
+                guard let self = self else {
+                    MOALogger.loge()
+                    return
+                }
+                
+                kakaoAuthRelay.accept(
+                    KakaoAuth(
+                        accessToken: oauthToken.accessToken,
+                        profileName: user.kakaoAccount?.profile?.nickname ?? ""
+                    )
+                )
+            }).disposed(by: disposeBag)
         } else {
             Observable.zip(
                 UserApi.shared.rx.loginWithKakaoAccount(),
                 UserApi.shared.rx.me().asObservable()
             ).flatMap { [weak self] (oauthToken, user) -> Observable<Result<AuthLoginResponse, URLError>> in
                 guard let self = self else {
-                    MOALogger.loge("\(URLError.Code.unknown.rawValue)")
                     return .just(.failure(URLError(.unknown)))
                 }
-                    
-                UserPreferences.setLoginUserName(name: user.kakaoAccount?.profile?.nickname)
+                
                 return authService.login(
                     oauthAccessToken: oauthToken.accessToken,
                     nickname: user.kakaoAccount?.profile?.nickname ?? "",
@@ -75,7 +123,6 @@ final class LoginViewModel: BaseViewModel {
             }.subscribe(
                 onNext: handleLoginResult(result:),
                 onError: { [weak self] error in
-                    MOALogger.loge("\(error)")
                     self?.handleLoginResult(result: .failure(URLError(URLError.cannotParseResponse)))
                 }
             ).disposed(by: disposeBag)
