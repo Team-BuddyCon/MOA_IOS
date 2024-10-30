@@ -32,6 +32,7 @@ final class LoginViewModel: BaseViewModel {
     
     init(authService: AuthServiceProtocol) {
         self.authService = authService
+        AuthApi.shared.refreshToken(completion: {_,_ in })
     }
     
     func loginBykakao() {
@@ -44,88 +45,100 @@ final class LoginViewModel: BaseViewModel {
     
     func loginByKakaoTalk() {
         if UserPreferences.getAccessToken().isEmpty {
-            Observable.zip(
-                UserApi.shared.rx.loginWithKakaoTalk(),
-                UserApi.shared.rx.me().asObservable()
-            ).subscribe(onNext: { [weak self] (oauthToken, user) in
-                guard let self = self else {
-                    MOALogger.loge()
-                    return
-                }
-                
-                UserPreferences.setLoginUserName(name: user.kakaoAccount?.profile?.nickname)
-                kakaoAuthRelay.accept(
-                    KakaoAuth(
-                        accessToken: oauthToken.accessToken,
-                        profileName: user.kakaoAccount?.profile?.nickname ?? ""
-                    )
-                )
-            }).disposed(by: disposeBag)
+            // loginWithKakaoTalk, me를 동시에 실행하면 Token authentication is nil 에러 발생
+            UserApi.shared.rx.loginWithKakaoTalk()
+                .flatMap { oauthToken in
+                    UserApi.shared.rx.me().asObservable().map { user in
+                        (oauthToken, user)
+                    }
+                }.subscribe(
+                    onNext: { [weak self] (oauthToken, user) in
+                        guard let self = self else {
+                            MOALogger.loge()
+                            return
+                        }
+                        
+                        kakaoAuthRelay.accept(
+                            KakaoAuth(
+                                accessToken: oauthToken.accessToken,
+                                profileName: user.kakaoAccount?.profile?.nickname ?? ""
+                            )
+                        )
+                    }
+                ).disposed(by: disposeBag)
         } else {
-            Observable.zip(
-                UserApi.shared.rx.loginWithKakaoTalk(),
-                UserApi.shared.rx.me().asObservable()
-            ).flatMap { [weak self] (oauthToken, user) -> Observable<Result<AuthLoginResponse, URLError>> in
-                guard let self = self else {
-                    return .just(.failure(URLError(.unknown)))
-                }
-                
-                return authService.login(
-                    oauthAccessToken: oauthToken.accessToken,
-                    nickname: user.kakaoAccount?.profile?.nickname ?? "",
-                    email: nil,
-                    gender: nil,
-                    age: nil
-                )
-            }.subscribe(
-                onNext: handleLoginResult(result:),
-                onError: { [weak self] error in
-                    self?.handleLoginResult(result: .failure(URLError(URLError.cannotParseResponse)))
-                }
-            ).disposed(by: disposeBag)
+            UserApi.shared.rx.loginWithKakaoTalk()
+                .flatMap { oauthToken in
+                    UserApi.shared.rx.me().asObservable().map { user in
+                        (oauthToken, user)
+                    }
+                }.flatMap { [weak self] (oauthToken, user) -> Observable<Result<AuthLoginResponse, URLError>> in
+                    guard let self = self else {
+                        return .just(.failure(URLError(.unknown)))
+                    }
+                    
+                    return authService.login(
+                        oauthAccessToken: oauthToken.accessToken,
+                        nickname: user.kakaoAccount?.profile?.nickname ?? "",
+                        email: nil,
+                        gender: nil,
+                        age: nil
+                    )
+                }.subscribe(
+                    onNext: handleLoginResult(result:),
+                    onError: { [weak self] error in
+                        self?.handleLoginResult(result: .failure(URLError(URLError.cannotParseResponse)))
+                    }
+                ).disposed(by: disposeBag)
         }
     }
     
     func loginByKakaoAccount() {
         if UserPreferences.getAccessToken().isEmpty {
-            Observable.zip(
-                UserApi.shared.rx.loginWithKakaoAccount(),
-                UserApi.shared.rx.me().asObservable()
-            ).subscribe(onNext: { [weak self] (oauthToken, user) in
-                guard let self = self else {
-                    MOALogger.loge()
-                    return
-                }
-                
-                kakaoAuthRelay.accept(
-                    KakaoAuth(
-                        accessToken: oauthToken.accessToken,
-                        profileName: user.kakaoAccount?.profile?.nickname ?? ""
-                    )
-                )
-            }).disposed(by: disposeBag)
+            UserApi.shared.rx.loginWithKakaoAccount()
+                .flatMap { oauthToken in
+                    UserApi.shared.rx.me().asObservable().map { user in
+                        (oauthToken, user)
+                    }
+                }.subscribe(
+                    onNext: { [weak self] (oauthToken, user) in
+                        guard let self = self else {
+                            MOALogger.loge()
+                            return
+                        }
+                        
+                        kakaoAuthRelay.accept(
+                            KakaoAuth(
+                                accessToken: oauthToken.accessToken,
+                                profileName: user.kakaoAccount?.profile?.nickname ?? ""
+                            )
+                        )
+                    }
+                ).disposed(by: disposeBag)
         } else {
-            Observable.zip(
-                UserApi.shared.rx.loginWithKakaoAccount(),
-                UserApi.shared.rx.me().asObservable()
-            ).flatMap { [weak self] (oauthToken, user) -> Observable<Result<AuthLoginResponse, URLError>> in
-                guard let self = self else {
-                    return .just(.failure(URLError(.unknown)))
-                }
-                
-                return authService.login(
-                    oauthAccessToken: oauthToken.accessToken,
-                    nickname: user.kakaoAccount?.profile?.nickname ?? "",
-                    email: nil,
-                    gender: nil,
-                    age: nil
-                )
-            }.subscribe(
-                onNext: handleLoginResult(result:),
-                onError: { [weak self] error in
-                    self?.handleLoginResult(result: .failure(URLError(URLError.cannotParseResponse)))
-                }
-            ).disposed(by: disposeBag)
+            UserApi.shared.rx.loginWithKakaoAccount()
+                .flatMap { oauthToken in
+                    UserApi.shared.rx.me().asObservable().map { user in
+                        (oauthToken, user)
+                    }
+                }.flatMap { [weak self] (oauthToken, user) -> Observable<Result<AuthLoginResponse, URLError>> in
+                    guard let self = self else {
+                        return .just(.failure(URLError(.unknown)))
+                    }
+                    
+                    return authService.login(
+                        oauthAccessToken: oauthToken.accessToken,
+                        nickname: user.kakaoAccount?.profile?.nickname ?? "",
+                        email: nil,
+                        gender: nil,
+                        age: nil
+                    )
+                }.subscribe(
+                    onNext: handleLoginResult(result:),
+                    onError: { [weak self] error in
+                        self?.handleLoginResult(result: .failure(URLError(URLError.cannotParseResponse)))
+                    }
+                ).disposed(by: disposeBag)
         }
     }
     
