@@ -16,19 +16,4 @@ extension UIApplication {
             window.makeKeyAndVisible()
         }
     }
-    
-    func navigateToHome() {
-        MOALogger.logd()
-        let tabBarController = UITabBarController()
-        let gifticonViewController = GifticonViewController()
-        let mapViewController = MapViewController()
-        let mypageViewController = MypageViewController()
-        tabBarController.setViewControllers([gifticonViewController, mapViewController, mypageViewController], animated: true)
-        
-        if let windowScene = connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first(where: { $0.isKeyWindow }) {
-            window.rootViewController = tabBarController
-            window.makeKeyAndVisible()
-        }
-    }
 }

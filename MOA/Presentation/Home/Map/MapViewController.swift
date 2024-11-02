@@ -8,5 +8,8 @@
 import UIKit
 
 final class MapViewController: BaseViewController {
-    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        MOALogger.logd()
+    }
 }

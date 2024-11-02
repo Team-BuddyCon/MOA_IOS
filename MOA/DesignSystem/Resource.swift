@@ -44,6 +44,11 @@ let SIGNUP_COMPLETE_SUBTITLE_FORMAT = "MOA의 소중한 회원이 되신 %@님,\
 let SIGNUP_SERVICE_TERMS_URL = "https://scarce-cartoon-27d.notion.site/e09da35361e142b7936c12e38396475e"
 let SIGNUP_PRIVACY_INFORMATION_URL = "https://scarce-cartoon-27d.notion.site/c4e5ff54f9bd434e971a2631d122252c"
 
+// Home
+let GIFTICON_MENU_TITLE = "기프티콘"
+let MAP_MENU_TITLE = "지도"
+let MYPAGE_MENU_TITLE = "마이페이지"
+
 
 // MARK: Resource
 // Font
@@ -62,3 +67,9 @@ let BACK_BUTTON_IMAGE_ASSET = "BackButton"
 let CHECK_BUTTON_IMAGE_ASSET = "CheckButton"
 let FORWARD_BUTTON_IMAGE_ASSET = "ForwardButton"
 let SIGNUP_COMPLETE_ICON_ASSET = "SignUpCompleteIcon"
+let GIFTICON_MENU = "GifticonMenu"
+let GIFTICON_SELECTED_MENU = "GifticonSelMenu"
+let MAP_MENU = "MapMenu"
+let MAP_SELECTED_MENU = "MapSelMenu"
+let MYPAGE_MENU = "MypageMenu"
+let MYPAGE_SELECTED_MENU = "MypageSelMenu"

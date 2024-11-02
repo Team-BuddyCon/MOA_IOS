@@ -60,7 +60,7 @@ private extension LoginViewController {
         loginViewModel.tokenInfoDriver
             .drive { token in
                 MOALogger.logi("\(token)")
-                UIApplication.shared.navigateToHome()
+                UIApplication.shared.setRootViewController(viewController: HomeTabBarController())
             }.disposed(by: disposeBag)
         
         loginViewModel.kakaoAuthDriver
@@ -74,7 +74,7 @@ private extension LoginViewController {
 private extension LoginViewController {
     @objc func tapKakaoLogin() {
         MOALogger.logd()
-        UIApplication.shared.navigateToHome()
+        UIApplication.shared.setRootViewController(viewController: HomeTabBarController())
         //loginViewModel.loginBykakao()
     }
 }
