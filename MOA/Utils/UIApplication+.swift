@@ -13,6 +13,7 @@ extension UIApplication {
         if let windowScene = connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first(where: { $0.isKeyWindow }) {
             window.rootViewController = UINavigationController(rootViewController: viewController)
+            window.makeKeyAndVisible()
         }
     }
 }
