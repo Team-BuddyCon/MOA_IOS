@@ -10,7 +10,7 @@ import RxSwift
 import RxRelay
 import RxCocoa
 
-enum StoreCategory: String {
+enum StoreCategory: String, CaseIterable {
     case All = "전체"
     case Cafe = "카페"
     case ConvenienceStore = "편의점"
@@ -19,6 +19,7 @@ enum StoreCategory: String {
 
 final class CategoryButton: UIButton {
     
+    private let disposeBag = DisposeBag()
     let category: StoreCategory
     var isClicked = BehaviorRelay(value: false)
     
@@ -29,6 +30,7 @@ final class CategoryButton: UIButton {
         self.category = category
         super.init(frame: frame)
         setUp()
+        update()
     }
     
     required init?(coder: NSCoder) {
@@ -40,18 +42,19 @@ final class CategoryButton: UIButton {
         layer.cornerRadius = frame.height / 2
     }
     
-    func setUp() {
+    private func setUp() {
         setTitle(category.rawValue, for: .normal)
-        setTitleColor(.white, for: .normal)
-        setTitleColor(.grey60, for: .selected)
+        setTitleColor(.grey60, for: .normal)
+        setTitleColor(.white, for: .selected)
     }
-}
-
-extension Reactive where Base: CategoryButton {
-    var isClicked: Binder<Bool> {
-        return Binder<Bool>(self.base) { button, isClick in
-            button.backgroundColor = isClick ? .pink100 : .white
-            button.isSelected = isClick
-        }
+    
+    private func update() {
+        isClicked.asDriver()
+            .drive { [weak self] isClicked in
+                guard let `self` = self else { return }
+                MOALogger.logd("\(String(describing: category.rawValue)) \(isClicked)")
+                backgroundColor = isClicked ? .pink100 : .white
+                isSelected = isClicked
+            }.disposed(by: disposeBag)
     }
 }
