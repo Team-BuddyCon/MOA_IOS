@@ -28,9 +28,9 @@ final class HomeTabBarController: UITabBarController {
         UITabBarItem.appearance().setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.grey60], for: .normal)
         UITabBarItem.appearance().setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.grey90], for: .normal)
         
-        let gifticonViewController = GifticonViewController()
-        let mapViewController = MapViewController()
-        let mypageViewController = MypageViewController()
+        let gifticonViewController = UINavigationController(rootViewController: GifticonViewController())
+        let mapViewController = UINavigationController(rootViewController: MapViewController())
+        let mypageViewController = UINavigationController(rootViewController: MypageViewController())
         setViewControllers([gifticonViewController, mapViewController, mypageViewController], animated: true)
         
         if let items = tabBar.items {

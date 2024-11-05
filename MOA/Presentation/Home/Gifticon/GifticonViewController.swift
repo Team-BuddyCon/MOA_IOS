@@ -12,5 +12,16 @@ final class GifticonViewController: BaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
+        setupNavigationBar()
+    }
+}
+
+private extension GifticonViewController {
+    func setupNavigationBar() {
+        let label = UILabel()
+        label.text = GIFTICON_MENU_TITLE
+        label.font = UIFont(name: pretendard_bold, size: 22)
+        label.textColor = .grey90
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: label)
     }
 }
