@@ -16,4 +16,13 @@ extension UIApplication {
             window.makeKeyAndVisible()
         }
     }
+    
+    func navigationHome() {
+        MOALogger.logd()
+        if let windowScene = connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first(where: { $0.isKeyWindow }) {
+            window.rootViewController = HomeTabBarController()
+            window.makeKeyAndVisible()
+        }
+    }
 }

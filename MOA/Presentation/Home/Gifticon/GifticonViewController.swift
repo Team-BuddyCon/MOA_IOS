@@ -9,8 +9,68 @@ import UIKit
 import SnapKit
 
 final class GifticonViewController: BaseViewController {    
+    
+    private lazy var categoryStackView: UIStackView = {
+        let stackView = UIStackView()
+        StoreCategory.allCases.forEach {
+            let button = CategoryButton(frame: .zero, category: $0)
+            button.titleLabel?.font = UIFont(name: pretendard_medium, size: 14.0)
+            button.contentEdgeInsets = UIEdgeInsets(top: 6.0, left: 12.0, bottom: 6.0, right: 12.0)
+            button.snp.makeConstraints { $0.height.equalTo(32) }
+            stackView.addArrangedSubview(button)
+        }
+        
+        return stackView
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
+        setupNavigationBar()
+        setupLayout()
+        setupData()
+        subscribe()
+    }
+}
+
+private extension GifticonViewController {
+    func setupNavigationBar() {
+        let label = UILabel()
+        label.text = GIFTICON_MENU_TITLE
+        label.font = UIFont(name: pretendard_bold, size: 22)
+        label.textColor = .grey90
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: label)
+    }
+    
+    func setupLayout() {
+        [categoryStackView].forEach {
+            view.addSubview($0)
+        }
+        
+        categoryStackView.snp.makeConstraints {
+            $0.top.equalTo(view.safeAreaLayoutGuide).inset(12)
+            $0.left.equalToSuperview().inset(20)
+        }
+    }
+    
+    func setupData() {
+        if let button = categoryStackView.arrangedSubviews.first as? CategoryButton {
+            button.isClicked.accept(true)
+        }
+    }
+    
+    func subscribe() {
+        categoryStackView.arrangedSubviews.forEach {
+            if let button = $0 as? CategoryButton {
+                button.rx.tap
+                    .subscribe(onNext: { [weak self] in
+                        button.isClicked.accept(true)
+                        self?.categoryStackView.arrangedSubviews
+                            .filter { $0 != button }
+                            .map { $0 as? CategoryButton }
+                            .forEach { $0?.isClicked.accept(false) }
+                    }).disposed(by: disposeBag)
+            }
+        }
     }
 }
