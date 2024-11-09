@@ -27,6 +27,9 @@ extension UIColor {
     /// 0xFF6F6F71
     static let grey70 = UIColor(red: 111/255, green: 111/255, blue: 113/255, alpha: 1.0)
     
+    /// 0xFF4F5051
+    static let grey80 = UIColor(red: 79/255, green: 80/255, blue: 81/255, alpha: 1.0)
+    
     /// 0xFF2D2D2D
     static let grey90 = UIColor(red: 45/255, green: 45/255, blue: 45/255, alpha: 1.0)
 }

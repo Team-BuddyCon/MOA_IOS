@@ -23,6 +23,15 @@ final class GifticonViewController: BaseViewController {
         return stackView
     }()
     
+    private lazy var sortButton: UIButton = {
+        let button = UIButton()
+        button.addTarget(self, action: #selector(tapSortButton), for: .touchUpInside)
+        button.setTitle(SortType.ExpirationPeriod.rawValue, for: .normal)
+        button.setTitleColor(.grey80, for: .normal)
+        button.titleLabel?.font = UIFont(name: pretendard_medium, size: 13.0)
+        return button
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
@@ -43,13 +52,18 @@ private extension GifticonViewController {
     }
     
     func setupLayout() {
-        [categoryStackView].forEach {
+        [categoryStackView, sortButton].forEach {
             view.addSubview($0)
         }
         
         categoryStackView.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide).inset(12)
             $0.left.equalToSuperview().inset(20)
+        }
+        
+        sortButton.snp.makeConstraints {
+            $0.centerY.equalTo(categoryStackView)
+            $0.right.equalToSuperview().inset(20)
         }
     }
     
@@ -72,5 +86,14 @@ private extension GifticonViewController {
                     }).disposed(by: disposeBag)
             }
         }
+    }
+}
+
+extension GifticonViewController {
+    @objc func tapSortButton() {
+        let bottomSheetVC = BottomSheetViewController(type: .Sort)
+        bottomSheetVC.modalPresentationStyle = .overFullScreen
+        bottomSheetVC.modalTransitionStyle = .crossDissolve
+        self.present(bottomSheetVC, animated: true)
     }
 }
