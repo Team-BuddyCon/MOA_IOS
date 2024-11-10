@@ -19,6 +19,8 @@ final class BottomSheetViewController: UIViewController {
     init(type: BottomSheetType) {
         self.type = type
         super.init(nibName: nil, bundle: nil)
+        self.modalPresentationStyle = .overFullScreen
+        self.modalTransitionStyle = .crossDissolve
     }
     
     required init?(coder: NSCoder) {
@@ -28,10 +30,6 @@ final class BottomSheetViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLayout()
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
         startAnimation()
     }
 }
@@ -49,7 +47,7 @@ private extension BottomSheetViewController {
         
         view.addSubview(contentView)
         contentView.snp.makeConstraints {
-            $0.width.equalToSuperview()
+            $0.horizontalEdges.equalToSuperview()
             $0.height.equalTo(type.rawValue)
             $0.bottom.equalToSuperview().offset(type.rawValue)
         }
@@ -58,20 +56,21 @@ private extension BottomSheetViewController {
         view.addGestureRecognizer(dismissTapGesture)
     }
     
+    // TODO : 추후 애니메이션 정상 동작하도록 변경
     func startAnimation() {
         UIView.animate(
             withDuration: 0.25,
             delay: 0,
             options: [.curveEaseOut]
         ) { [weak self] in
-            guard let `self` = self else {
+            guard let self = self else {
                 MOALogger.loge()
                 return
             }
-            contentView.snp.remakeConstraints {
-                $0.width.equalToSuperview()
+            contentView.snp.updateConstraints {
+                $0.horizontalEdges.equalToSuperview()
                 $0.height.equalTo(self.type.rawValue)
-                $0.bottom.equalToSuperview()
+                $0.bottom.equalToSuperview().offset(0)
             }
             contentView.layoutIfNeeded()
         }
@@ -80,6 +79,7 @@ private extension BottomSheetViewController {
 
 extension BottomSheetViewController {
     @objc func tapDismiss() {
+        MOALogger.logd()
         dismiss(animated: true)
     }
 }

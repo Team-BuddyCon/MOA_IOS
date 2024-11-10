@@ -92,8 +92,6 @@ private extension GifticonViewController {
 extension GifticonViewController {
     @objc func tapSortButton() {
         let bottomSheetVC = BottomSheetViewController(type: .Sort)
-        bottomSheetVC.modalPresentationStyle = .overFullScreen
-        bottomSheetVC.modalTransitionStyle = .crossDissolve
         self.present(bottomSheetVC, animated: true)
     }
 }

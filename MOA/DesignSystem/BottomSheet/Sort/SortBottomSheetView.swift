@@ -11,13 +11,8 @@ import RxSwift
 import RxCocoa
 import RxRelay
 
-enum SortType: String {
-    case ExpirationPeriod = "유효기간순"
-    case Registration = "등록순"
-    case Name = "이름순"
-}
-
 final class SortBottomSheetView: UIView {
+    private let disposeBag = DisposeBag()
     private let _type = BehaviorRelay(value: SortType.ExpirationPeriod)
     let type: Driver<SortType>
     
@@ -27,24 +22,18 @@ final class SortBottomSheetView: UIView {
         return view
     }()
     
-    private lazy var expirationButton: UIButton = {
-        let button = UIButton()
-        button.setTitle(SortType.ExpirationPeriod.rawValue, for: .normal)
-        button.setTitleColor(.grey60, for: .normal)
+    private lazy var expirationButton: SortButton = {
+        let button = SortButton(type: .ExpirationPeriod)
         return button
     }()
     
-    private lazy var registrationButton: UIButton = {
-        let button = UIButton()
-        button.setTitle(SortType.Registration.rawValue, for: .normal)
-        button.setTitleColor(.grey60, for: .normal)
+    private lazy var registrationButton: SortButton = {
+        let button = SortButton(type: .Registration)
         return button
     }()
     
-    private lazy var nameButton: UIButton = {
-        let button = UIButton()
-        button.setTitle(SortType.Name.rawValue, for: .normal)
-        button.setTitleColor(.grey60, for: .normal)
+    private lazy var nameButton: SortButton = {
+        let button = SortButton(type: .Name)
         return button
     }()
     
@@ -52,6 +41,7 @@ final class SortBottomSheetView: UIView {
         type = _type.asDriver(onErrorJustReturn: .ExpirationPeriod)
         super.init(frame: frame)
         setupLayout()
+        subscribe()
     }
     
     required init?(coder: NSCoder) {
@@ -93,7 +83,47 @@ final class SortBottomSheetView: UIView {
             $0.width.equalToSuperview()
             $0.top.equalTo(registrationButton.snp.bottom).offset(8)
             $0.height.equalTo(52)
-            $0.bottom.equalToSuperview().inset(42)
         }
+    }
+    
+    func subscribe() {
+        expirationButton.isSelected
+            .distinctUntilChanged()
+            .asSignal(onErrorJustReturn: false)
+            .emit(onNext: { [weak self] isSelect in
+                guard let self = self else {
+                    return
+                }
+                if isSelect {
+                    registrationButton.isSelected.accept(false)
+                    nameButton.isSelected.accept(false)
+                }
+            }).disposed(by: disposeBag)
+        
+        registrationButton.isSelected
+            .distinctUntilChanged()
+            .asSignal(onErrorJustReturn: false)
+            .emit(onNext: { [weak self] isSelect in
+                guard let self = self else {
+                    return
+                }
+                if isSelect {
+                    expirationButton.isSelected.accept(false)
+                    nameButton.isSelected.accept(false)
+                }
+            }).disposed(by: disposeBag)
+        
+        nameButton.isSelected
+            .distinctUntilChanged()
+            .asSignal(onErrorJustReturn: false)
+            .emit(onNext: { [weak self] isSelect in
+                guard let self = self else {
+                    return
+                }
+                if isSelect {
+                    expirationButton.isSelected.accept(false)
+                    registrationButton.isSelected.accept(false)
+                }
+            }).disposed(by: disposeBag)
     }
 }
