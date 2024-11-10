@@ -13,8 +13,8 @@ import RxRelay
 
 final class SortBottomSheetView: UIView {
     private let disposeBag = DisposeBag()
-    private let _type = BehaviorRelay(value: SortType.ExpirationPeriod)
-    let type: Driver<SortType>
+    private let _sortType: PublishRelay<SortType> = PublishRelay()
+    let sortType: Signal<SortType>
     
     private let indicatorView: UIView = {
         let view = UIView()
@@ -37,10 +37,11 @@ final class SortBottomSheetView: UIView {
         return button
     }()
     
-    override init(frame: CGRect) {
-        type = _type.asDriver(onErrorJustReturn: .ExpirationPeriod)
-        super.init(frame: frame)
+    init(type: SortType) {
+        sortType = _sortType.asSignal(onErrorJustReturn: type)
+        super.init(frame: .zero)
         setupLayout()
+        setupData(type: type)
         subscribe()
     }
     
@@ -95,6 +96,7 @@ final class SortBottomSheetView: UIView {
                     return
                 }
                 if isSelect {
+                    _sortType.accept(.ExpirationPeriod)
                     registrationButton.isSelected.accept(false)
                     nameButton.isSelected.accept(false)
                 }
@@ -108,6 +110,7 @@ final class SortBottomSheetView: UIView {
                     return
                 }
                 if isSelect {
+                    _sortType.accept(.Registration)
                     expirationButton.isSelected.accept(false)
                     nameButton.isSelected.accept(false)
                 }
@@ -121,9 +124,21 @@ final class SortBottomSheetView: UIView {
                     return
                 }
                 if isSelect {
+                    _sortType.accept(.Name)
                     expirationButton.isSelected.accept(false)
                     registrationButton.isSelected.accept(false)
                 }
             }).disposed(by: disposeBag)
+    }
+    
+    func setupData(type: SortType) {
+        switch type {
+        case .ExpirationPeriod:
+            expirationButton.isSelected.accept(true)
+        case .Registration:
+            registrationButton.isSelected.accept(true)
+        case .Name:
+            nameButton.isSelected.accept(true)
+        }
     }
 }

@@ -36,7 +36,7 @@ final class AuthService: AuthServiceProtocol {
         gender: String?,
         age: String?
     ) -> Observable<Result<AuthLoginResponse, URLError>> {
-        var request = AuthLoginRequest(
+        let request = AuthLoginRequest(
             oauthAccessToken: oauthAccessToken,
             nickname: nickname,
             email: email,

@@ -8,16 +8,23 @@
 import UIKit
 import SnapKit
 
-final class BottomSheetViewController: UIViewController {
+final class BottomSheetViewController: BaseViewController {
     
-    private let type: BottomSheetType
+    private let sheetType: BottomSheetType
     private lazy var contentView: UIView = {
         let view = UIView()
         return view
     }()
     
-    init(type: BottomSheetType) {
-        self.type = type
+    var delegate: BottomSheetDelegate?
+    var sortType: SortType?
+    
+    init(
+        sheetType: BottomSheetType,
+        sortType: SortType? = nil
+    ) {
+        self.sheetType = sheetType
+        self.sortType = sortType
         super.init(nibName: nil, bundle: nil)
         self.modalPresentationStyle = .overFullScreen
         self.modalTransitionStyle = .crossDissolve
@@ -38,9 +45,9 @@ private extension BottomSheetViewController {
     func setupLayout() {
         view.backgroundColor = .black.withAlphaComponent(0.5)
         
-        switch type {
+        switch sheetType {
         case .Sort:
-            contentView.addSubview(SortBottomSheetView(frame: .zero))
+            setupSortBottomSheet()
         case .Date:
             return
         }
@@ -48,12 +55,23 @@ private extension BottomSheetViewController {
         view.addSubview(contentView)
         contentView.snp.makeConstraints {
             $0.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(type.rawValue)
-            $0.bottom.equalToSuperview().offset(type.rawValue)
+            $0.height.equalTo(sheetType.rawValue)
+            $0.bottom.equalToSuperview().offset(sheetType.rawValue)
         }
         
         let dismissTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapDismiss))
         view.addGestureRecognizer(dismissTapGesture)
+    }
+    
+    func setupSortBottomSheet() {
+        let sheetView = SortBottomSheetView(type: sortType ?? .ExpirationPeriod)
+        contentView.addSubview(sheetView)
+        
+        sheetView.sortType
+            .emit(onNext: { [weak self] type in
+                self?.delegate?.selectSortType(type: type)
+                self?.dismiss(animated: true)
+            }).disposed(by: disposeBag)
     }
     
     // TODO : 추후 애니메이션 정상 동작하도록 변경
@@ -69,7 +87,7 @@ private extension BottomSheetViewController {
             }
             contentView.snp.updateConstraints {
                 $0.horizontalEdges.equalToSuperview()
-                $0.height.equalTo(self.type.rawValue)
+                $0.height.equalTo(self.sheetType.rawValue)
                 $0.bottom.equalToSuperview().offset(0)
             }
             contentView.layoutIfNeeded()

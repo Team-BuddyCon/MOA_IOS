@@ -67,7 +67,6 @@ final class SortButton: UIView {
                     MOALogger.loge()
                     return
                 }
-                MOALogger.logd("\(type.rawValue) \(isSelect)")
                 titleLabel.font = UIFont(name: isSelect ? pretendard_bold : pretendard_medium, size: 14.0)
                 titleLabel.textColor = isSelect ? .pink100 : .grey60
                 checkImageView.isHidden = !isSelect

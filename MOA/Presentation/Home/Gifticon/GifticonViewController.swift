@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-final class GifticonViewController: BaseViewController {    
+final class GifticonViewController: BaseViewController {
     
     private lazy var categoryStackView: UIStackView = {
         let stackView = UIStackView()
@@ -26,11 +26,15 @@ final class GifticonViewController: BaseViewController {
     private lazy var sortButton: UIButton = {
         let button = UIButton()
         button.addTarget(self, action: #selector(tapSortButton), for: .touchUpInside)
-        button.setTitle(SortType.ExpirationPeriod.rawValue, for: .normal)
+        button.setTitle(sortType.rawValue, for: .normal)
         button.setTitleColor(.grey80, for: .normal)
         button.titleLabel?.font = UIFont(name: pretendard_medium, size: 13.0)
+        button.semanticContentAttribute = .forceRightToLeft
+        button.setImage(UIImage(named: DOWN_ARROW)?.withRenderingMode(.alwaysOriginal), for: .normal)
         return button
     }()
+    
+    private var sortType: SortType = .ExpirationPeriod
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,6 +46,7 @@ final class GifticonViewController: BaseViewController {
     }
 }
 
+// MARK: setup
 private extension GifticonViewController {
     func setupNavigationBar() {
         let label = UILabel()
@@ -89,9 +94,20 @@ private extension GifticonViewController {
     }
 }
 
+// MARK: objc function
 extension GifticonViewController {
     @objc func tapSortButton() {
-        let bottomSheetVC = BottomSheetViewController(type: .Sort)
+        let bottomSheetVC = BottomSheetViewController(sheetType: .Sort, sortType: sortType)
+        bottomSheetVC.delegate = self
         self.present(bottomSheetVC, animated: true)
+    }
+}
+
+// MARK: BottomSheetDelegate
+extension GifticonViewController: BottomSheetDelegate {
+    func selectSortType(type: SortType) {
+        MOALogger.logd(type.rawValue)
+        sortType = type
+        sortButton.setTitle(type.rawValue, for: .normal)
     }
 }
