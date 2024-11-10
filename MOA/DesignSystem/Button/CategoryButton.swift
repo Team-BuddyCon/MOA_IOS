@@ -51,7 +51,10 @@ final class CategoryButton: UIButton {
     private func update() {
         isClicked.asDriver()
             .drive { [weak self] isClicked in
-                guard let `self` = self else { return }
+                guard let self = self else {
+                    MOALogger.loge()
+                    return
+                }
                 MOALogger.logd("\(String(describing: category.rawValue)) \(isClicked)")
                 backgroundColor = isClicked ? .pink100 : .white
                 isSelected = isClicked
