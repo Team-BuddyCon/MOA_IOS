@@ -23,17 +23,17 @@ final class SortBottomSheetView: UIView {
     }()
     
     private lazy var expirationButton: SortButton = {
-        let button = SortButton(type: .ExpirationPeriod)
+        let button = SortButton(type: .EXPIRATION_DATE)
         return button
     }()
     
     private lazy var registrationButton: SortButton = {
-        let button = SortButton(type: .Registration)
+        let button = SortButton(type: .REGISTRATION)
         return button
     }()
     
     private lazy var nameButton: SortButton = {
-        let button = SortButton(type: .Name)
+        let button = SortButton(type: .NAME)
         return button
     }()
     
@@ -96,7 +96,7 @@ final class SortBottomSheetView: UIView {
                     return
                 }
                 if isSelect {
-                    _sortType.accept(.ExpirationPeriod)
+                    _sortType.accept(.EXPIRATION_DATE)
                     registrationButton.isSelected.accept(false)
                     nameButton.isSelected.accept(false)
                 }
@@ -110,7 +110,7 @@ final class SortBottomSheetView: UIView {
                     return
                 }
                 if isSelect {
-                    _sortType.accept(.Registration)
+                    _sortType.accept(.REGISTRATION)
                     expirationButton.isSelected.accept(false)
                     nameButton.isSelected.accept(false)
                 }
@@ -124,7 +124,7 @@ final class SortBottomSheetView: UIView {
                     return
                 }
                 if isSelect {
-                    _sortType.accept(.Name)
+                    _sortType.accept(.NAME)
                     expirationButton.isSelected.accept(false)
                     registrationButton.isSelected.accept(false)
                 }
@@ -133,11 +133,11 @@ final class SortBottomSheetView: UIView {
     
     func setupData(type: SortType) {
         switch type {
-        case .ExpirationPeriod:
+        case .EXPIRATION_DATE:
             expirationButton.isSelected.accept(true)
-        case .Registration:
+        case .REGISTRATION:
             registrationButton.isSelected.accept(true)
-        case .Name:
+        case .NAME:
             nameButton.isSelected.accept(true)
         }
     }

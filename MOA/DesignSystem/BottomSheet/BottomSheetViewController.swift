@@ -64,7 +64,7 @@ private extension BottomSheetViewController {
     }
     
     func setupSortBottomSheet() {
-        let sheetView = SortBottomSheetView(type: sortType ?? .ExpirationPeriod)
+        let sheetView = SortBottomSheetView(type: sortType ?? .EXPIRATION_DATE)
         contentView.addSubview(sheetView)
         
         sheetView.sortType

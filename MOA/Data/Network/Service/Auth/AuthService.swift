@@ -8,13 +8,6 @@
 import Foundation
 import RxSwift
 
-let AUTH_LOGIN_PATH = "/api/v1/auth/login"
-let AUTH_LOGIN_OAUTH_ACCESS_TOKEN = "oauthAccessToken"
-let AUTH_LOGIN_NICKNAME = "nickname"
-let AUTH_LOGIN_EMAIL = "email"
-let AUTH_LOGIN_GENDER = "gender"
-let AUTH_LOGIN_AGE = "age"
-
 protocol AuthServiceProtocol {
     func login(
         oauthAccessToken: String,

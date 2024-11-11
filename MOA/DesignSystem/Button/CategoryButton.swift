@@ -10,13 +10,6 @@ import RxSwift
 import RxRelay
 import RxCocoa
 
-enum StoreCategory: String, CaseIterable {
-    case All = "전체"
-    case Cafe = "카페"
-    case ConvenienceStore = "편의점"
-    case Etc = "기타"
-}
-
 final class CategoryButton: UIButton {
     
     private let disposeBag = DisposeBag()

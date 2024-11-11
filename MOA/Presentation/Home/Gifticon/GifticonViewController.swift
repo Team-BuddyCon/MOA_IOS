@@ -50,7 +50,7 @@ final class GifticonViewController: BaseViewController {
         return collectionView
     }()
     
-    private var sortType: SortType = .ExpirationPeriod
+    private var sortType: SortType = .EXPIRATION_DATE
     
     override func viewDidLoad() {
         super.viewDidLoad()

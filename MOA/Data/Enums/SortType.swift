@@ -8,7 +8,7 @@
 import Foundation
 
 enum SortType: String {
-    case ExpirationPeriod = "유효기간순"
-    case Registration = "등록순"
-    case Name = "이름순"
+    case EXPIRATION_DATE = "유효기간순"
+    case REGISTRATION = "등록순"
+    case NAME = "이름순"
 }
