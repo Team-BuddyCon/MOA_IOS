@@ -8,7 +8,7 @@
 import Foundation
 
 enum StoreType: String, CaseIterable {
-    case TOTAL = "전체"
+    case ALL = "전체"
     case STARBUCKS = "스타벅스"
     case TWOSOME_PLACE = "투썸플레이스"
     case ANGELINUS = "엔젤리너스"

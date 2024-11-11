@@ -13,6 +13,9 @@ let GIFTICON_AVAILABLE_PATH = "/api/v1/gifticons/available"
 protocol GifticonServiceProtocol {
     func fetchAvailable(
         pageNumber: Int,
-        rowCount: Int
+        rowCount: Int,
+        storeCateogry: StoreCategory,
+        storeType: StoreType,
+        sortType: SortType
     )
 }
