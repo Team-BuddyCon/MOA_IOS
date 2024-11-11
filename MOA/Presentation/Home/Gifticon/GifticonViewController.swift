@@ -34,6 +34,22 @@ final class GifticonViewController: BaseViewController {
         return button
     }()
     
+    private lazy var gifticonCollectionView: UICollectionView = {
+        let width = getWidthByDivision(division: 2, exclude: 20 + 16 + 20) // left + middle + right
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .vertical
+        layout.itemSize = CGSize(width: Double(width), height: Double(width) * 234 / 159.5)
+        layout.minimumInteritemSpacing = 16
+        layout.minimumLineSpacing = 24
+        layout.sectionInset = UIEdgeInsets(top: 24.0, left: 20.0, bottom: 0.0, right: 20.0)
+        
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        collectionView.register(GifticonCell.self, forCellWithReuseIdentifier: GifticonCell.identifier)
+        return collectionView
+    }()
+    
     private var sortType: SortType = .ExpirationPeriod
     
     override func viewDidLoad() {
@@ -57,7 +73,7 @@ private extension GifticonViewController {
     }
     
     func setupLayout() {
-        [categoryStackView, sortButton].forEach {
+        [categoryStackView, sortButton, gifticonCollectionView].forEach {
             view.addSubview($0)
         }
         
@@ -69,6 +85,12 @@ private extension GifticonViewController {
         sortButton.snp.makeConstraints {
             $0.centerY.equalTo(categoryStackView)
             $0.right.equalToSuperview().inset(20)
+        }
+        
+        gifticonCollectionView.snp.makeConstraints {
+            $0.top.equalTo(categoryStackView.snp.bottom).offset(8)
+            $0.horizontalEdges.equalToSuperview()
+            $0.bottom.equalToSuperview()
         }
     }
     
@@ -109,5 +131,33 @@ extension GifticonViewController: BottomSheetDelegate {
         MOALogger.logd(type.rawValue)
         sortType = type
         sortButton.setTitle(type.rawValue, for: .normal)
+    }
+}
+
+// MARK: UICollectionViewDelegateFlowLayout
+extension GifticonViewController: UICollectionViewDelegateFlowLayout {
+    
+}
+
+// MARK:
+extension GifticonViewController: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return 3
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: GifticonCell.identifier, for: indexPath) as? GifticonCell else {
+            return UICollectionViewCell()
+        }
+        
+        cell.setData(
+            dday: 3,
+            imageURL: "https://cdn.najunews.kr/news/photo/202311/222522_16128_3436.jpg",
+            store: "스타벅스",
+            title: "스타벅스 쿠폰 써야해",
+            date: "2024-12-08"
+        )
+        
+        return cell
     }
 }
