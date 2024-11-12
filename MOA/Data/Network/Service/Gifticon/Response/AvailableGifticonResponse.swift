@@ -12,13 +12,13 @@ struct AvailableGifticonResponse: BaseResponse {
     var message: String
     
     private var body: Body
-    var gifticonInfo: AvailableGifticonInfo {
+    var gifticonInfo: [AvailableGifticonInfo] {
         body.content
     }
 
     private struct Body: Decodable {
         let size: Int
-        let content: AvailableGifticonInfo
+        let content: [AvailableGifticonInfo]
     }
 }
 

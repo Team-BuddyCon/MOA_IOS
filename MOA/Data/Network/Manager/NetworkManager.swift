@@ -9,6 +9,11 @@ import UIKit
 import RxSwift
 import RxCocoa
 
+let HEADER_VALUE_APPLICATION_JSON = "application/json"
+let HEADER_FIELD_CONTENT_TYPE = "Content-Type"
+let HEADER_VALUE_AUTHORIZATION = "Bearer %@"
+let HEADER_FIELD_AUTHORIZATION = "Authorization"
+
 final class NetworkManager {
     static let shared = NetworkManager()
     private init() {}
@@ -38,7 +43,11 @@ final class NetworkManager {
         
         if request.method != .GET {
             urlReqeuset.httpBody = try? JSONSerialization.data(withJSONObject: request.body, options: [])
-            urlReqeuset.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            urlReqeuset.setValue(HEADER_VALUE_APPLICATION_JSON, forHTTPHeaderField: HEADER_FIELD_CONTENT_TYPE)
+        }
+        
+        if !UserPreferences.getAccessToken().isEmpty {
+            urlReqeuset.addValue(String(format: HEADER_VALUE_AUTHORIZATION, UserPreferences.getAccessToken()), forHTTPHeaderField: HEADER_FIELD_AUTHORIZATION)
         }
 
         return URLSession.shared.rx.data(request: urlReqeuset)

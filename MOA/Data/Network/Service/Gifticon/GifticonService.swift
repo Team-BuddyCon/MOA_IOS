@@ -8,14 +8,33 @@
 import Foundation
 import RxSwift
 
-let GIFTICON_AVAILABLE_PATH = "/api/v1/gifticons/available"
-
 protocol GifticonServiceProtocol {
-    func fetchAvailable(
+    func fetchAvailableGifticon(
         pageNumber: Int,
         rowCount: Int,
         storeCateogry: StoreCategory,
-        storeType: StoreType,
         sortType: SortType
-    )
+    ) -> Observable<Result<AvailableGifticonResponse, URLError>>
+}
+
+
+final class GifticonService: GifticonServiceProtocol {
+    static let shared = GifticonService()
+    private init() {}
+    
+    func fetchAvailableGifticon(
+        pageNumber: Int,
+        rowCount: Int,
+        storeCateogry: StoreCategory,
+        sortType: SortType
+    ) -> Observable<Result<AvailableGifticonResponse, URLError>> {
+        let request = AvailableGifticonRequest(
+            pageNumber: pageNumber,
+            rowCount: rowCount,
+            storeCategory: storeCateogry,
+            sortType: sortType
+        )
+        
+        return NetworkManager.shared.request(request: request)
+    }
 }
