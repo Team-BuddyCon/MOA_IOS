@@ -59,22 +59,6 @@ final class GifticonViewController: BaseViewController {
         setupLayout()
         setupData()
         subscribe()
-        
-        GifticonService.shared.fetchAvailableGifticon(
-            pageNumber: 0,
-            rowCount: 20,
-            storeCateogry: .CONVENIENCE_STORE,
-            sortType: .EXPIRE_DATE
-        ).subscribe(onNext: { result in
-            switch result {
-            case .success(let response):
-                print(response)
-                break
-            case .failure(let error):
-                print(error)
-                break
-            }
-        }).disposed(by: disposeBag)
     }
 }
 

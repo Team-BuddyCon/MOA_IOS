@@ -12,7 +12,8 @@ protocol GifticonServiceProtocol {
     func fetchAvailableGifticon(
         pageNumber: Int,
         rowCount: Int,
-        storeCateogry: StoreCategory,
+        storeCateogry: StoreCategory?,
+        storeType: StoreType?,
         sortType: SortType
     ) -> Observable<Result<AvailableGifticonResponse, URLError>>
 }
@@ -24,14 +25,16 @@ final class GifticonService: GifticonServiceProtocol {
     
     func fetchAvailableGifticon(
         pageNumber: Int,
-        rowCount: Int,
-        storeCateogry: StoreCategory,
-        sortType: SortType
+        rowCount: Int = 20,
+        storeCateogry: StoreCategory? = nil,
+        storeType: StoreType? = nil,
+        sortType: SortType = .EXPIRE_DATE
     ) -> Observable<Result<AvailableGifticonResponse, URLError>> {
         let request = AvailableGifticonRequest(
             pageNumber: pageNumber,
             rowCount: rowCount,
             storeCategory: storeCateogry,
+            storeType: storeType,
             sortType: sortType
         )
         

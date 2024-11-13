@@ -10,15 +10,17 @@ import Foundation
 struct AvailableGifticonResponse: BaseResponse {
     var status: Int
     var message: String
-    
-    private var body: Body
-    var gifticonInfo: [AvailableGifticonInfo] {
-        body.content
-    }
+    var gifticonInfos: AvailableGifticonInfos
 
-    private struct Body: Decodable {
+    struct AvailableGifticonInfos: Decodable {
         let size: Int
         let content: [AvailableGifticonInfo]
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case status
+        case message
+        case gifticonInfos = "body"
     }
 }
 

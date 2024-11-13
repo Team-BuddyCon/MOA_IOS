@@ -28,18 +28,27 @@ final class AvailableGifticonRequest: BaseRequest {
     init(
         pageNumber: Int,
         rowCount: Int,
-        storeCategory: StoreCategory,
-        sortType: SortType
+        storeCategory: StoreCategory?,
+        storeType: StoreType?,
+        sortType: SortType?
     ) {
         var query: [String: String?] = [:]
         query.updateValue(String(pageNumber), forKey: AVAILABLE_GIFTICON_PAGE_NUMBER)
         query.updateValue(String(rowCount), forKey: AVAILABLE_GIFTICON_ROW_COUNT)
-        query.updateValue(String(describing: storeCategory), forKey: AVAILABLE_GIFTICON_STORE_CATEGORY)
-        query.updateValue(String(describing: sortType), forKey: AVAILABLE_GIFTICON_SORT_TYPE)
+        
+        if let storeCategory = storeCategory {
+            query.updateValue(String(describing: storeCategory), forKey: AVAILABLE_GIFTICON_STORE_CATEGORY)
+        }
+        
+        if let storeType = storeType {
+            query.updateValue(String(describing: storeType), forKey: AVAILABLE_GIFTICON_STORE)
+        }
+        
+        if let sortType = sortType {
+            query.updateValue(String(describing: sortType), forKey: AVAILABLE_GIFTICON_SORT_TYPE)
+        }
+        
         self.query = query
         self.body = [:]
-        
-        "http://3.37.254.182:8080/api/v1/gifticons/available?gifticonStoreCategory=CONVENIENCE_STORE&rowCount=20&pageNumber=0&gifticonSortType=EXPIRATION_DATE"
-        "http://3.37.254.182:8080/api/v1/gifticons/available?pageNumber=0&gifticonStoreCategory=CONVENIENCE_STORE&gifticonSortType=EXPIRE_DATE&rowCount=10 "
     }
 }
