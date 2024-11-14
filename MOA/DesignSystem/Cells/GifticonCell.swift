@@ -32,7 +32,7 @@ final class GifticonCell: UICollectionViewCell {
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 8
-        imageView.backgroundColor = .red
+        imageView.backgroundColor = .grey30
         return imageView
     }()
     
@@ -71,12 +71,12 @@ final class GifticonCell: UICollectionViewCell {
     func setData(
         dday: Int,
         imageURL: String,
-        store: String,
+        storeType: StoreType,
         title: String,
         date: String
     ) {
         ddayButton.dday = dday
-        storeLabel.text = store
+        storeLabel.text = storeType.rawValue
         titleLabel.text = title
         dateLabel.text = date
         

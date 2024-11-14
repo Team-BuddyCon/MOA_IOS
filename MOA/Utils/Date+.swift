@@ -21,6 +21,20 @@ extension Date {
 }
 
 extension String {
+    func toDday() -> Int {
+        let formatter = DateFormatter()
+        formatter.dateFormat = AVAILABLE_GIFTICON_UI_TIME_FORMAT
+        let date = formatter.date(from: self)
+        let calendar = Calendar.current
+        
+        if let date = date {
+            let day = calendar.component(.day, from: date)
+            let today = calendar.component(.day, from: Date())
+            return day - today
+        }
+        return 0
+    }
+    
     func transformTimeformat(
         origin: String,
         dest: String

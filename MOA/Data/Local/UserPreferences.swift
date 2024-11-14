@@ -39,7 +39,6 @@ final class UserPreferences {
     
     static func getAccessToken() -> String {
         let accessToken = UserDefaults.standard.string(forKey: MOA_ACCESS_TOKEN) ?? ""
-        MOALogger.logd(accessToken)
         return accessToken
     }
     

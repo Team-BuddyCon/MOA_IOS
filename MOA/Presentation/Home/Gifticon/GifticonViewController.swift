@@ -51,6 +51,7 @@ final class GifticonViewController: BaseViewController {
     }()
     
     private var sortType: SortType = .EXPIRE_DATE
+    private let gifticonViewModel = GifticonViewModel(gifticonService: GifticonService.shared)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -98,6 +99,8 @@ private extension GifticonViewController {
         if let button = categoryStackView.arrangedSubviews.first as? CategoryButton {
             button.isClicked.accept(true)
         }
+        
+        gifticonViewModel.fetchAvailableGifticon()
     }
     
     func subscribe() {
@@ -113,6 +116,11 @@ private extension GifticonViewController {
                     }).disposed(by: disposeBag)
             }
         }
+        
+        gifticonViewModel.gifticonDriver
+            .drive(onNext: { [weak self] gifticons in
+                self?.gifticonCollectionView.reloadData()
+            }).disposed(by: disposeBag)
     }
 }
 
@@ -136,26 +144,41 @@ extension GifticonViewController: BottomSheetDelegate {
 
 // MARK: UICollectionViewDelegateFlowLayout
 extension GifticonViewController: UICollectionViewDelegateFlowLayout {
-    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if gifticonViewModel.gifticons.isEmpty {
+            return
+        }
+        
+        let contentOffsetY = gifticonCollectionView.contentOffset.y
+        let scrollViewHeight = gifticonCollectionView.bounds.size.height
+        let contentHeight = gifticonCollectionView.contentSize.height
+        let height = CGFloat(getWidthByDivision(division: 2, exclude: 20 + 16 + 20))
+        if contentOffsetY + scrollViewHeight + height >= contentHeight, !gifticonViewModel.isScrollEnded, !gifticonViewModel.isLoading {
+            MOALogger.logd()
+            gifticonViewModel.pageNumber += 1
+            gifticonViewModel.fetchAvailableGifticon()
+        }
+    }
 }
 
 // MARK:
 extension GifticonViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 3
+        return gifticonViewModel.gifticons.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: GifticonCell.identifier, for: indexPath) as? GifticonCell else {
             return UICollectionViewCell()
         }
-        
+
+        let gifticon = gifticonViewModel.gifticons[indexPath.row]
         cell.setData(
-            dday: 3,
-            imageURL: "https://cdn.najunews.kr/news/photo/202311/222522_16128_3436.jpg",
-            store: "스타벅스",
-            title: "스타벅스 쿠폰 써야해",
-            date: "2024-12-08"
+            dday: gifticon.expireDate.toDday(),
+            imageURL: gifticon.imageUrl,
+            storeType: gifticon.gifticonStore,
+            title: gifticon.name,
+            date: gifticon.expireDate
         )
         
         return cell

@@ -26,9 +26,9 @@ final class GifticonService: GifticonServiceProtocol {
     func fetchAvailableGifticon(
         pageNumber: Int,
         rowCount: Int = 20,
-        storeCateogry: StoreCategory? = nil,
-        storeType: StoreType? = nil,
-        sortType: SortType = .EXPIRE_DATE
+        storeCateogry: StoreCategory?,
+        storeType: StoreType?,
+        sortType: SortType
     ) -> Observable<Result<AvailableGifticonResponse, URLError>> {
         let request = AvailableGifticonRequest(
             pageNumber: pageNumber,
