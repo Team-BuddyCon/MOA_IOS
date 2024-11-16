@@ -23,17 +23,17 @@ final class SortBottomSheetView: UIView {
     }()
     
     private lazy var expirationButton: SortButton = {
-        let button = SortButton(type: .ExpirationPeriod)
+        let button = SortButton(type: .EXPIRE_DATE)
         return button
     }()
     
     private lazy var registrationButton: SortButton = {
-        let button = SortButton(type: .Registration)
+        let button = SortButton(type: .CREATED_AT)
         return button
     }()
     
     private lazy var nameButton: SortButton = {
-        let button = SortButton(type: .Name)
+        let button = SortButton(type: .NAME)
         return button
     }()
     
@@ -42,7 +42,7 @@ final class SortBottomSheetView: UIView {
         super.init(frame: .zero)
         setupLayout()
         setupData(type: type)
-        subscribe()
+        bind()
     }
     
     required init?(coder: NSCoder) {
@@ -87,57 +87,40 @@ final class SortBottomSheetView: UIView {
         }
     }
     
-    func subscribe() {
-        expirationButton.isSelected
-            .distinctUntilChanged()
-            .asSignal(onErrorJustReturn: false)
-            .emit(onNext: { [weak self] isSelect in
-                guard let self = self else {
-                    return
-                }
-                if isSelect {
-                    _sortType.accept(.ExpirationPeriod)
-                    registrationButton.isSelected.accept(false)
-                    nameButton.isSelected.accept(false)
-                }
-            }).disposed(by: disposeBag)
+    func bind() {
+        let sortButtons = subviews
+            .filter { $0 is SortButton }
+            .map { $0 as? SortButton }
         
-        registrationButton.isSelected
-            .distinctUntilChanged()
-            .asSignal(onErrorJustReturn: false)
-            .emit(onNext: { [weak self] isSelect in
-                guard let self = self else {
-                    return
+        sortButtons.forEach {
+            if let button = $0 {
+                button.isSelected
+                    .distinctUntilChanged()
+                    .asSignal(onErrorJustReturn: false)
+                    .emit(onNext: { [weak self] isSelect in
+                        guard let self = self else {
+                            MOALogger.loge()
+                            return
+                        }
+                        
+                        if isSelect {
+                            _sortType.accept(button.type)
+                            sortButtons
+                                .filter { $0 != button }
+                                .forEach { $0?.isSelected.accept(false) }
+                        }
+                    }).disposed(by: disposeBag)
                 }
-                if isSelect {
-                    _sortType.accept(.Registration)
-                    expirationButton.isSelected.accept(false)
-                    nameButton.isSelected.accept(false)
-                }
-            }).disposed(by: disposeBag)
-        
-        nameButton.isSelected
-            .distinctUntilChanged()
-            .asSignal(onErrorJustReturn: false)
-            .emit(onNext: { [weak self] isSelect in
-                guard let self = self else {
-                    return
-                }
-                if isSelect {
-                    _sortType.accept(.Name)
-                    expirationButton.isSelected.accept(false)
-                    registrationButton.isSelected.accept(false)
-                }
-            }).disposed(by: disposeBag)
+            }
     }
     
     func setupData(type: SortType) {
         switch type {
-        case .ExpirationPeriod:
+        case .EXPIRE_DATE:
             expirationButton.isSelected.accept(true)
-        case .Registration:
+        case .CREATED_AT:
             registrationButton.isSelected.accept(true)
-        case .Name:
+        case .NAME:
             nameButton.isSelected.accept(true)
         }
     }

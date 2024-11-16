@@ -74,7 +74,9 @@ private extension LoginViewController {
 private extension LoginViewController {
     @objc func tapKakaoLogin() {
         MOALogger.logd()
+        UserPreferences.setAccessToken(accessToken: TEST_ACCESS_TOKEN)
         UIApplication.shared.navigationHome()
+        
         //loginViewModel.loginBykakao()
     }
 }

@@ -29,11 +29,12 @@ final class DDayButton: UIButton {
     }
     
     init(
-        frame: CGRect = .zero,
+        dday: Int = 0,
         fontName: String = pretendard_bold,
         fontSize: CGFloat = 10.0
     ) {
-        super.init(frame: frame)
+        self.dday = dday
+        super.init(frame: .zero)
         titleLabel?.font = UIFont(name: fontName, size: fontSize)
     }
     

@@ -10,18 +10,11 @@ import RxSwift
 import RxRelay
 import RxCocoa
 
-enum StoreCategory: String, CaseIterable {
-    case All = "전체"
-    case Cafe = "카페"
-    case ConvenienceStore = "편의점"
-    case Etc = "기타"
-}
-
 final class CategoryButton: UIButton {
     
     private let disposeBag = DisposeBag()
     let category: StoreCategory
-    var isClicked = BehaviorRelay(value: false)
+    let isClicked = BehaviorRelay(value: false)
     
     init(
         frame: CGRect,
@@ -30,7 +23,8 @@ final class CategoryButton: UIButton {
         self.category = category
         super.init(frame: frame)
         setUp()
-        update()
+        bind()
+    
     }
     
     required init?(coder: NSCoder) {
@@ -48,13 +42,14 @@ final class CategoryButton: UIButton {
         setTitleColor(.white, for: .selected)
     }
     
-    private func update() {
+    private func bind() {
         isClicked.asDriver()
             .drive { [weak self] isClicked in
                 guard let self = self else {
                     MOALogger.loge()
                     return
                 }
+                
                 MOALogger.logd("\(String(describing: category.rawValue)) \(isClicked)")
                 backgroundColor = isClicked ? .pink100 : .white
                 isSelected = isClicked

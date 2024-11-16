@@ -13,7 +13,7 @@ import RxCocoa
 
 final class SortButton: UIView {
     private let disposeBag = DisposeBag()
-    private let type: SortType
+    let type: SortType
     let isSelected = BehaviorRelay(value: false)
     
     private lazy var titleLabel: UILabel = {
@@ -33,7 +33,7 @@ final class SortButton: UIView {
         self.type = type
         super.init(frame: .zero)
         setupLayout()
-        subscribe()
+        bind()
     }
     
     required init?(coder: NSCoder) {
@@ -60,7 +60,7 @@ final class SortButton: UIView {
         addGestureRecognizer(tapGesture)
     }
     
-    func subscribe() {
+    func bind() {
         isSelected.asDriver()
             .drive(onNext: { [weak self] isSelect in
                 guard let self = self else {
