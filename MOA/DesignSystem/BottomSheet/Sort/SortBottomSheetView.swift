@@ -42,7 +42,7 @@ final class SortBottomSheetView: UIView {
         super.init(frame: .zero)
         setupLayout()
         setupData(type: type)
-        subscribe()
+        bind()
     }
     
     required init?(coder: NSCoder) {
@@ -87,48 +87,31 @@ final class SortBottomSheetView: UIView {
         }
     }
     
-    func subscribe() {
-        expirationButton.isSelected
-            .distinctUntilChanged()
-            .asSignal(onErrorJustReturn: false)
-            .emit(onNext: { [weak self] isSelect in
-                guard let self = self else {
-                    return
-                }
-                if isSelect {
-                    _sortType.accept(.EXPIRE_DATE)
-                    registrationButton.isSelected.accept(false)
-                    nameButton.isSelected.accept(false)
-                }
-            }).disposed(by: disposeBag)
+    func bind() {
+        let sortButtons = subviews
+            .filter { $0 is SortButton }
+            .map { $0 as? SortButton }
         
-        registrationButton.isSelected
-            .distinctUntilChanged()
-            .asSignal(onErrorJustReturn: false)
-            .emit(onNext: { [weak self] isSelect in
-                guard let self = self else {
-                    return
+        sortButtons.forEach {
+            if let button = $0 {
+                button.isSelected
+                    .distinctUntilChanged()
+                    .asSignal(onErrorJustReturn: false)
+                    .emit(onNext: { [weak self] isSelect in
+                        guard let self = self else {
+                            MOALogger.loge()
+                            return
+                        }
+                        
+                        if isSelect {
+                            _sortType.accept(button.type)
+                            sortButtons
+                                .filter { $0 != button }
+                                .forEach { $0?.isSelected.accept(false) }
+                        }
+                    }).disposed(by: disposeBag)
                 }
-                if isSelect {
-                    _sortType.accept(.CREATED_AT)
-                    expirationButton.isSelected.accept(false)
-                    nameButton.isSelected.accept(false)
-                }
-            }).disposed(by: disposeBag)
-        
-        nameButton.isSelected
-            .distinctUntilChanged()
-            .asSignal(onErrorJustReturn: false)
-            .emit(onNext: { [weak self] isSelect in
-                guard let self = self else {
-                    return
-                }
-                if isSelect {
-                    _sortType.accept(.NAME)
-                    expirationButton.isSelected.accept(false)
-                    registrationButton.isSelected.accept(false)
-                }
-            }).disposed(by: disposeBag)
+            }
     }
     
     func setupData(type: SortType) {

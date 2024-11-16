@@ -17,14 +17,21 @@ final class GifticonViewModel: BaseViewModel {
     private let categoryRelay: BehaviorRelay<StoreCategory> = BehaviorRelay(value: .All)
     private let sortTypeRelay: BehaviorRelay<SortType> = BehaviorRelay(value: .EXPIRE_DATE)
     var sortType: SortType { sortTypeRelay.value }
+    
+    var sortTitle: Driver<String> {
+        sortTypeRelay
+            .map { $0.rawValue }
+            .asDriver(onErrorJustReturn: SortType.EXPIRE_DATE.rawValue)
+    }
+    
     private let pageNumberRelay = BehaviorRelay(value: 0)
     var pageNumber: Int { pageNumberRelay.value }
+    
+    let gifticons = BehaviorRelay<[AvailableGifticon]>(value: [])
     
     var isScrollEnded = false
     var isLoading = false
     var isChangedOptions = false
-    
-    let gifticons = BehaviorRelay<[AvailableGifticon]>(value: [])
     
     init(gifticonService: GifticonServiceProtocol) {
         self.gifticonService = gifticonService

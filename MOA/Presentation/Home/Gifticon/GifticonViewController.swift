@@ -137,6 +137,11 @@ private extension GifticonViewController {
             .map { _ in self.gifticonCollectionView }
             .bind(to: self.rx.scrollOffset)
             .disposed(by: disposeBag)
+        
+        gifticonViewModel.sortTitle
+            .asObservable()
+            .bind(to: sortButton.rx.title())
+            .disposed(by: disposeBag)
     }
 }
 
@@ -145,7 +150,6 @@ extension GifticonViewController: BottomSheetDelegate {
     func selectSortType(type: SortType) {
         MOALogger.logd(type.rawValue)
         gifticonViewModel.changeSort(type: type)
-        sortButton.setTitle(type.rawValue, for: .normal)
     }
 }
 

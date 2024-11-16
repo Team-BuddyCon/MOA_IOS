@@ -10,12 +10,12 @@ import SnapKit
 
 final class BottomSheetViewController: BaseViewController {
     
-    private let sheetType: BottomSheetType
     private lazy var contentView: UIView = {
         let view = UIView()
         return view
     }()
     
+    private let sheetType: BottomSheetType
     var delegate: BottomSheetDelegate?
     var sortType: SortType?
     
