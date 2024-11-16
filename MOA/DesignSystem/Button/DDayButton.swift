@@ -10,7 +10,7 @@ import UIKit
 
 final class DDayButton: UIButton {
     
-    var dday: Int = 0 {
+    private var dday: Int = 0 {
         didSet {
             if dday < 0 {
                 setTitle(dday_end, for: .normal)
@@ -29,11 +29,12 @@ final class DDayButton: UIButton {
     }
     
     init(
-        frame: CGRect = .zero,
+        dday: Int,
         fontName: String = pretendard_bold,
         fontSize: CGFloat = 10.0
     ) {
-        super.init(frame: frame)
+        self.dday = dday
+        super.init(frame: .zero)
         titleLabel?.font = UIFont(name: fontName, size: fontSize)
     }
     
