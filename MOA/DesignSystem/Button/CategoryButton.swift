@@ -13,8 +13,16 @@ import RxCocoa
 final class CategoryButton: UIButton {
     
     private let disposeBag = DisposeBag()
-    let category: StoreCategory
-    var isClicked = BehaviorRelay(value: false)
+    private let category: StoreCategory
+    private var isClicked = false {
+        didSet {
+            backgroundColor = isClicked ? .pink100 : .white
+            isSelected = isClicked
+        }
+    }
+    
+    let tapped = PublishRelay<Void>()
+    let clicked 
     
     init(
         frame: CGRect,
@@ -23,7 +31,8 @@ final class CategoryButton: UIButton {
         self.category = category
         super.init(frame: frame)
         setUp()
-        update()
+        bind()
+    
     }
     
     required init?(coder: NSCoder) {
@@ -41,16 +50,16 @@ final class CategoryButton: UIButton {
         setTitleColor(.white, for: .selected)
     }
     
-    private func update() {
-        isClicked.asDriver()
-            .drive { [weak self] isClicked in
+    private func bind() {
+        tapped.bind(
+            onNext: { [weak self] in
                 guard let self = self else {
                     MOALogger.loge()
                     return
                 }
-                MOALogger.logd("\(String(describing: category.rawValue)) \(isClicked)")
-                backgroundColor = isClicked ? .pink100 : .white
-                isSelected = isClicked
-            }.disposed(by: disposeBag)
+                
+                isClicked = !isClicked
+            }
+        ).disposed(by: disposeBag)
     }
 }

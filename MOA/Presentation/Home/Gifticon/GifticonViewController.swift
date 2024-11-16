@@ -25,7 +25,6 @@ final class GifticonViewController: BaseViewController {
     
     private lazy var sortButton: UIButton = {
         let button = UIButton()
-        button.addTarget(self, action: #selector(tapSortButton), for: .touchUpInside)
         button.setTitle(sortType.rawValue, for: .normal)
         button.setTitleColor(.grey80, for: .normal)
         button.titleLabel?.font = UIFont(name: pretendard_medium, size: 13.0)
@@ -60,6 +59,7 @@ final class GifticonViewController: BaseViewController {
         setupLayout()
         setupData()
         subscribe()
+        bind()
     }
 }
 
@@ -120,6 +120,20 @@ private extension GifticonViewController {
         gifticonViewModel.gifticonDriver
             .drive(onNext: { [weak self] gifticons in
                 self?.gifticonCollectionView.reloadData()
+            }).disposed(by: disposeBag)
+    }
+    
+    func bind() {
+        sortButton.rx.tap
+            .bind(onNext: { [weak self] in
+                guard let self = self else {
+                    MOALogger.loge()
+                    return
+                }
+                
+                let bottomSheetVC = BottomSheetViewController(sheetType: .Sort, sortType: sortType)
+                bottomSheetVC.delegate = self
+                self.present(bottomSheetVC, animated: true)
             }).disposed(by: disposeBag)
     }
 }

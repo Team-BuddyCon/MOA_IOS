@@ -20,30 +20,38 @@ enum ButtonStatus {
 final class CommonButton: UIButton {
     
     private let disposeBag = DisposeBag()
-    var status = BehaviorRelay<ButtonStatus>(value: .active)
+    let status: BehaviorRelay<ButtonStatus>
     
     init(
-        frame: CGRect = .zero,
+        status: ButtonStatus = .active,
         title: String,
         fontName: String = pretendard_bold,
         fontSize: CGFloat = 15.0
     ) {
-        super.init(frame: frame)
-        self.layer.cornerRadius = 12.0
+        self.status = BehaviorRelay(value: status)
+        super.init(frame: .zero)
         self.setTitle(title, for: .normal)
         self.titleLabel?.font = UIFont(name: fontName, size: fontSize)
-        updateStatus()
+        bind()
     }
     
     required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        updateStatus()
+        fatalError("init(coder:) has not been implemented")
     }
     
-    func updateStatus() {
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        self.layer.cornerRadius = 12.0
+    }
+    
+    func bind() {
         status.asDriver()
             .drive { [weak self] status in
-                guard let self = self else { return }
+                guard let self = self else {
+                    MOALogger.loge()
+                    return
+                }
+                
                 switch status {
                 case .active:
                     backgroundColor = .pink100
@@ -55,7 +63,6 @@ final class CommonButton: UIButton {
                     backgroundColor = .grey30
                     titleLabel?.textColor = .grey70
                 }
-            }
-            .disposed(by: disposeBag)
+            }.disposed(by: disposeBag)
     }
 }

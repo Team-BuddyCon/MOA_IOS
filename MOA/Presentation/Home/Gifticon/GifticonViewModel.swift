@@ -30,6 +30,8 @@ final class GifticonViewModel: BaseViewModel {
     
     func fetchAvailableGifticon() {
         isLoading = true
+        
+        
         gifticonService
             .fetchAvailableGifticon(
                 pageNumber: pageNumber,
