@@ -28,7 +28,7 @@ final class SortBottomSheetView: UIView {
     }()
     
     private lazy var registrationButton: SortButton = {
-        let button = SortButton(type: .REGISTRATION)
+        let button = SortButton(type: .CREATED_AT)
         return button
     }()
     
@@ -110,7 +110,7 @@ final class SortBottomSheetView: UIView {
                     return
                 }
                 if isSelect {
-                    _sortType.accept(.REGISTRATION)
+                    _sortType.accept(.CREATED_AT)
                     expirationButton.isSelected.accept(false)
                     nameButton.isSelected.accept(false)
                 }
@@ -135,7 +135,7 @@ final class SortBottomSheetView: UIView {
         switch type {
         case .EXPIRE_DATE:
             expirationButton.isSelected.accept(true)
-        case .REGISTRATION:
+        case .CREATED_AT:
             registrationButton.isSelected.accept(true)
         case .NAME:
             nameButton.isSelected.accept(true)

@@ -7,6 +7,9 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxRelay
+import RxCocoa
 
 final class GifticonViewController: BaseViewController {
     
@@ -25,7 +28,7 @@ final class GifticonViewController: BaseViewController {
     
     private lazy var sortButton: UIButton = {
         let button = UIButton()
-        button.setTitle(sortType.rawValue, for: .normal)
+        button.setTitle(gifticonViewModel.sortType.rawValue, for: .normal)
         button.setTitleColor(.grey80, for: .normal)
         button.titleLabel?.font = UIFont(name: pretendard_medium, size: 13.0)
         button.semanticContentAttribute = .forceRightToLeft
@@ -43,37 +46,30 @@ final class GifticonViewController: BaseViewController {
         layout.sectionInset = UIEdgeInsets(top: 24.0, left: 20.0, bottom: 0.0, right: 20.0)
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.delegate = self
-        collectionView.dataSource = self
         collectionView.register(GifticonCell.self, forCellWithReuseIdentifier: GifticonCell.identifier)
         return collectionView
     }()
-    
-    private var sortType: SortType = .EXPIRE_DATE
-    private let gifticonViewModel = GifticonViewModel(gifticonService: GifticonService.shared)
+
+    let gifticonViewModel = GifticonViewModel(gifticonService: GifticonService.shared)
     
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
-        setupNavigationBar()
         setupLayout()
         setupData()
-        subscribe()
         bind()
     }
 }
 
 // MARK: setup
 private extension GifticonViewController {
-    func setupNavigationBar() {
+    func setupLayout() {
         let label = UILabel()
         label.text = GIFTICON_MENU_TITLE
         label.font = UIFont(name: pretendard_bold, size: 22)
         label.textColor = .grey90
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: label)
-    }
-    
-    func setupLayout() {
+        
         [categoryStackView, sortButton, gifticonCollectionView].forEach {
             view.addSubview($0)
         }
@@ -99,17 +95,21 @@ private extension GifticonViewController {
         if let button = categoryStackView.arrangedSubviews.first as? CategoryButton {
             button.isClicked.accept(true)
         }
-        
-        gifticonViewModel.fetchAvailableGifticon()
+        gifticonViewModel.fetch()
     }
     
-    func subscribe() {
+    func bind() {
         categoryStackView.arrangedSubviews.forEach {
             if let button = $0 as? CategoryButton {
                 button.rx.tap
                     .subscribe(onNext: { [weak self] in
+                        guard let self = self else {
+                            MOALogger.loge()
+                            return
+                        }
+                        
                         button.isClicked.accept(true)
-                        self?.categoryStackView.arrangedSubviews
+                        categoryStackView.arrangedSubviews
                             .filter { $0 != button }
                             .map { $0 as? CategoryButton }
                             .forEach { $0?.isClicked.accept(false) }
@@ -117,33 +117,25 @@ private extension GifticonViewController {
             }
         }
         
-        gifticonViewModel.gifticonDriver
-            .drive(onNext: { [weak self] gifticons in
-                self?.gifticonCollectionView.reloadData()
-            }).disposed(by: disposeBag)
-    }
-    
-    func bind() {
         sortButton.rx.tap
-            .bind(onNext: { [weak self] in
-                guard let self = self else {
-                    MOALogger.loge()
-                    return
-                }
-                
-                let bottomSheetVC = BottomSheetViewController(sheetType: .Sort, sortType: sortType)
-                bottomSheetVC.delegate = self
-                self.present(bottomSheetVC, animated: true)
-            }).disposed(by: disposeBag)
-    }
-}
-
-// MARK: objc function
-extension GifticonViewController {
-    @objc func tapSortButton() {
-        let bottomSheetVC = BottomSheetViewController(sheetType: .Sort, sortType: sortType)
-        bottomSheetVC.delegate = self
-        self.present(bottomSheetVC, animated: true)
+            .bind(to: self.rx.tapSort)
+            .disposed(by: disposeBag)
+        
+        gifticonViewModel.gifticons
+            .bind(to: gifticonCollectionView.rx.items(cellIdentifier: GifticonCell.identifier, cellType: GifticonCell.self)) { row, gifticon, cell in
+                cell.setData(
+                    dday: gifticon.expireDate.toDday(),
+                    imageURL: gifticon.imageUrl,
+                    storeType: gifticon.gifticonStore,
+                    title: gifticon.name,
+                    date: gifticon.expireDate
+                )
+            }.disposed(by: disposeBag)
+        
+        gifticonCollectionView.rx.contentOffset
+            .map { _ in self.gifticonCollectionView }
+            .bind(to: self.rx.scrollOffset)
+            .disposed(by: disposeBag)
     }
 }
 
@@ -151,7 +143,7 @@ extension GifticonViewController {
 extension GifticonViewController: BottomSheetDelegate {
     func selectSortType(type: SortType) {
         MOALogger.logd(type.rawValue)
-        sortType = type
+        gifticonViewModel.changeSort(type: type)
         sortButton.setTitle(type.rawValue, for: .normal)
     }
 }
@@ -159,42 +151,58 @@ extension GifticonViewController: BottomSheetDelegate {
 // MARK: UICollectionViewDelegateFlowLayout
 extension GifticonViewController: UICollectionViewDelegateFlowLayout {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        if gifticonViewModel.gifticons.isEmpty {
-            return
-        }
-        
         let contentOffsetY = gifticonCollectionView.contentOffset.y
         let scrollViewHeight = gifticonCollectionView.bounds.size.height
         let contentHeight = gifticonCollectionView.contentSize.height
         let height = CGFloat(getWidthByDivision(division: 2, exclude: 20 + 16 + 20))
+        
+        // 스크롤 할 필요 없는 데이터의 양일 때는 페이징 처리하지 않음
+        if contentHeight <= scrollViewHeight {
+            return
+        }
+        
         if contentOffsetY + scrollViewHeight + height >= contentHeight, !gifticonViewModel.isScrollEnded, !gifticonViewModel.isLoading {
-            MOALogger.logd()
-            gifticonViewModel.pageNumber += 1
-            gifticonViewModel.fetchAvailableGifticon()
+            gifticonViewModel.isLoading = true
+            gifticonViewModel.fetchMore()
         }
     }
 }
 
-// MARK:
-extension GifticonViewController: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return gifticonViewModel.gifticons.count
+// MARK: extension
+extension Reactive where Base: GifticonViewController {
+    var scrollOffset: Binder<UICollectionView> {
+        return Binder<UICollectionView>(self.base) { viewController, collectionView in
+            let contentOffsetY = collectionView.contentOffset.y
+            let scrollViewHeight = collectionView.bounds.size.height
+            let contentHeight = collectionView.contentSize.height
+            let height = CGFloat(getWidthByDivision(division: 2, exclude: 20 + 16 + 20))
+            
+            // 스크롤 할 필요 없는 데이터의 양일 때는 페이징 처리하지 않음
+            if contentHeight <= scrollViewHeight {
+                return
+            }
+            
+            // 카테고리 및 정렬만 바꾸는 경우 호출되지 않도록 처리
+            if viewController.gifticonViewModel.isChangedOptions {
+                viewController.gifticonViewModel.isChangedOptions = false
+                return
+            }
+            
+            if contentOffsetY + scrollViewHeight + height >= contentHeight,
+               !viewController.gifticonViewModel.isScrollEnded,
+               !viewController.gifticonViewModel.isLoading {
+                MOALogger.logd()
+                viewController.gifticonViewModel.isLoading = true
+                viewController.gifticonViewModel.fetchMore()
+            }
+        }
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: GifticonCell.identifier, for: indexPath) as? GifticonCell else {
-            return UICollectionViewCell()
+    var tapSort: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            let bottomSheetVC = BottomSheetViewController(sheetType: .Sort, sortType: viewController.gifticonViewModel.sortType)
+            bottomSheetVC.delegate = viewController
+            viewController.present(bottomSheetVC, animated: true)
         }
-
-        let gifticon = gifticonViewModel.gifticons[indexPath.row]
-        cell.setData(
-            dday: gifticon.expireDate.toDday(),
-            imageURL: gifticon.imageUrl,
-            storeType: gifticon.gifticonStore,
-            title: gifticon.name,
-            date: gifticon.expireDate
-        )
-        
-        return cell
     }
 }

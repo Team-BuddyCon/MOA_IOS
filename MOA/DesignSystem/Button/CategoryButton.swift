@@ -14,15 +14,8 @@ final class CategoryButton: UIButton {
     
     private let disposeBag = DisposeBag()
     private let category: StoreCategory
-    private var isClicked = false {
-        didSet {
-            backgroundColor = isClicked ? .pink100 : .white
-            isSelected = isClicked
-        }
-    }
     
-    let tapped = PublishRelay<Void>()
-    let clicked 
+    let isClicked = BehaviorRelay(value: false)
     
     init(
         frame: CGRect,
@@ -51,15 +44,16 @@ final class CategoryButton: UIButton {
     }
     
     private func bind() {
-        tapped.bind(
-            onNext: { [weak self] in
+        isClicked.asDriver()
+            .drive { [weak self] isClicked in
                 guard let self = self else {
                     MOALogger.loge()
                     return
                 }
                 
-                isClicked = !isClicked
-            }
-        ).disposed(by: disposeBag)
+                MOALogger.logd("\(String(describing: category.rawValue)) \(isClicked)")
+                backgroundColor = isClicked ? .pink100 : .white
+                isSelected = isClicked
+            }.disposed(by: disposeBag)
     }
 }
