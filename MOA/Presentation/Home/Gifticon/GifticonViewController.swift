@@ -109,6 +109,7 @@ private extension GifticonViewController {
                         }
                         
                         button.isClicked.accept(true)
+                        gifticonViewModel.changeCategory(category: button.category)
                         categoryStackView.arrangedSubviews
                             .filter { $0 != button }
                             .map { $0 as? CategoryButton }
@@ -145,26 +146,6 @@ extension GifticonViewController: BottomSheetDelegate {
         MOALogger.logd(type.rawValue)
         gifticonViewModel.changeSort(type: type)
         sortButton.setTitle(type.rawValue, for: .normal)
-    }
-}
-
-// MARK: UICollectionViewDelegateFlowLayout
-extension GifticonViewController: UICollectionViewDelegateFlowLayout {
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let contentOffsetY = gifticonCollectionView.contentOffset.y
-        let scrollViewHeight = gifticonCollectionView.bounds.size.height
-        let contentHeight = gifticonCollectionView.contentSize.height
-        let height = CGFloat(getWidthByDivision(division: 2, exclude: 20 + 16 + 20))
-        
-        // 스크롤 할 필요 없는 데이터의 양일 때는 페이징 처리하지 않음
-        if contentHeight <= scrollViewHeight {
-            return
-        }
-        
-        if contentOffsetY + scrollViewHeight + height >= contentHeight, !gifticonViewModel.isScrollEnded, !gifticonViewModel.isLoading {
-            gifticonViewModel.isLoading = true
-            gifticonViewModel.fetchMore()
-        }
     }
 }
 

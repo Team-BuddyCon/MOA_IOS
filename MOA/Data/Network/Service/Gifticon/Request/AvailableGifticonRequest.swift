@@ -36,7 +36,7 @@ final class AvailableGifticonRequest: BaseRequest {
         query.updateValue(String(pageNumber), forKey: AVAILABLE_GIFTICON_PAGE_NUMBER)
         query.updateValue(String(rowCount), forKey: AVAILABLE_GIFTICON_ROW_COUNT)
         
-        if let storeCategory = storeCategory {
+        if let storeCategory = storeCategory, storeCategory != .All {
             query.updateValue(String(describing: storeCategory), forKey: AVAILABLE_GIFTICON_STORE_CATEGORY)
         }
         

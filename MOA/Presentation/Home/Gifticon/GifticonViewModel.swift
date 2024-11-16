@@ -13,6 +13,8 @@ import RxCocoa
 final class GifticonViewModel: BaseViewModel {
     
     private let gifticonService: GifticonServiceProtocol
+    
+    private let categoryRelay: BehaviorRelay<StoreCategory> = BehaviorRelay(value: .All)
     private let sortTypeRelay: BehaviorRelay<SortType> = BehaviorRelay(value: .EXPIRE_DATE)
     var sortType: SortType { sortTypeRelay.value }
     private let pageNumberRelay = BehaviorRelay(value: 0)
@@ -31,14 +33,15 @@ final class GifticonViewModel: BaseViewModel {
     func fetch() {
         MOALogger.logd()
         Observable.combineLatest(
+            categoryRelay,
             sortTypeRelay,
             pageNumberRelay
-        ).flatMapLatest { (sortType, pageNumber) in
+        ).flatMapLatest { (category, sortType, pageNumber) in
             return self.gifticonService
                 .fetchAvailableGifticon(
                     pageNumber: pageNumber,
                     rowCount: 10,
-                    storeCateogry: nil,
+                    storeCateogry: category,
                     storeType: nil,
                     sortType: sortType
                 )
@@ -74,6 +77,13 @@ final class GifticonViewModel: BaseViewModel {
     func fetchMore() {
         MOALogger.logd()
         pageNumberRelay.accept(pageNumber + 1)
+    }
+    
+    func changeCategory(category: StoreCategory) {
+        MOALogger.logd()
+        isChangedOptions = true
+        clearPagingData()
+        categoryRelay.accept(category)
     }
     
     func changeSort(type: SortType) {

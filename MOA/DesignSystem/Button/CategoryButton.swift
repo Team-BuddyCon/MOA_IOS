@@ -13,8 +13,7 @@ import RxCocoa
 final class CategoryButton: UIButton {
     
     private let disposeBag = DisposeBag()
-    private let category: StoreCategory
-    
+    let category: StoreCategory
     let isClicked = BehaviorRelay(value: false)
     
     init(
