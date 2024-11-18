@@ -49,6 +49,11 @@ final class GifticonViewController: BaseViewController {
         collectionView.register(GifticonCell.self, forCellWithReuseIdentifier: GifticonCell.identifier)
         return collectionView
     }()
+    
+    private let floatingButton: FloatingButton = {
+        let button = FloatingButton()
+        return button
+    }()
 
     let gifticonViewModel = GifticonViewModel(gifticonService: GifticonService.shared)
     
@@ -70,7 +75,7 @@ private extension GifticonViewController {
         label.textColor = .grey90
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: label)
         
-        [categoryStackView, sortButton, gifticonCollectionView].forEach {
+        [categoryStackView, sortButton, gifticonCollectionView, floatingButton].forEach {
             view.addSubview($0)
         }
         
@@ -88,6 +93,13 @@ private extension GifticonViewController {
             $0.top.equalTo(categoryStackView.snp.bottom).offset(8)
             $0.horizontalEdges.equalToSuperview()
             $0.bottom.equalToSuperview()
+        }
+        
+        let tapBarHeight = (tabBarController?.tabBar.frame.height ?? 0) + 16
+        floatingButton.snp.makeConstraints {
+            $0.bottom.equalToSuperview().inset(tapBarHeight)
+            $0.trailing.equalToSuperview().inset(20)
+            $0.size.equalTo(56)
         }
     }
     
@@ -142,6 +154,10 @@ private extension GifticonViewController {
             .asObservable()
             .bind(to: sortButton.rx.title())
             .disposed(by: disposeBag)
+        
+        floatingButton.rx.tap
+            .bind(to: self.rx.tapFloating)
+            .disposed(by: disposeBag)
     }
 }
 
@@ -185,9 +201,16 @@ extension Reactive where Base: GifticonViewController {
     
     var tapSort: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
+            MOALogger.logd()
             let bottomSheetVC = BottomSheetViewController(sheetType: .Sort, sortType: viewController.gifticonViewModel.sortType)
             bottomSheetVC.delegate = viewController
             viewController.present(bottomSheetVC, animated: true)
+        }
+    }
+    
+    var tapFloating: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            MOALogger.logd()
         }
     }
 }
