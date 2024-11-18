@@ -13,7 +13,7 @@ import RxCocoa
 
 final class GifticonViewController: BaseViewController {
     
-    private lazy var categoryStackView: UIStackView = {
+    let categoryStackView: UIStackView = {
         let stackView = UIStackView()
         StoreCategory.allCases.forEach {
             let button = CategoryButton(frame: .zero, category: $0)
@@ -114,19 +114,9 @@ private extension GifticonViewController {
         categoryStackView.arrangedSubviews.forEach {
             if let button = $0 as? CategoryButton {
                 button.rx.tap
-                    .subscribe(onNext: { [weak self] in
-                        guard let self = self else {
-                            MOALogger.loge()
-                            return
-                        }
-                        
-                        button.isClicked.accept(true)
-                        gifticonViewModel.changeCategory(category: button.category)
-                        categoryStackView.arrangedSubviews
-                            .filter { $0 != button }
-                            .map { $0 as? CategoryButton }
-                            .forEach { $0?.isClicked.accept(false) }
-                    }).disposed(by: disposeBag)
+                    .map { button }
+                    .bind(to: self.rx.tapCategory)
+                    .disposed(by: disposeBag)
             }
         }
         
@@ -211,6 +201,17 @@ extension Reactive where Base: GifticonViewController {
     var tapFloating: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
+        }
+    }
+    
+    var tapCategory: Binder<CategoryButton> {
+        return Binder<CategoryButton>(self.base) { viewController, button in
+            button.isClicked.accept(true)
+            viewController.gifticonViewModel.changeCategory(category: button.category)
+            viewController.categoryStackView.arrangedSubviews
+                .filter { $0 != button }
+                .map { $0 as? CategoryButton }
+                .forEach { $0?.isClicked.accept(false) }
         }
     }
 }
