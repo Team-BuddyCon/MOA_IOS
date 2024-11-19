@@ -13,7 +13,7 @@ import RxCocoa
 
 final class GifticonViewController: BaseViewController {
     
-    private lazy var categoryStackView: UIStackView = {
+    let categoryStackView: UIStackView = {
         let stackView = UIStackView()
         StoreCategory.allCases.forEach {
             let button = CategoryButton(frame: .zero, category: $0)
@@ -36,7 +36,7 @@ final class GifticonViewController: BaseViewController {
         return button
     }()
     
-    private lazy var gifticonCollectionView: UICollectionView = {
+    lazy var gifticonCollectionView: UICollectionView = {
         let width = getWidthByDivision(division: 2, exclude: 20 + 16 + 20) // left + middle + right
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
@@ -53,6 +53,34 @@ final class GifticonViewController: BaseViewController {
     private let floatingButton: FloatingButton = {
         let button = FloatingButton()
         return button
+    }()
+    
+    private lazy var emptyImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: EMPTY_GIFTICON)
+        imageView.contentMode = .scaleAspectFill
+        return imageView
+    }()
+    
+    private lazy var emptyTitleLabel: UILabel = {
+        let label = UILabel()
+        label.setTextWithLineHeight(
+            text: GIFTICON_EMPTY_TITLE,
+            font: pretendard_medium,
+            size: 14.0,
+            lineSpacing: 19.6,
+            alignment: .center
+        )
+    
+        label.textColor = .grey60
+        label.numberOfLines = 2
+        return label
+    }()
+    
+    lazy var emptyView: UIView = {
+        let view = UIView()
+        view.isHidden = true
+        return view
     }()
 
     let gifticonViewModel = GifticonViewModel(gifticonService: GifticonService.shared)
@@ -75,7 +103,13 @@ private extension GifticonViewController {
         label.textColor = .grey90
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: label)
         
-        [categoryStackView, sortButton, gifticonCollectionView, floatingButton].forEach {
+        [
+            categoryStackView,
+            sortButton,
+            gifticonCollectionView,
+            floatingButton,
+            emptyView
+        ].forEach {
             view.addSubview($0)
         }
         
@@ -101,6 +135,28 @@ private extension GifticonViewController {
             $0.trailing.equalToSuperview().inset(20)
             $0.size.equalTo(56)
         }
+        
+        emptyView.snp.makeConstraints {
+            $0.centerY.equalToSuperview()
+            $0.horizontalEdges.equalToSuperview()
+        }
+        
+        [emptyImageView, emptyTitleLabel].forEach {
+            emptyView.addSubview($0)
+        }
+        
+        emptyImageView.snp.makeConstraints {
+            $0.top.equalToSuperview()
+            $0.centerX.equalToSuperview()
+            $0.width.equalTo(300)
+            $0.height.equalTo(200)
+        }
+        
+        emptyTitleLabel.snp.makeConstraints {
+            $0.centerX.equalToSuperview()
+            $0.top.equalTo(emptyImageView.snp.bottom).offset(12)
+            $0.bottom.equalToSuperview()
+        }
     }
     
     func setupData() {
@@ -114,19 +170,9 @@ private extension GifticonViewController {
         categoryStackView.arrangedSubviews.forEach {
             if let button = $0 as? CategoryButton {
                 button.rx.tap
-                    .subscribe(onNext: { [weak self] in
-                        guard let self = self else {
-                            MOALogger.loge()
-                            return
-                        }
-                        
-                        button.isClicked.accept(true)
-                        gifticonViewModel.changeCategory(category: button.category)
-                        categoryStackView.arrangedSubviews
-                            .filter { $0 != button }
-                            .map { $0 as? CategoryButton }
-                            .forEach { $0?.isClicked.accept(false) }
-                    }).disposed(by: disposeBag)
+                    .map { button }
+                    .bind(to: self.rx.tapCategory)
+                    .disposed(by: disposeBag)
             }
         }
         
@@ -144,6 +190,11 @@ private extension GifticonViewController {
                     date: gifticon.expireDate
                 )
             }.disposed(by: disposeBag)
+        
+        gifticonViewModel.gifticons
+            .map { $0.isEmpty }
+            .bind(to: self.rx.isEmptyUI)
+            .disposed(by: disposeBag)
         
         gifticonCollectionView.rx.contentOffset
             .map { _ in self.gifticonCollectionView }
@@ -211,6 +262,25 @@ extension Reactive where Base: GifticonViewController {
     var tapFloating: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
+        }
+    }
+    
+    var tapCategory: Binder<CategoryButton> {
+        return Binder<CategoryButton>(self.base) { viewController, button in
+            button.isClicked.accept(true)
+            viewController.gifticonViewModel.changeCategory(category: button.category)
+            viewController.categoryStackView.arrangedSubviews
+                .filter { $0 != button }
+                .map { $0 as? CategoryButton }
+                .forEach { $0?.isClicked.accept(false) }
+        }
+    }
+    
+    var isEmptyUI: Binder<Bool> {
+        return Binder<Bool>(self.base) { viewController, isEmpty in
+            MOALogger.logd("\(isEmpty)")
+            viewController.emptyView.isHidden = !isEmpty
+            viewController.gifticonCollectionView.isHidden = isEmpty
         }
     }
 }
