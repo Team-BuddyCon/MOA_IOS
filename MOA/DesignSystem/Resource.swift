@@ -49,6 +49,9 @@ let GIFTICON_MENU_TITLE = "기프티콘"
 let MAP_MENU_TITLE = "지도"
 let MYPAGE_MENU_TITLE = "마이페이지"
 
+// Gifticon
+let GIFTICON_EMPTY_TITLE = "아래 플러스 버튼을 눌러\n가지고 있는 기프티콘을 등록해 주세요"
+
 
 // MARK: Resource
 // Font
@@ -75,3 +78,4 @@ let MYPAGE_MENU = "MypageMenu"
 let MYPAGE_SELECTED_MENU = "MypageSelMenu"
 let DOWN_ARROW = "DownArrow"
 let FLOATING_ICON = "FloatingIcon"
+let EMPTY_GIFTICON = "EmptyGifticon"
