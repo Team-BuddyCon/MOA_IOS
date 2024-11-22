@@ -1,5 +1,5 @@
 //
-//  Resource.swift
+//  String+.swift
 //  MOA
 //
 //  Created by 오원석 on 10/1/24.
@@ -7,16 +7,15 @@
 
 import Foundation
 
-// MARK: Naming
-// Common
+// MARK: Common
 let LETS_START = "시작하기"
 
-// Design System
+// MARK: Design System
 let dday_end = "만료"
 let dday_format = "D-%d"
 let dday_over365 = "D-365+"
 
-// WalkThrough
+// MARK: WalkThrough
 let WALKTHROUGH_SKIP = "건너뛰기"
 let WALKTHROUGH_NEXT = "다음"
 let WALKTHROUGH_BANNER1_IMGRES = "WalkThroughBanner1"
@@ -26,11 +25,11 @@ let WALKTHROUGH_BANNER2_IMGRES = "WalkThroughBanner2"
 let WALKTHROUGH_BANNER2_TITLE = "사용처를 한눈에 확인해요"
 let WALKTHROUGH_BANNER2_DESCRIPTION = "지도를 통해 근처에서 기프티콘\n사용 가능한 매장을 확인해요"
 
-// Login
+// MARK: Login
 let LOGIN_ICON = "LoginIcon"
 let KAKAO_LOGIN_BUTTON_IMAGES = "KakaoLoginButton"
 
-// SignUp
+// MARK: SignUp
 let SIGNUP_TITLE = "회원가입"
 let SIGNUP_TERMS_GUIDE_TITLE = "모아의 서비스\n이용약관에 동의해주세요"
 let SIGNUP_AGREE_TO_ALL = "전체 동의하기"
@@ -44,28 +43,19 @@ let SIGNUP_COMPLETE_SUBTITLE_FORMAT = "MOA의 소중한 회원이 되신 %@님,\
 let SIGNUP_SERVICE_TERMS_URL = "https://scarce-cartoon-27d.notion.site/e09da35361e142b7936c12e38396475e"
 let SIGNUP_PRIVACY_INFORMATION_URL = "https://scarce-cartoon-27d.notion.site/c4e5ff54f9bd434e971a2631d122252c"
 
-// Home
+// MARK: Home
 let GIFTICON_MENU_TITLE = "기프티콘"
 let MAP_MENU_TITLE = "지도"
 let MYPAGE_MENU_TITLE = "마이페이지"
 
-// Gifticon
+// MARK: Gifticon
 let GIFTICON_EMPTY_TITLE = "아래 플러스 버튼을 눌러\n가지고 있는 기프티콘을 등록해 주세요"
+let GIFTICON_IMAGE_PERMISSION_TITLE = "저장을 위해 접근 권한이 필요해요"
+let GIFTICON_IMAGE_PERMISSION_SUBTITLE = "기프티콘 이미지를 저장하기 위해\n외부 저장소 접근을 허용해 주세요."
+let GIFTICON_IMAGE_PERMISSION_ALLOW = "허용하기"
 
 
-// MARK: Resource
-// Font
-let pretendard_black = "Pretendard-Black"
-let pretendard_bold = "Pretendard-Bold"
-let pretendard_extrabold = "Pretendard-ExtraBold"
-let pretendard_extraLight = "Pretendard-ExtraLight"
-let pretendard_light = "Pretendard-Light"
-let pretendard_medium = "Pretendard-Medium"
-let pretendard_regular = "Pretendard-Regular"
-let pretendard_semibold = "Pretendard-SemiBold"
-let pretendard_thin = "Pretendard-Thin"
-
-// ImageSet
+// MARK: ImageSet
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"
 let CHECK_BUTTON_IMAGE_ASSET = "CheckButton"
 let FORWARD_BUTTON_IMAGE_ASSET = "ForwardButton"
@@ -79,3 +69,14 @@ let MYPAGE_SELECTED_MENU = "MypageSelMenu"
 let DOWN_ARROW = "DownArrow"
 let FLOATING_ICON = "FloatingIcon"
 let EMPTY_GIFTICON = "EmptyGifticon"
+
+// MARK: Font
+let pretendard_black = "Pretendard-Black"
+let pretendard_bold = "Pretendard-Bold"
+let pretendard_extrabold = "Pretendard-ExtraBold"
+let pretendard_extraLight = "Pretendard-ExtraLight"
+let pretendard_light = "Pretendard-Light"
+let pretendard_medium = "Pretendard-Medium"
+let pretendard_regular = "Pretendard-Regular"
+let pretendard_semibold = "Pretendard-SemiBold"
+let pretendard_thin = "Pretendard-Thin"

@@ -55,13 +55,13 @@ final class CommonButton: UIButton {
                 switch status {
                 case .active:
                     backgroundColor = .pink100
-                    titleLabel?.textColor = .white
+                    setTitleColor(.white, for: .normal)
                 case .disabled:
                     backgroundColor = .grey40
-                    titleLabel?.textColor = .grey60
+                    setTitleColor(.grey60, for: .normal)
                 case .cancel:
                     backgroundColor = .grey30
-                    titleLabel?.textColor = .grey70
+                    setTitleColor(.grey70, for: .normal)
                 }
             }.disposed(by: disposeBag)
     }

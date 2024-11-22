@@ -262,6 +262,15 @@ extension Reactive where Base: GifticonViewController {
     var tapFloating: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
+            let modalVC = ModalViewController(
+                modalType: .alertDetail,
+                title: GIFTICON_IMAGE_PERMISSION_TITLE,
+                subTitle: GIFTICON_IMAGE_PERMISSION_SUBTITLE,
+                confirmText: GIFTICON_IMAGE_PERMISSION_ALLOW
+            ) {
+                MOALogger.logd()
+            }
+            viewController.present(modalVC, animated: true)
         }
     }
     
