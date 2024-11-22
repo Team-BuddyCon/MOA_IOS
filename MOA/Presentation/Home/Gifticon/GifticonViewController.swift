@@ -10,6 +10,8 @@ import SnapKit
 import RxSwift
 import RxRelay
 import RxCocoa
+import Photos
+import PhotosUI
 
 final class GifticonViewController: BaseViewController {
     
@@ -262,15 +264,13 @@ extension Reactive where Base: GifticonViewController {
     var tapFloating: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            let modalVC = ModalViewController(
-                modalType: .alertDetail,
-                title: GIFTICON_IMAGE_PERMISSION_TITLE,
-                subTitle: GIFTICON_IMAGE_PERMISSION_SUBTITLE,
-                confirmText: GIFTICON_IMAGE_PERMISSION_ALLOW
-            ) {
-                MOALogger.logd()
-            }
-            viewController.present(modalVC, animated: true)
+            var configuration = PHPickerConfiguration(photoLibrary: .shared())
+            configuration.selectionLimit = 1
+            configuration.filter = .images
+            
+            let pickerVC = PHPickerViewController(configuration: configuration)
+            pickerVC.delegate = viewController
+            viewController.present(pickerVC, animated: true)
         }
     }
     
@@ -291,5 +291,12 @@ extension Reactive where Base: GifticonViewController {
             viewController.emptyView.isHidden = !isEmpty
             viewController.gifticonCollectionView.isHidden = isEmpty
         }
+    }
+}
+
+extension GifticonViewController: PHPickerViewControllerDelegate {
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        MOALogger.logd()
+        picker.dismiss(animated: true)
     }
 }
