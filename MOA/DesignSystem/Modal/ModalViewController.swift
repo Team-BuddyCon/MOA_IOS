@@ -37,35 +37,41 @@ final class ModalViewController: BaseViewController {
     private lazy var cancelButton: CommonButton = {
         let button = CommonButton(status: .cancel, title: cancelText ?? "")
         button.isHidden = modalType == .alert || modalType == .alertDetail
+        button.addTarget(self, action: #selector(tapDismiss), for: .touchUpInside)
         return button
     }()
     
     private lazy var activeButton: CommonButton = {
         let button = CommonButton(status: .active, title: confirmText ?? "")
         button.isHidden = modalType == .alert || modalType == .alertDetail
+        button.addTarget(self, action: #selector(tapConfirm), for: .touchUpInside)
         return button
     }()
     
     private lazy var confirmButton: CommonButton = {
         let button = CommonButton(status: .active, title: confirmText ?? "")
         button.isHidden = modalType == .select || modalType == .selectDetail
+        button.addTarget(self, action: #selector(tapConfirm), for: .touchUpInside)
         return button
     }()
     
     private var cancelText: String?
     private var confirmText: String?
     private let modalType: ModalType
+    private let onConfirm: () -> Void
     
     init(
         modalType: ModalType,
         title: String,
         subTitle: String? = nil,
         confirmText: String,
-        cancelText: String? = nil
+        cancelText: String? = nil,
+        onConfirm: @escaping () -> Void = {}
     ) {
         self.modalType = modalType
         self.confirmText = confirmText
         self.cancelText = cancelText
+        self.onConfirm = onConfirm
         super.init(nibName: nil, bundle: nil)
         
         modalPresentationStyle = .overFullScreen
@@ -141,5 +147,30 @@ final class ModalViewController: BaseViewController {
             $0.leading.equalTo(cancelButton.snp.trailing).offset(16)
             $0.width.equalTo(buttonW)
         }
+        
+        let dismissTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapDismiss))
+        dismissTapGesture.delegate = self
+        view.addGestureRecognizer(dismissTapGesture)
+    }
+    
+    @objc private func tapDismiss() {
+        MOALogger.logd()
+        dismiss(animated: true)
+    }
+    
+    @objc private func tapConfirm() {
+        MOALogger.logd()
+        dismiss(animated: true) { [weak self] in
+            self?.onConfirm()
+        }
+    }
+}
+
+extension ModalViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        if touch.view == contentView {
+            return false
+        }
+        return true
     }
 }
