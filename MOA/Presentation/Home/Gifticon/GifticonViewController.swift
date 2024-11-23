@@ -100,11 +100,7 @@ final class GifticonViewController: BaseViewController {
 // MARK: setup
 private extension GifticonViewController {
     func setupLayout() {
-        let label = UILabel()
-        label.text = GIFTICON_MENU_TITLE
-        label.font = UIFont(name: pretendard_bold, size: 22)
-        label.textColor = .grey90
-        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: label)
+        setupTopBarWithLargeTitle(title: GIFTICON_MENU_TITLE)
         
         [
             categoryStackView,
@@ -332,13 +328,20 @@ extension GifticonViewController: PHPickerViewControllerDelegate {
         visionImage.orientation = image.imageOrientation
         
         let barcodeScanner = BarcodeScanner.barcodeScanner(options: barcodeOptions)
-        barcodeScanner.process(visionImage) { features, error in
+        barcodeScanner.process(visionImage) { [weak self] features, error in
+            guard let self = self else {
+                MOALogger.loge()
+                return
+            }
+            
             guard error == nil, let features = features, !features.isEmpty else {
                 MOALogger.loge("PHPicker image is not contained barcode")
                 return
             }
             
-            MOALogger.logd("success")
+            MOALogger.logd()
+            let registerVC = GifticonRegisterViewController()
+            navigationController?.pushViewController(registerVC, animated: true)
         }
     }
 }
