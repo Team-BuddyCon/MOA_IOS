@@ -100,8 +100,6 @@ final class GifticonViewController: BaseViewController {
 // MARK: setup
 private extension GifticonViewController {
     func setupLayout() {
-        setupTopBarWithLargeTitle(title: GIFTICON_MENU_TITLE)
-        
         [
             categoryStackView,
             sortButton,
@@ -128,9 +126,8 @@ private extension GifticonViewController {
             $0.bottom.equalToSuperview()
         }
         
-        let tapBarHeight = (tabBarController?.tabBar.frame.height ?? 0) + 16
         floatingButton.snp.makeConstraints {
-            $0.bottom.equalToSuperview().inset(tapBarHeight)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(16)
             $0.trailing.equalToSuperview().inset(20)
             $0.size.equalTo(56)
         }
@@ -340,7 +337,7 @@ extension GifticonViewController: PHPickerViewControllerDelegate {
             }
             
             MOALogger.logd()
-            let registerVC = GifticonRegisterViewController()
+            let registerVC = GifticonRegisterViewController(image: image)
             navigationController?.pushViewController(registerVC, animated: true)
         }
     }

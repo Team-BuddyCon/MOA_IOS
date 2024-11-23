@@ -9,6 +9,8 @@ import Foundation
 
 // MARK: Common
 let LETS_START = "시작하기"
+let CANCEL = "취소하기"
+let SAVE = "저장하기"
 
 // MARK: Design System
 let dday_end = "만료"
@@ -53,6 +55,7 @@ let GIFTICON_EMPTY_TITLE = "아래 플러스 버튼을 눌러\n가지고 있는 
 let GIFTICON_IMAGE_PERMISSION_TITLE = "저장을 위해 접근 권한이 필요해요"
 let GIFTICON_IMAGE_PERMISSION_SUBTITLE = "기프티콘 이미지를 저장하기 위해\n외부 저장소 접근을 허용해 주세요."
 let GIFTICON_IMAGE_PERMISSION_ALLOW = "허용하기"
+let GIFTICON_REGISTER_TITLE = "기프티콘 등록하기"
 
 
 // MARK: ImageSet
