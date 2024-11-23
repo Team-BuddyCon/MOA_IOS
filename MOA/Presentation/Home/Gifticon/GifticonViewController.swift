@@ -10,8 +10,9 @@ import SnapKit
 import RxSwift
 import RxRelay
 import RxCocoa
-import Photos
 import PhotosUI
+import MLKitBarcodeScanning
+import MLKitVision
 
 final class GifticonViewController: BaseViewController {
     
@@ -298,5 +299,46 @@ extension GifticonViewController: PHPickerViewControllerDelegate {
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         MOALogger.logd()
         picker.dismiss(animated: true)
+        
+        let itemProvider = results.first?.itemProvider
+        if let itemProvider = itemProvider,
+           itemProvider.canLoadObject(ofClass: UIImage.self) {
+            itemProvider.loadObject(ofClass: UIImage.self) { [weak self] (image, error) in
+                guard let self = self else {
+                    MOALogger.loge()
+                    return
+                }
+                
+                if error != nil {
+                    // TODO 에러 팝업 노출
+                    MOALogger.loge("PHPicker load Image error: \(error?.localizedDescription)")
+                    return
+                }
+                
+                checkBarcodeImage(image: image as? UIImage)
+            }
+        }
+    }
+    
+    private func checkBarcodeImage(image: UIImage?) {
+        guard let image = image else {
+            // TODO 에러 팝업 노출
+            MOALogger.loge("PHPicker load Image is nil")
+            return
+        }
+        
+        let barcodeOptions = BarcodeScannerOptions()
+        let visionImage = VisionImage(image: image)
+        visionImage.orientation = image.imageOrientation
+        
+        let barcodeScanner = BarcodeScanner.barcodeScanner(options: barcodeOptions)
+        barcodeScanner.process(visionImage) { features, error in
+            guard error == nil, let features = features, !features.isEmpty else {
+                MOALogger.loge("PHPicker image is not contained barcode")
+                return
+            }
+            
+            MOALogger.logd("success")
+        }
     }
 }
