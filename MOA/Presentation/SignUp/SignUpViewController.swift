@@ -79,7 +79,7 @@ final class SignUpViewController: BaseViewController {
 
 private extension SignUpViewController {
     func setupAppearance() {
-        setupNavigationBar()
+        setupTopBarWithBackButton(title: SIGNUP_TITLE)
         [
             titleLable,
             allSignUpCheckBox,
@@ -193,10 +193,6 @@ private extension SignUpViewController {
 }
 
 private extension SignUpViewController {
-    @objc func tapBackButton() {
-        navigationController?.popViewController(animated: true)
-    }
-    
     @objc func tapCompletButton() {
         signUpViewModel.signUp(
             acecssToken: kakaoAuth.accessToken,

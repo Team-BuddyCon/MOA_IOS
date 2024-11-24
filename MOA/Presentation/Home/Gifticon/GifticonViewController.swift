@@ -100,12 +100,6 @@ final class GifticonViewController: BaseViewController {
 // MARK: setup
 private extension GifticonViewController {
     func setupLayout() {
-        let label = UILabel()
-        label.text = GIFTICON_MENU_TITLE
-        label.font = UIFont(name: pretendard_bold, size: 22)
-        label.textColor = .grey90
-        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: label)
-        
         [
             categoryStackView,
             sortButton,
@@ -132,9 +126,8 @@ private extension GifticonViewController {
             $0.bottom.equalToSuperview()
         }
         
-        let tapBarHeight = (tabBarController?.tabBar.frame.height ?? 0) + 16
         floatingButton.snp.makeConstraints {
-            $0.bottom.equalToSuperview().inset(tapBarHeight)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(16)
             $0.trailing.equalToSuperview().inset(20)
             $0.size.equalTo(56)
         }
@@ -332,13 +325,20 @@ extension GifticonViewController: PHPickerViewControllerDelegate {
         visionImage.orientation = image.imageOrientation
         
         let barcodeScanner = BarcodeScanner.barcodeScanner(options: barcodeOptions)
-        barcodeScanner.process(visionImage) { features, error in
+        barcodeScanner.process(visionImage) { [weak self] features, error in
+            guard let self = self else {
+                MOALogger.loge()
+                return
+            }
+            
             guard error == nil, let features = features, !features.isEmpty else {
                 MOALogger.loge("PHPicker image is not contained barcode")
                 return
             }
             
-            MOALogger.logd("success")
+            MOALogger.logd()
+            let registerVC = GifticonRegisterViewController(image: image)
+            navigationController?.pushViewController(registerVC, animated: true)
         }
     }
 }

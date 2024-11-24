@@ -9,6 +9,8 @@ import Foundation
 
 // MARK: Common
 let LETS_START = "시작하기"
+let CANCEL = "취소하기"
+let SAVE = "저장하기"
 
 // MARK: Design System
 let dday_end = "만료"
@@ -53,7 +55,15 @@ let GIFTICON_EMPTY_TITLE = "아래 플러스 버튼을 눌러\n가지고 있는 
 let GIFTICON_IMAGE_PERMISSION_TITLE = "저장을 위해 접근 권한이 필요해요"
 let GIFTICON_IMAGE_PERMISSION_SUBTITLE = "기프티콘 이미지를 저장하기 위해\n외부 저장소 접근을 허용해 주세요."
 let GIFTICON_IMAGE_PERMISSION_ALLOW = "허용하기"
-
+let GIFTICON_REGISTER_TITLE = "기프티콘 등록하기"
+let GIFTICON_REGSITER_NAME_INPUT_TITLE = "기프티콘 이름"
+let GIFTICON_REGISTER_NAME_INPUT_HINT = "최대 16자"
+let GIFTICON_REGISTER_EXPIRE_DATE_INPUT_TITLE = "유효기간"
+let GIFTICON_REGISTER_EXPIRE_DATE_INPUT_HINT = "유효기간 선택"
+let GIFTICON_REGISTER_STORE_INPUT_TITLE = "사용처"
+let GIFTICON_REGISTER_STORE_INPUT_HINT = "사용처 선택"
+let GIFTICON_REGISTER_MEMO_INPUT_TITLE = "메모"
+let GIFTICON_REGISTER_MEMO_INPUT_HINT = "최대 50자"
 
 // MARK: ImageSet
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"
@@ -69,6 +79,8 @@ let MYPAGE_SELECTED_MENU = "MypageSelMenu"
 let DOWN_ARROW = "DownArrow"
 let FLOATING_ICON = "FloatingIcon"
 let EMPTY_GIFTICON = "EmptyGifticon"
+let EXPIRE_DATE_INPUT_ICON = "ExpireDateInputIcon"
+let STORE_INPUT_ICON = "StoreInputIcon"
 
 // MARK: Font
 let pretendard_black = "Pretendard-Black"

@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-final class HomeTabBarController: UITabBarController {
+final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,15 +22,16 @@ final class HomeTabBarController: UITabBarController {
         UITabBar.appearance().backgroundColor = UIColor.white
         tabBar.layer.shadowColor = UIColor.black.cgColor
         tabBar.layer.shadowOpacity = 0.1
+        delegate = self
     }
     
     private func setupViewControllers() {
         UITabBarItem.appearance().setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.grey60], for: .normal)
         UITabBarItem.appearance().setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.grey90], for: .normal)
         
-        let gifticonViewController = UINavigationController(rootViewController: GifticonViewController())
-        let mapViewController = UINavigationController(rootViewController: MapViewController())
-        let mypageViewController = UINavigationController(rootViewController: MypageViewController())
+        let gifticonViewController = GifticonViewController()
+        let mapViewController = MapViewController()
+        let mypageViewController = MypageViewController()
         setViewControllers([gifticonViewController, mapViewController, mypageViewController], animated: true)
         
         if let items = tabBar.items {
@@ -46,6 +47,25 @@ final class HomeTabBarController: UITabBarController {
             items[2].selectedImage = UIImage(named: MYPAGE_SELECTED_MENU)?.withRenderingMode(.alwaysOriginal)
             items[2].title = MYPAGE_MENU_TITLE
         }
+        
+        setupTopBarWithLargeTitle(title: GIFTICON_MENU_TITLE)
+    }
+    
+    func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
+
+        if viewController is GifticonViewController {
+            setupTopBarWithLargeTitle(title: GIFTICON_MENU_TITLE)
+        }
+        
+        if viewController is MapViewController {
+            setupTopBarWithLargeTitle(title: MAP_MENU_TITLE)
+        }
+        
+        if viewController is MypageViewController {
+            setupTopBarWithLargeTitle(title: MYPAGE_MENU_TITLE)
+        }
+        
+        return true
     }
 }
 

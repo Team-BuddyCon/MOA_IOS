@@ -21,7 +21,7 @@ extension UIApplication {
         MOALogger.logd()
         if let windowScene = connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first(where: { $0.isKeyWindow }) {
-            window.rootViewController = HomeTabBarController()
+            window.rootViewController = UINavigationController(rootViewController: HomeTabBarController()) 
             window.makeKeyAndVisible()
         }
     }
