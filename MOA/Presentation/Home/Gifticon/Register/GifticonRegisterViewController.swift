@@ -40,6 +40,26 @@ final class GifticonRegisterViewController: BaseViewController {
         return button
     }()
     
+    private let nameInputView: RegisterInputView = {
+        let inputView = RegisterInputView(inputType: .name)
+        return inputView
+    }()
+    
+    private let expireDateInputView: RegisterInputView = {
+        let inputView = RegisterInputView(inputType: .expireDate)
+        return inputView
+    }()
+    
+    private let storeInputView: RegisterInputView = {
+        let inputView = RegisterInputView(inputType: .store)
+        return inputView
+    }()
+    
+    private let memoInputView: RegisterInputView = {
+        let inputView = RegisterInputView(inputType: .memo)
+        return inputView
+    }()
+    
     private var image: UIImage?
     
     init(image: UIImage) {
@@ -86,7 +106,7 @@ private extension GifticonRegisterViewController {
         scrollView.snp.makeConstraints {
             $0.top.equalToSuperview()
             $0.horizontalEdges.equalToSuperview()
-            $0.bottom.equalTo(cancelButton.snp.top).offset(16)
+            $0.bottom.equalTo(cancelButton.snp.top).offset(-16)
         }
         
         scrollView.addSubview(contentView)
@@ -95,9 +115,7 @@ private extension GifticonRegisterViewController {
             $0.width.equalTo(scrollView.snp.width)
         }
         
-        [
-            imageView
-        ].forEach {
+        [imageView, nameInputView, expireDateInputView, storeInputView, memoInputView].forEach {
             contentView.addSubview($0)
         }
         
@@ -105,6 +123,27 @@ private extension GifticonRegisterViewController {
             $0.top.equalToSuperview().inset(8)
             $0.horizontalEdges.equalToSuperview().inset(20)
             $0.height.equalTo(imageView.snp.width).multipliedBy(328 / 335.0)
+        }
+        
+        nameInputView.snp.makeConstraints {
+            $0.top.equalTo(imageView.snp.bottom).offset(24)
+            $0.horizontalEdges.equalToSuperview().inset(20)
+        }
+        
+        expireDateInputView.snp.makeConstraints {
+            $0.top.equalTo(nameInputView.snp.bottom).offset(16)
+            $0.horizontalEdges.equalToSuperview().inset(20)
+        }
+        
+        storeInputView.snp.makeConstraints {
+            $0.top.equalTo(expireDateInputView.snp.bottom).offset(16)
+            $0.horizontalEdges.equalToSuperview().inset(20)
+        }
+        
+        memoInputView.snp.makeConstraints {
+            $0.top.equalTo(storeInputView.snp.bottom).offset(16)
+            $0.horizontalEdges.equalToSuperview().inset(20)
+            $0.bottom.equalToSuperview()
         }
     }
 }
