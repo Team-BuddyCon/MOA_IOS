@@ -61,6 +61,7 @@ final class RegisterInputView: UIView {
         label.font = UIFont(name: pretendard_medium, size: 15.0)
         label.textColor = .grey40
         label.text = inputType.hint
+        label.isUserInteractionEnabled = true
         return label
     }()
     
@@ -104,6 +105,7 @@ final class RegisterInputView: UIView {
             titleLabel.text = inputType.title
         }
         setupLayout()
+        bind()
     }
     
     required init?(coder: NSCoder) {
@@ -142,5 +144,14 @@ final class RegisterInputView: UIView {
             $0.bottom.equalToSuperview()
             $0.height.equalTo(1)
         }
+    }
+    
+    private func bind() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tapInput))
+        hintLabel.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc func tapInput() {
+        MOALogger.logd("\(inputType.title)")
     }
 }

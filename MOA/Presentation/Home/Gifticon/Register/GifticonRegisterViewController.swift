@@ -7,6 +7,9 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
+import RxRelay
 
 final class GifticonRegisterViewController: BaseViewController {
     
@@ -75,6 +78,7 @@ final class GifticonRegisterViewController: BaseViewController {
         super.viewDidLoad()
         MOALogger.logd()
         setupLayout()
+        bind()
     }
 
 }
@@ -144,6 +148,20 @@ private extension GifticonRegisterViewController {
             $0.top.equalTo(storeInputView.snp.bottom).offset(16)
             $0.horizontalEdges.equalToSuperview().inset(20)
             $0.bottom.equalToSuperview()
+        }
+    }
+    
+    func bind() {
+        cancelButton.rx.tap
+            .bind(to: self.rx.tapCancel)
+            .disposed(by: disposeBag)
+    }
+}
+
+private extension Reactive where Base: GifticonRegisterViewController {
+    var tapCancel: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            viewController.navigationController?.popViewController(animated: true)
         }
     }
 }
