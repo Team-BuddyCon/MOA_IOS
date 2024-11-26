@@ -8,6 +8,20 @@
 import UIKit
 
 extension UIApplication {
+    
+    var topViewController: UIViewController? {
+        if let windowScene = connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first(where: { $0.isKeyWindow }) {
+            if let viewController = window.rootViewController as? UINavigationController {
+                return viewController.visibleViewController
+            } else {
+                return window.rootViewController
+            }
+        }
+        return nil
+    }
+
+    
     func setRootViewController(viewController: UIViewController) {
         MOALogger.logd("\(viewController)")
         if let windowScene = connectedScenes.first as? UIWindowScene,
