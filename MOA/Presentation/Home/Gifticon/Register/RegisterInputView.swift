@@ -176,7 +176,9 @@ final class RegisterInputView: UIView {
             bottomVC.delegate = self
             topVC?.present(bottomVC, animated: true)
         case .store:
-            break
+            let topVC = UIApplication.shared.topViewController
+            let bottomVC = BottomSheetViewController(sheetType: .Store)
+            topVC?.present(bottomVC, animated: true)
         case .memo:
             break
         }

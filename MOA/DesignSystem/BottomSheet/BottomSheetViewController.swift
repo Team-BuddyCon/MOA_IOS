@@ -53,6 +53,10 @@ private extension BottomSheetViewController {
             setupSortBottomSheet()
         case .Date:
             setupDateBottomSheet()
+        case .Store:
+            setupStoreBottomSheet()
+        case .Store_New:
+            break
         }
         
         view.addSubview(contentView)
@@ -86,6 +90,11 @@ private extension BottomSheetViewController {
                 let date = sheetView.datePicker.date
                 self?.delegate?.selectDate(date: date)
             }).disposed(by: disposeBag)
+    }
+    
+    func setupStoreBottomSheet() {
+        let sheetView = StoreSheetView()
+        contentView.addSubview(sheetView)
     }
     
     // TODO : 추후 애니메이션 정상 동작하도록 변경

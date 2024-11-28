@@ -10,4 +10,6 @@ import Foundation
 enum BottomSheetType: Int {
     case Sort = 230
     case Date = 313
+    case Store = 498
+    case Store_New = 400
 }

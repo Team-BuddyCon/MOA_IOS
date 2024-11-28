@@ -5,7 +5,7 @@
 //  Created by 오원석 on 11/11/24.
 //
 
-import Foundation
+import UIKit
 
 enum StoreType: String, CaseIterable {
     case ALL = "전체"
@@ -20,4 +20,21 @@ enum StoreType: String, CaseIterable {
     case GS25 = "GS25"
     case CU = "CU"
     case OTHERS = "기타"
+    
+    var image: UIImage? {
+        switch self {
+        case .ALL: return nil
+        case .STARBUCKS: return UIImage(named: STARBUCKS_IMAGE)
+        case .TWOSOME_PLACE: return UIImage(named: TWOSOME_PLACE_IMAGE)
+        case .ANGELINUS: return UIImage(named: ANGELINUS_IMAGE)
+        case .MEGA_COFFEE: return UIImage(named: MEGA_COFFEE_IMAGE)
+        case .COFFEE_BEAN: return UIImage(named: COFFEE_BEAN_IMAGE)
+        case .GONG_CHA: return UIImage(named: GONG_CHA_IMAGE)
+        case .BASKIN_ROBBINS: return UIImage(named: BASKIN_ROBBINS_IMAGE)
+        case .MACDONALD: return UIImage(named: MACDONALD_IMAGE)
+        case .GS25: return UIImage(named: GS25_IMAGE)
+        case .CU: return UIImage(named: CU_IMAGE)
+        case .OTHERS: return UIImage(named: OTHERS_IMAGE)
+        }
+    }
 }
