@@ -70,6 +70,7 @@ final class RegisterInputView: UIView {
         label.font = UIFont(name: pretendard_bold, size: 15.0)
         label.textColor = .grey90
         label.isHidden = true
+        label.isUserInteractionEnabled = true
         return label
     }()
     
@@ -86,13 +87,22 @@ final class RegisterInputView: UIView {
         return view
     }()
     
+    private var hasInput: Bool = false {
+        didSet {
+            hintLabel.isHidden = hasInput
+            inputLabel.isHidden = !hasInput
+        }
+    }
     private var inputType: InputType
+    private var selectDate: Date = Date()
     
     init(
-        inputType: InputType
+        inputType: InputType,
+        hasInput: Bool = false
     ) {
         self.inputType = inputType
         super.init(frame: .zero)
+        self.hasInput = hasInput
         
         if inputType.isMandatory {
             titleLabel.setRangeFontColor(
@@ -124,12 +134,12 @@ final class RegisterInputView: UIView {
         
         hintLabel.snp.makeConstraints {
             $0.top.equalTo(titleLabel.snp.bottom).offset(10)
-            $0.leading.equalToSuperview()
+            $0.horizontalEdges.equalToSuperview()
         }
         
         inputLabel.snp.makeConstraints {
-            $0.top.equalTo(titleLabel.snp.bottom).offset(20)
-            $0.leading.equalToSuperview()
+            $0.top.equalTo(titleLabel.snp.bottom).offset(10)
+            $0.horizontalEdges.equalToSuperview()
         }
         
         iconView.snp.makeConstraints {
@@ -147,11 +157,42 @@ final class RegisterInputView: UIView {
     }
     
     private func bind() {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tapInput))
-        hintLabel.addGestureRecognizer(tapGesture)
+        let hintTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapInput))
+        let inputTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapInput))
+        hintLabel.addGestureRecognizer(hintTapGesture)
+        inputLabel.addGestureRecognizer(inputTapGesture)
     }
     
     @objc func tapInput() {
         MOALogger.logd("\(inputType.title)")
+        
+        switch inputType {
+        case .name:
+            // TODO
+            break
+        case .expireDate:
+            let topVC = UIApplication.shared.topViewController
+            let bottomVC = BottomSheetViewController(sheetType: .Date, date: selectDate)
+            bottomVC.delegate = self
+            topVC?.present(bottomVC, animated: true)
+        case .store:
+            break
+        case .memo:
+            break
+        }
+    }
+}
+
+extension RegisterInputView: BottomSheetDelegate {
+    func selectDate(date: Date) {
+        MOALogger.logd("\(date)")
+        hasInput = true
+        selectDate = date
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = AVAILABLE_GIFTICON_UI_TIME_FORMAT
+        inputLabel.text = formatter.string(from: date)
+        
+        UIApplication.shared.topViewController?.dismiss(animated: true)
     }
 }

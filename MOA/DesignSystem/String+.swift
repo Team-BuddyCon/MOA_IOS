@@ -11,6 +11,7 @@ import Foundation
 let LETS_START = "시작하기"
 let CANCEL = "취소하기"
 let SAVE = "저장하기"
+let EXPIRE_DATE = "유효기간"
 
 // MARK: Design System
 let dday_end = "만료"
@@ -81,6 +82,7 @@ let FLOATING_ICON = "FloatingIcon"
 let EMPTY_GIFTICON = "EmptyGifticon"
 let EXPIRE_DATE_INPUT_ICON = "ExpireDateInputIcon"
 let STORE_INPUT_ICON = "StoreInputIcon"
+let CLOSE_BUTTON = "CloseButton"
 
 // MARK: Font
 let pretendard_black = "Pretendard-Black"
