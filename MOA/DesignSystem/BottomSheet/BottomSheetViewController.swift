@@ -15,16 +15,19 @@ final class BottomSheetViewController: BaseViewController {
         return view
     }()
     
-    private let sheetType: BottomSheetType
     var delegate: BottomSheetDelegate?
-    var sortType: SortType?
+    private let sheetType: BottomSheetType
+    private var sortType: SortType?
+    private var date: Date = Date()
     
     init(
         sheetType: BottomSheetType,
-        sortType: SortType? = nil
+        sortType: SortType? = nil,
+        date: Date = Date()
     ) {
         self.sheetType = sheetType
         self.sortType = sortType
+        self.date = date
         super.init(nibName: nil, bundle: nil)
         self.modalPresentationStyle = .overFullScreen
         self.modalTransitionStyle = .crossDissolve
@@ -49,7 +52,7 @@ private extension BottomSheetViewController {
         case .Sort:
             setupSortBottomSheet()
         case .Date:
-            return
+            setupDateBottomSheet()
         }
         
         view.addSubview(contentView)
@@ -71,6 +74,17 @@ private extension BottomSheetViewController {
             .emit(onNext: { [weak self] type in
                 self?.delegate?.selectSortType(type: type)
                 self?.dismiss(animated: true)
+            }).disposed(by: disposeBag)
+    }
+    
+    func setupDateBottomSheet() {
+        let sheetView = ExpireDateSheetView(date: date)
+        contentView.addSubview(sheetView)
+        
+        sheetView.closeButton.rx.tap
+            .subscribe(onNext: { [weak self] in
+                let date = sheetView.datePicker.date
+                self?.delegate?.selectDate(date: date)
             }).disposed(by: disposeBag)
     }
     
