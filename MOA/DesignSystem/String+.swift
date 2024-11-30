@@ -13,6 +13,7 @@ let CANCEL = "취소하기"
 let SAVE = "저장하기"
 let EXPIRE_DATE = "유효기간"
 let STORE = "사용처"
+let OTHER_STORE = "기타"
 
 // MARK: Design System
 let dday_end = "만료"

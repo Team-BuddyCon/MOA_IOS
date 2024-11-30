@@ -19,7 +19,12 @@ final class BottomSheetViewController: BaseViewController {
     }()
     
     var delegate: BottomSheetDelegate?
-    private let sheetType: BottomSheetType
+    private var sheetType: BottomSheetType {
+        didSet {
+            updateBottomSheet()
+        }
+    }
+    
     private var sortType: SortType?
     private var date: Date = Date()
     
@@ -51,6 +56,8 @@ final class BottomSheetViewController: BaseViewController {
 private extension BottomSheetViewController {
     func setupLayout() {
         view.backgroundColor = .black.withAlphaComponent(0.5)
+        view.addSubview(contentView)
+        updateBottomSheet()
         
         switch sheetType {
         case .Sort:
@@ -59,21 +66,18 @@ private extension BottomSheetViewController {
             setupDateBottomSheet()
         case .Store:
             setupStoreBottomSheet()
-        case .Store_New:
-            break
-        }
-        
-        view.addSubview(contentView)
-        contentView.snp.makeConstraints {
-            $0.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(sheetType.rawValue)
-            $0.bottom.equalToSuperview().offset(sheetType.rawValue)
+        case .Other_Store:
+            setupOtherStoreBottomSheet()
         }
     }
     
     func setupSortBottomSheet() {
         let sheetView = SortBottomSheetView(type: sortType ?? .EXPIRE_DATE)
         contentView.addSubview(sheetView)
+        
+        sheetView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
         
         sheetView.sortType
             .emit(onNext: { [weak self] type in
@@ -86,6 +90,10 @@ private extension BottomSheetViewController {
         let sheetView = ExpireDateSheetView(date: date)
         contentView.addSubview(sheetView)
         
+        sheetView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+        
         sheetView.closeButton.rx.tap
             .subscribe(onNext: { [weak self] in
                 let date = sheetView.datePicker.date
@@ -95,7 +103,14 @@ private extension BottomSheetViewController {
     
     func setupStoreBottomSheet() {
         let sheetView = StoreSheetView()
+        contentView.subviews.forEach {
+            $0.removeFromSuperview()
+        }
         contentView.addSubview(sheetView)
+        
+        sheetView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
         
         sheetView.closeButton.rx.tap
             .subscribe(onNext: { [weak self] in
@@ -104,8 +119,43 @@ private extension BottomSheetViewController {
         
         sheetView.storeCollectionView.rx.modelSelected(StoreType.self)
             .subscribe(onNext: { [weak self] type in
-                self?.delegate?.selectStoreType(type: type)
+                guard let self = self else { return }
+                
+                switch type {
+                case .OTHERS:
+                    sheetType = .Other_Store
+                    setupOtherStoreBottomSheet()
+                default:
+                    delegate?.selectStoreType(type: type)
+                }
             }).disposed(by: disposeBag)
+    }
+    
+    func setupOtherStoreBottomSheet() {
+        let sheetView = OtherStoreSheetView()
+        contentView.subviews.forEach {
+            $0.removeFromSuperview()
+        }
+        contentView.addSubview(sheetView)
+        
+        sheetView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+        
+        sheetView.closeButton.rx.tap
+            .subscribe(onNext: { [weak self] in
+                guard let self = self else { return }
+                sheetType = .Store
+                setupStoreBottomSheet()
+            }).disposed(by: disposeBag)
+    }
+    
+    func updateBottomSheet() {
+        contentView.snp.remakeConstraints {
+            $0.horizontalEdges.equalToSuperview()
+            $0.height.equalTo(sheetType.rawValue)
+            $0.bottom.equalToSuperview()
+        }
     }
     
     // TODO : 추후 애니메이션 정상 동작하도록 변경
