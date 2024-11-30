@@ -178,6 +178,7 @@ final class RegisterInputView: UIView {
         case .store:
             let topVC = UIApplication.shared.topViewController
             let bottomVC = BottomSheetViewController(sheetType: .Store)
+            bottomVC.delegate = self
             topVC?.present(bottomVC, animated: true)
         case .memo:
             break
@@ -195,6 +196,13 @@ extension RegisterInputView: BottomSheetDelegate {
         formatter.dateFormat = AVAILABLE_GIFTICON_UI_TIME_FORMAT
         inputLabel.text = formatter.string(from: date)
         
+        UIApplication.shared.topViewController?.dismiss(animated: true)
+    }
+    
+    func selectStoreType(type: StoreType) {
+        MOALogger.logd("\(type)")
+        hasInput = true
+        inputLabel.text = type.rawValue
         UIApplication.shared.topViewController?.dismiss(animated: true)
     }
 }

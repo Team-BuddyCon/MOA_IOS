@@ -28,7 +28,7 @@ final class StoreSheetView: UIView {
         return button
     }()
     
-    private let storeCollectionView: UICollectionView = {
+    let storeCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         layout.minimumLineSpacing = 32
@@ -91,15 +91,5 @@ final class StoreSheetView: UIView {
         ) { row, storeType, cell in
             cell.setData(storeType: storeType)
         }.disposed(by: disposeBag)
-        
-
-        Observable.zip(
-            storeCollectionView.rx.itemSelected,
-            storeCollectionView.rx.modelSelected(StoreType.self)
-        ).subscribe(onNext: { [weak self] indexPath, storeType in
-            guard let self = self else { return }
-            MOALogger.logd("\(indexPath.row) \(storeType)")
-            
-        }).disposed(by: disposeBag)
     }
 }

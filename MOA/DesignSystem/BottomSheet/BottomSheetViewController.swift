@@ -7,6 +7,9 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
+import RxRelay
 
 final class BottomSheetViewController: BaseViewController {
     
@@ -93,6 +96,16 @@ private extension BottomSheetViewController {
     func setupStoreBottomSheet() {
         let sheetView = StoreSheetView()
         contentView.addSubview(sheetView)
+        
+        sheetView.closeButton.rx.tap
+            .subscribe(onNext: { [weak self] in
+                self?.dismiss(animated: true)
+            }).disposed(by: disposeBag)
+        
+        sheetView.storeCollectionView.rx.modelSelected(StoreType.self)
+            .subscribe(onNext: { [weak self] type in
+                self?.delegate?.selectStoreType(type: type)
+            }).disposed(by: disposeBag)
     }
     
     // TODO : 추후 애니메이션 정상 동작하도록 변경
