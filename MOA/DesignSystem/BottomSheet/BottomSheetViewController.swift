@@ -7,6 +7,9 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
+import RxRelay
 
 final class BottomSheetViewController: BaseViewController {
     
@@ -41,6 +44,7 @@ final class BottomSheetViewController: BaseViewController {
         super.viewDidLoad()
         setupLayout()
         startAnimation()
+        bind()
     }
 }
 
@@ -53,6 +57,10 @@ private extension BottomSheetViewController {
             setupSortBottomSheet()
         case .Date:
             setupDateBottomSheet()
+        case .Store:
+            setupStoreBottomSheet()
+        case .Store_New:
+            break
         }
         
         view.addSubview(contentView)
@@ -61,9 +69,6 @@ private extension BottomSheetViewController {
             $0.height.equalTo(sheetType.rawValue)
             $0.bottom.equalToSuperview().offset(sheetType.rawValue)
         }
-        
-        let dismissTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapDismiss))
-        view.addGestureRecognizer(dismissTapGesture)
     }
     
     func setupSortBottomSheet() {
@@ -88,6 +93,21 @@ private extension BottomSheetViewController {
             }).disposed(by: disposeBag)
     }
     
+    func setupStoreBottomSheet() {
+        let sheetView = StoreSheetView()
+        contentView.addSubview(sheetView)
+        
+        sheetView.closeButton.rx.tap
+            .subscribe(onNext: { [weak self] in
+                self?.dismiss(animated: true)
+            }).disposed(by: disposeBag)
+        
+        sheetView.storeCollectionView.rx.modelSelected(StoreType.self)
+            .subscribe(onNext: { [weak self] type in
+                self?.delegate?.selectStoreType(type: type)
+            }).disposed(by: disposeBag)
+    }
+    
     // TODO : 추후 애니메이션 정상 동작하도록 변경
     func startAnimation() {
         UIView.animate(
@@ -107,8 +127,23 @@ private extension BottomSheetViewController {
             contentView.layoutIfNeeded()
         }
     }
+    
+    func bind() {
+        let dismissTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapDismiss))
+        dismissTapGesture.delegate = self
+        view.addGestureRecognizer(dismissTapGesture)
+    }
 }
 
+// MARK: UIGestureRecognizerDelegate
+extension BottomSheetViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        guard touch.view?.isDescendant(of: self.contentView) == false else { return false }
+        return true
+    }
+}
+
+// MARK: objective-C
 extension BottomSheetViewController {
     @objc func tapDismiss() {
         MOALogger.logd()
