@@ -6,6 +6,9 @@
 //
 
 import UIKit
+import RxSwift
+import RxCocoa
+import RxRelay
 
 final class StoreTypeCell: UICollectionViewCell {
     static let identifier = "StoreTypeCell"

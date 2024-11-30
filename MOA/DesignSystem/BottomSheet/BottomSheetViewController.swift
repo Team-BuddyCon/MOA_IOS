@@ -41,6 +41,7 @@ final class BottomSheetViewController: BaseViewController {
         super.viewDidLoad()
         setupLayout()
         startAnimation()
+        bind()
     }
 }
 
@@ -65,9 +66,6 @@ private extension BottomSheetViewController {
             $0.height.equalTo(sheetType.rawValue)
             $0.bottom.equalToSuperview().offset(sheetType.rawValue)
         }
-        
-        let dismissTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapDismiss))
-        view.addGestureRecognizer(dismissTapGesture)
     }
     
     func setupSortBottomSheet() {
@@ -116,8 +114,23 @@ private extension BottomSheetViewController {
             contentView.layoutIfNeeded()
         }
     }
+    
+    func bind() {
+        let dismissTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapDismiss))
+        dismissTapGesture.delegate = self
+        view.addGestureRecognizer(dismissTapGesture)
+    }
 }
 
+// MARK: UIGestureRecognizerDelegate
+extension BottomSheetViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        guard touch.view?.isDescendant(of: self.contentView) == false else { return false }
+        return true
+    }
+}
+
+// MARK: objective-C
 extension BottomSheetViewController {
     @objc func tapDismiss() {
         MOALogger.logd()

@@ -85,8 +85,21 @@ final class StoreSheetView: UIView {
     }
     
     private func bind() {
-        storeTypes.bind(to: storeCollectionView.rx.items(cellIdentifier: StoreTypeCell.identifier, cellType: StoreTypeCell.self)) { row, storeType, cell in
+        storeTypes.bind(to: storeCollectionView.rx.items(
+            cellIdentifier: StoreTypeCell.identifier,
+            cellType: StoreTypeCell.self)
+        ) { row, storeType, cell in
             cell.setData(storeType: storeType)
         }.disposed(by: disposeBag)
+        
+
+        Observable.zip(
+            storeCollectionView.rx.itemSelected,
+            storeCollectionView.rx.modelSelected(StoreType.self)
+        ).subscribe(onNext: { [weak self] indexPath, storeType in
+            guard let self = self else { return }
+            MOALogger.logd("\(indexPath.row) \(storeType)")
+            
+        }).disposed(by: disposeBag)
     }
 }
