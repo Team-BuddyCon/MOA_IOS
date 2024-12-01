@@ -53,6 +53,7 @@ final class SortBottomSheetView: UIView {
         let width = Int(UIScreen.main.bounds.width)
         let heith = BottomSheetType.Sort.rawValue
         frame = CGRect(x: 0, y: 0, width: width, height: heith)
+        layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         layer.cornerRadius = 16
         backgroundColor = .white
         

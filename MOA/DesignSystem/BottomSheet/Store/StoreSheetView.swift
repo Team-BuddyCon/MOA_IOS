@@ -59,6 +59,7 @@ final class StoreSheetView: UIView {
         let width = Int(UIScreen.main.bounds.width)
         let height = BottomSheetType.Store.rawValue
         frame = CGRect(x: 0, y: 0, width: width, height: height)
+        layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         layer.cornerRadius = 16
         backgroundColor = .white
         

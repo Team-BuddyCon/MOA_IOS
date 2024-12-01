@@ -199,10 +199,10 @@ extension RegisterInputView: BottomSheetDelegate {
         UIApplication.shared.topViewController?.dismiss(animated: true)
     }
     
-    func selectStoreType(type: StoreType) {
-        MOALogger.logd("\(type)")
+    func selectStore(store: String) {
+        MOALogger.logd(store)
         hasInput = true
-        inputLabel.text = type.rawValue
+        inputLabel.text = store
         UIApplication.shared.topViewController?.dismiss(animated: true)
     }
 }

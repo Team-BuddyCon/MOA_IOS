@@ -103,6 +103,7 @@ private extension BottomSheetViewController {
     
     func setupStoreBottomSheet() {
         let sheetView = StoreSheetView()
+        
         contentView.subviews.forEach {
             $0.removeFromSuperview()
         }
@@ -114,7 +115,7 @@ private extension BottomSheetViewController {
         
         sheetView.closeButton.rx.tap
             .subscribe(onNext: { [weak self] in
-                self?.dismiss(animated: true)
+                self?.dismiss(animated: false)
             }).disposed(by: disposeBag)
         
         sheetView.storeCollectionView.rx.modelSelected(StoreType.self)
@@ -126,7 +127,7 @@ private extension BottomSheetViewController {
                     sheetType = .Other_Store
                     setupOtherStoreBottomSheet()
                 default:
-                    delegate?.selectStoreType(type: type)
+                    delegate?.selectStore(store: type.rawValue)
                 }
             }).disposed(by: disposeBag)
     }
@@ -144,9 +145,21 @@ private extension BottomSheetViewController {
         
         sheetView.closeButton.rx.tap
             .subscribe(onNext: { [weak self] in
+                self?.dismiss(animated: false)
+            }).disposed(by: disposeBag)
+        
+        sheetView.prevButton.rx.tap
+            .subscribe(onNext: { [weak self] in
                 guard let self = self else { return }
                 sheetType = .Store
                 setupStoreBottomSheet()
+            }).disposed(by: disposeBag)
+        
+        sheetView.completeButton.rx.tap
+            .subscribe(onNext: { [weak self] in
+                guard let self = self else { return }
+                let text = sheetView.textInput.text ?? ""
+                delegate?.selectStore(store: "기타 - \(text)")
             }).disposed(by: disposeBag)
     }
     
@@ -182,6 +195,20 @@ private extension BottomSheetViewController {
         let dismissTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapDismiss))
         dismissTapGesture.delegate = self
         view.addGestureRecognizer(dismissTapGesture)
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillAppear),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillDisAppear),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
     }
 }
 
@@ -198,5 +225,34 @@ extension BottomSheetViewController {
     @objc func tapDismiss() {
         MOALogger.logd()
         dismiss(animated: true)
+    }
+    
+    @objc func keyboardWillAppear(sender: Notification) {
+        MOALogger.logd()
+        guard let keyboardFrame = sender.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
+        let keyboardHeight = keyboardFrame.cgRectValue.height
+        let contentViewY = UIScreen.main.bounds.size.height - CGFloat(sheetType.rawValue)
+        
+        UIView.animate(
+            withDuration: 1.0,
+            delay: 0.0,
+            options: [.curveEaseInOut]
+        ) { [weak self] in
+            guard let self = self else { return }
+            contentView.frame.origin.y = contentViewY - keyboardHeight
+        }
+    }
+    
+    @objc func keyboardWillDisAppear(sender: Notification) {
+        MOALogger.logd()
+        let contentViewY = UIScreen.main.bounds.size.height - CGFloat(sheetType.rawValue)
+        UIView.animate(
+            withDuration: 1.0,
+            delay: 0.0,
+            options: [.curveEaseInOut]
+        ) { [weak self] in
+            guard let self = self else { return }
+            contentView.frame.origin.y = contentViewY
+        }
     }
 }

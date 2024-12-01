@@ -10,12 +10,12 @@ import Foundation
 protocol BottomSheetDelegate {
     func selectSortType(type: SortType)
     func selectDate(date: Date)
-    func selectStoreType(type: StoreType)
+    func selectStore(store: String)
 }
 
 // optional
 extension BottomSheetDelegate {
     func selectSortType(type: SortType) {}
     func selectDate(date: Date) {}
-    func selectStoreType(type: StoreType) {}
+    func selectStore(store: String) {}
 }
