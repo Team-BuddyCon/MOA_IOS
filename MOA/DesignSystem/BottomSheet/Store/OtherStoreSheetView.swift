@@ -42,7 +42,7 @@ final class OtherStoreSheetView: UIView {
         return label
     }()
     
-    let textInput: UITextField = {
+    lazy var textInput: UITextField = {
         let textField = UITextField()
         textField.font = UIFont(name: pretendard_bold, size: 15.0)
         textField.textColor = .grey90
@@ -50,6 +50,7 @@ final class OtherStoreSheetView: UIView {
         textField.autocorrectionType = .no
         textField.spellCheckingType = .no
         textField.placeholder = GIFTICON_REGISTER_OTHER_STORE_PLACEHOLDER
+        textField.delegate = self
         return textField
     }()
     
@@ -164,5 +165,12 @@ final class OtherStoreSheetView: UIView {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesBegan(touches, with: event)
         textInput.endEditing(true)
+    }
+}
+
+extension OtherStoreSheetView: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textInput.resignFirstResponder()
+        return true
     }
 }

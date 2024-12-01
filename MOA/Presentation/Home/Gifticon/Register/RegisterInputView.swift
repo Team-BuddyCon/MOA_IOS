@@ -6,6 +6,9 @@
 //
 
 import UIKit
+import RxSwift
+import RxCocoa
+import RxRelay
 
 enum InputType {
     case name
@@ -49,6 +52,8 @@ enum InputType {
 }
 
 final class RegisterInputView: UIView {
+    private let disposeBag = DisposeBag()
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont(name: pretendard_medium, size: 13.0)
@@ -63,6 +68,18 @@ final class RegisterInputView: UIView {
         label.text = inputType.hint
         label.isUserInteractionEnabled = true
         return label
+    }()
+    
+    private lazy var inputTextField: UITextField = {
+        let textField = UITextField()
+        textField.font = UIFont(name: pretendard_bold, size: 15.0)
+        textField.textColor = .grey90
+        textField.borderStyle = .none
+        textField.autocorrectionType = .no
+        textField.spellCheckingType = .no
+        textField.isHidden = inputType == .expireDate || inputType == .store
+        textField.delegate = self
+        return textField
     }()
     
     private lazy var inputLabel: UILabel = {
@@ -91,6 +108,7 @@ final class RegisterInputView: UIView {
         didSet {
             hintLabel.isHidden = hasInput
             inputLabel.isHidden = !hasInput
+            inputTextField.isHidden = hasInput ? hasInput : (inputType == .expireDate || inputType == .store)
         }
     }
     private var inputType: InputType
@@ -123,7 +141,7 @@ final class RegisterInputView: UIView {
     }
     
     private func setupLayout() {
-        [titleLabel, hintLabel, inputLabel, iconView, lineView].forEach {
+        [titleLabel, hintLabel, inputTextField, inputLabel, iconView, lineView].forEach {
             addSubview($0)
         }
         
@@ -133,6 +151,11 @@ final class RegisterInputView: UIView {
         }
         
         hintLabel.snp.makeConstraints {
+            $0.top.equalTo(titleLabel.snp.bottom).offset(10)
+            $0.horizontalEdges.equalToSuperview()
+        }
+        
+        inputTextField.snp.makeConstraints {
             $0.top.equalTo(titleLabel.snp.bottom).offset(10)
             $0.horizontalEdges.equalToSuperview()
         }
@@ -161,15 +184,18 @@ final class RegisterInputView: UIView {
         let inputTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapInput))
         hintLabel.addGestureRecognizer(hintTapGesture)
         inputLabel.addGestureRecognizer(inputTapGesture)
+        
+        inputTextField.rx.text
+            .subscribe(onNext: { [weak self] text in
+                guard let self = self else { return }
+                hintLabel.isHidden = text?.isEmpty == false
+            }).disposed(by: disposeBag)
     }
     
     @objc func tapInput() {
         MOALogger.logd("\(inputType.title)")
         
         switch inputType {
-        case .name:
-            // TODO
-            break
         case .expireDate:
             let topVC = UIApplication.shared.topViewController
             let bottomVC = BottomSheetViewController(sheetType: .Date, date: selectDate)
@@ -180,12 +206,13 @@ final class RegisterInputView: UIView {
             let bottomVC = BottomSheetViewController(sheetType: .Store)
             bottomVC.delegate = self
             topVC?.present(bottomVC, animated: true)
-        case .memo:
+        default:
             break
         }
     }
 }
 
+// MARK: BottomSheetDelegate
 extension RegisterInputView: BottomSheetDelegate {
     func selectDate(date: Date) {
         MOALogger.logd("\(date)")
@@ -204,5 +231,12 @@ extension RegisterInputView: BottomSheetDelegate {
         hasInput = true
         inputLabel.text = store
         UIApplication.shared.topViewController?.dismiss(animated: true)
+    }
+}
+
+extension RegisterInputView: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        inputTextField.resignFirstResponder()
+        return true
     }
 }
