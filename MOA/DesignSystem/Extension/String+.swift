@@ -13,6 +13,7 @@ let CANCEL = "취소하기"
 let SAVE = "저장하기"
 let EXPIRE_DATE = "유효기간"
 let STORE = "사용처"
+let OTHER_STORE = "기타"
 
 // MARK: Design System
 let dday_end = "만료"
@@ -66,6 +67,11 @@ let GIFTICON_REGISTER_STORE_INPUT_TITLE = "사용처"
 let GIFTICON_REGISTER_STORE_INPUT_HINT = "사용처 선택"
 let GIFTICON_REGISTER_MEMO_INPUT_TITLE = "메모"
 let GIFTICON_REGISTER_MEMO_INPUT_HINT = "최대 50자"
+let GIFTICON_REGISTER_OTHER_STORE_GUIDE = "기프티콘 사용처를 입력해주세요"
+let GIFTICON_REGISTER_OTHER_STORE_INFO = "앞으로 더 많은 브랜드를 지원하기 위해서 노력할게요."
+let GIFTICON_REGISTER_OTHER_STORE_PLACEHOLDER = "예) 롯데리아"
+let GIFTICON_REGISTER_OTHER_STORE_PREVIOUS_BUTTON = "이전으로"
+let GIFTICON_REGISTER_OTHER_STORE_COMPLETED = "작성완료"
 
 // MARK: ImageSet
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"

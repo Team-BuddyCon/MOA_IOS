@@ -45,6 +45,7 @@ final class ExpireDateSheetView: UIView {
         let width = Int(UIScreen.main.bounds.width)
         let height = BottomSheetType.Date.rawValue
         frame = CGRect(x: 0, y: 0, width: width, height: height)
+        layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         layer.cornerRadius = 16
         backgroundColor = .white
         
