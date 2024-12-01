@@ -215,6 +215,7 @@ private extension BottomSheetViewController {
 // MARK: UIGestureRecognizerDelegate
 extension BottomSheetViewController: UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        MOALogger.logd()
         guard touch.view?.isDescendant(of: self.contentView) == false else { return false }
         return true
     }
@@ -233,26 +234,21 @@ extension BottomSheetViewController {
         let keyboardHeight = keyboardFrame.cgRectValue.height
         let contentViewY = UIScreen.main.bounds.size.height - CGFloat(sheetType.rawValue)
         
-        UIView.animate(
-            withDuration: 1.0,
-            delay: 0.0,
-            options: [.curveEaseInOut]
-        ) { [weak self] in
-            guard let self = self else { return }
-            contentView.frame.origin.y = contentViewY - keyboardHeight
+        contentView.snp.remakeConstraints {
+            $0.horizontalEdges.equalToSuperview()
+            $0.height.equalTo(self.sheetType.rawValue)
+            $0.bottom.equalToSuperview().inset(keyboardHeight)
         }
     }
     
     @objc func keyboardWillDisAppear(sender: Notification) {
         MOALogger.logd()
         let contentViewY = UIScreen.main.bounds.size.height - CGFloat(sheetType.rawValue)
-        UIView.animate(
-            withDuration: 1.0,
-            delay: 0.0,
-            options: [.curveEaseInOut]
-        ) { [weak self] in
-            guard let self = self else { return }
-            contentView.frame.origin.y = contentViewY
+        
+        contentView.snp.remakeConstraints {
+            $0.horizontalEdges.equalToSuperview()
+            $0.height.equalTo(self.sheetType.rawValue)
+            $0.bottom.equalToSuperview()
         }
     }
 }

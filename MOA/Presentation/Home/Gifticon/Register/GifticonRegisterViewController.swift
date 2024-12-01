@@ -100,7 +100,6 @@ private extension GifticonRegisterViewController {
         }
         
         saveButton.snp.makeConstraints {
-            $0.leading.equalTo(cancelButton.snp.trailing).offset(8)
             $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(11.5)
             $0.height.equalTo(54)
             $0.trailing.equalToSuperview().inset(20)
@@ -119,7 +118,13 @@ private extension GifticonRegisterViewController {
             $0.width.equalTo(scrollView.snp.width)
         }
         
-        [imageView, nameInputView, expireDateInputView, storeInputView, memoInputView].forEach {
+        [
+            imageView,
+            nameInputView,
+            expireDateInputView,
+            storeInputView,
+            memoInputView
+        ].forEach {
             contentView.addSubview($0)
         }
         
@@ -152,6 +157,20 @@ private extension GifticonRegisterViewController {
     }
     
     func bind() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillAppear),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillDisAppear),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+        
         cancelButton.rx.tap
             .bind(to: self.rx.tapCancel)
             .disposed(by: disposeBag)
@@ -163,5 +182,26 @@ private extension Reactive where Base: GifticonRegisterViewController {
         return Binder<Void>(self.base) { viewController, _ in
             viewController.navigationController?.popViewController(animated: true)
         }
+    }
+}
+
+extension GifticonRegisterViewController {
+    @objc func keyboardWillAppear(sender: Notification) {
+        MOALogger.logd()
+        guard let keyboardFrame = sender.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
+        let keyboardHeight = keyboardFrame.cgRectValue.height - 96
+        scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardHeight, right: 0)
+        scrollView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: keyboardHeight, right: 0)
+        scrollView.setNeedsLayout()
+        scrollView.layoutIfNeeded()
+    }
+    
+    @objc func keyboardWillDisAppear(sender: Notification) {
+        MOALogger.logd()
+        scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        scrollView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        scrollView.setNeedsLayout()
+        scrollView.layoutIfNeeded()
+
     }
 }
