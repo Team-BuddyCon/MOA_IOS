@@ -188,20 +188,16 @@ private extension Reactive where Base: GifticonRegisterViewController {
 extension GifticonRegisterViewController {
     @objc func keyboardWillAppear(sender: Notification) {
         MOALogger.logd()
-        guard let keyboardFrame = sender.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
-        let keyboardHeight = keyboardFrame.cgRectValue.height - 96
+        guard let keyboardFrame = sender.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+        let keyboardHeight = keyboardFrame.size.height - 96
+        
+        // contentInset을 통해서 Inset 을 주어 강제로 스크롤 되게 만듬
         scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardHeight, right: 0)
-        scrollView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: keyboardHeight, right: 0)
-        scrollView.setNeedsLayout()
-        scrollView.layoutIfNeeded()
+        scrollView.scrollRectToVisible(memoInputView.frame, animated: true)
     }
     
     @objc func keyboardWillDisAppear(sender: Notification) {
         MOALogger.logd()
         scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-        scrollView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-        scrollView.setNeedsLayout()
-        scrollView.layoutIfNeeded()
-
     }
 }
