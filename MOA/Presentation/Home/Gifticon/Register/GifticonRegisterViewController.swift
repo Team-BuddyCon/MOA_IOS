@@ -80,16 +80,6 @@ final class GifticonRegisterViewController: BaseViewController {
         setupLayout()
         bind()
     }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        addKeyboardNofitication()
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        removeKeyboardNotification()
-    }
 }
 
 private extension GifticonRegisterViewController {
@@ -166,29 +156,23 @@ private extension GifticonRegisterViewController {
     }
     
     func bind() {
-        cancelButton.rx.tap
-            .bind(to: self.rx.tapCancel)
-            .disposed(by: disposeBag)
-    }
-    
-    func addKeyboardNofitication() {
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(keyboardWillAppear),
             name: UIResponder.keyboardWillShowNotification,
-            object: self
+            object: nil
         )
         
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(keyboardWillDisAppear),
             name: UIResponder.keyboardWillHideNotification,
-            object: self
+            object: nil
         )
-    }
-    
-    func removeKeyboardNotification() {
-        NotificationCenter.default.removeObserver(self)
+        
+        cancelButton.rx.tap
+            .bind(to: self.rx.tapCancel)
+            .disposed(by: disposeBag)
     }
 }
 
@@ -203,6 +187,7 @@ private extension Reactive where Base: GifticonRegisterViewController {
 extension GifticonRegisterViewController {
     @objc func keyboardWillAppear(sender: Notification) {
         MOALogger.logd()
+        guard let topViewController = UIApplication.shared.topViewController as? GifticonRegisterViewController else { return }
         guard let keyboardFrame = sender.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
         let keyboardHeight = keyboardFrame.size.height - 96
         
@@ -213,6 +198,7 @@ extension GifticonRegisterViewController {
     
     @objc func keyboardWillDisAppear(sender: Notification) {
         MOALogger.logd()
+        guard let topViewController = UIApplication.shared.topViewController as? GifticonRegisterViewController else { return }
         scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
     }
 }

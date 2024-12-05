@@ -51,16 +51,6 @@ final class BottomSheetViewController: BaseViewController {
         startAnimation()
         bind()
     }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        addKeyboardNofitication()
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        removeKeyboardNotification()
-    }
 }
 
 private extension BottomSheetViewController {
@@ -202,12 +192,6 @@ private extension BottomSheetViewController {
     }
     
     func bind() {
-        let dismissTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapDismiss))
-        dismissTapGesture.delegate = self
-        view.addGestureRecognizer(dismissTapGesture)
-    }
-    
-    func addKeyboardNofitication() {
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(keyboardWillAppear),
@@ -221,10 +205,10 @@ private extension BottomSheetViewController {
             name: UIResponder.keyboardWillHideNotification,
             object: nil
         )
-    }
-    
-    func removeKeyboardNotification() {
-        NotificationCenter.default.removeObserver(self)
+        
+        let dismissTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapDismiss))
+        dismissTapGesture.delegate = self
+        view.addGestureRecognizer(dismissTapGesture)
     }
 }
 
