@@ -80,7 +80,16 @@ final class GifticonRegisterViewController: BaseViewController {
         setupLayout()
         bind()
     }
-
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        addKeyboardNofitication()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        removeKeyboardNotification()
+    }
 }
 
 private extension GifticonRegisterViewController {
@@ -157,23 +166,29 @@ private extension GifticonRegisterViewController {
     }
     
     func bind() {
+        cancelButton.rx.tap
+            .bind(to: self.rx.tapCancel)
+            .disposed(by: disposeBag)
+    }
+    
+    func addKeyboardNofitication() {
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(keyboardWillAppear),
             name: UIResponder.keyboardWillShowNotification,
-            object: nil
+            object: self
         )
         
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(keyboardWillDisAppear),
             name: UIResponder.keyboardWillHideNotification,
-            object: nil
+            object: self
         )
-        
-        cancelButton.rx.tap
-            .bind(to: self.rx.tapCancel)
-            .disposed(by: disposeBag)
+    }
+    
+    func removeKeyboardNotification() {
+        NotificationCenter.default.removeObserver(self)
     }
 }
 
