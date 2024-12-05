@@ -51,6 +51,16 @@ final class BottomSheetViewController: BaseViewController {
         startAnimation()
         bind()
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        addKeyboardNofitication()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        removeKeyboardNotification()
+    }
 }
 
 private extension BottomSheetViewController {
@@ -164,10 +174,10 @@ private extension BottomSheetViewController {
     }
     
     func updateBottomSheet() {
-        contentView.snp.remakeConstraints {
+        contentView.snp.updateConstraints {
             $0.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(sheetType.rawValue)
-            $0.bottom.equalToSuperview()
+            $0.height.equalTo(self.sheetType.rawValue)
+            $0.bottom.equalToSuperview().offset(0)
         }
     }
     
@@ -195,7 +205,9 @@ private extension BottomSheetViewController {
         let dismissTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapDismiss))
         dismissTapGesture.delegate = self
         view.addGestureRecognizer(dismissTapGesture)
-        
+    }
+    
+    func addKeyboardNofitication() {
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(keyboardWillAppear),
@@ -209,6 +221,10 @@ private extension BottomSheetViewController {
             name: UIResponder.keyboardWillHideNotification,
             object: nil
         )
+    }
+    
+    func removeKeyboardNotification() {
+        NotificationCenter.default.removeObserver(self)
     }
 }
 
@@ -231,24 +247,36 @@ extension BottomSheetViewController {
     @objc func keyboardWillAppear(sender: Notification) {
         MOALogger.logd()
         guard let keyboardFrame = sender.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
+        guard let keyboardDuration = sender.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double else { return }
         let keyboardHeight = keyboardFrame.cgRectValue.height
-        let contentViewY = UIScreen.main.bounds.size.height - CGFloat(sheetType.rawValue)
         
-        contentView.snp.remakeConstraints {
-            $0.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(self.sheetType.rawValue)
-            $0.bottom.equalToSuperview().inset(keyboardHeight)
-        }
+        UIView.animate(
+            withDuration: keyboardDuration,
+            delay: 0.0,
+            options: [.curveEaseInOut],
+            animations: { [weak self] in
+                guard let self = self else { return }
+                contentView.snp.updateConstraints {
+                    $0.bottom.equalToSuperview().inset(keyboardHeight)
+                }
+                view.layoutIfNeeded()
+            })
     }
     
     @objc func keyboardWillDisAppear(sender: Notification) {
         MOALogger.logd()
-        let contentViewY = UIScreen.main.bounds.size.height - CGFloat(sheetType.rawValue)
+        guard let keyboardDuration = sender.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double else { return }
         
-        contentView.snp.remakeConstraints {
-            $0.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(self.sheetType.rawValue)
-            $0.bottom.equalToSuperview()
-        }
+        UIView.animate(
+            withDuration: keyboardDuration,
+            delay: 0.0,
+            options: [.curveEaseInOut],
+            animations: { [weak self] in
+                guard let self = self else { return }
+                contentView.snp.updateConstraints {
+                    $0.bottom.equalToSuperview().offset(0)
+                }
+                contentView.layoutIfNeeded()
+            })
     }
 }

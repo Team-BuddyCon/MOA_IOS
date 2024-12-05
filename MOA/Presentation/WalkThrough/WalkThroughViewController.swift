@@ -29,19 +29,7 @@ final class WalkThroughViewController: UIViewController {
         )
     ]
     
-    var currentPage: Int = 0 {
-        didSet {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                pageIndicator.index = currentPage
-                pagerCollectionView.scrollToItem(at: IndexPath(row: self.currentPage, section: 0), at: .centeredHorizontally, animated: false)
-            }
-            
-            skipButton.isHidden = currentPage == pageItems.endIndex-1
-            nextButton.isHidden = currentPage == pageItems.endIndex-1
-            startButton.isHidden = currentPage != pageItems.endIndex-1
-        }
-    }
+    var currentPage: Int = 0
     
     private lazy var pagerCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -93,6 +81,7 @@ final class WalkThroughViewController: UIViewController {
         MOALogger.logd()
         setupAppearance()
     }
+    
 }
 
 private extension WalkThroughViewController {
@@ -131,6 +120,18 @@ private extension WalkThroughViewController {
             $0.height.equalTo(54)
         }
     }
+    
+    func updateWalkThrough() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            pageIndicator.index = currentPage
+            pagerCollectionView.scrollToItem(at: IndexPath(row: self.currentPage, section: 0), at: .centeredHorizontally, animated: false)
+        }
+        
+        skipButton.isHidden = currentPage == pageItems.endIndex-1
+        nextButton.isHidden = currentPage == pageItems.endIndex-1
+        startButton.isHidden = currentPage != pageItems.endIndex-1
+    }
 }
 
 extension WalkThroughViewController: UICollectionViewDataSource {
@@ -167,13 +168,27 @@ extension WalkThroughViewController: UICollectionViewDelegateFlowLayout {
 
     /**
      스크롤 뷰 드래그 종료 시 page 결정
-     - -halfwith .. halfwidth -> 0 page
-     - halfwidth .. width + halfwidth -> 1 page
+     - -with/4 ...width/4 -> 0 page
+     - fwidth .. width + halfwidth -> 1 page
      - ...
      */
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        let width = UIScreen.main.bounds.width
-        currentPage = Int(round(scrollView.contentOffset.x / width))
+        let width = Int(UIScreen.main.bounds.width)
+        let contentOffset = Int(scrollView.contentOffset.x)
+        let currentOffset = currentPage * width
+        let diff = contentOffset - currentOffset
+        
+        if diff < 0 {
+            if abs(diff) > width / 4 {
+                currentPage = currentPage - 1 < 0 ? 0 : currentPage - 1
+            }
+        } else {
+            if diff > width / 4 {
+                currentPage += 1
+            }
+        }
+        
+        updateWalkThrough()
     }
 }
 
