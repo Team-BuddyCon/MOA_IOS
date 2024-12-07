@@ -9,7 +9,6 @@ import UIKit
 import SnapKit
 
 final class ModalViewController: BaseViewController {
-    
     private let contentView: UIView = {
         let view = UIView()
         view.backgroundColor = .white

@@ -33,6 +33,12 @@ final class GifticonRegisterViewController: BaseViewController {
         return imageView
     }()
     
+    private lazy var imageZoomInButton: UIButton = {
+        let button = UIButton()
+        button.setImage(UIImage(named: ZOOM_IN_BUTTOn), for: .normal)
+        return button
+    }()
+    
     private let cancelButton: CommonButton = {
         let button = CommonButton(status: .cancel, title: CANCEL)
         return button
@@ -63,7 +69,7 @@ final class GifticonRegisterViewController: BaseViewController {
         return inputView
     }()
     
-    private var image: UIImage?
+    var image: UIImage?
     
     init(image: UIImage) {
         self.image = image
@@ -124,6 +130,7 @@ private extension GifticonRegisterViewController {
         
         [
             imageView,
+            imageZoomInButton,
             nameInputView,
             expireDateInputView,
             storeInputView,
@@ -136,6 +143,12 @@ private extension GifticonRegisterViewController {
             $0.top.equalToSuperview().inset(8)
             $0.horizontalEdges.equalToSuperview().inset(20)
             $0.height.equalTo(imageView.snp.width).multipliedBy(328 / 335.0)
+        }
+        
+        imageZoomInButton.snp.makeConstraints {
+            $0.trailing.equalTo(imageView.snp.trailing).inset(16)
+            $0.bottom.equalTo(imageView.snp.bottom).inset(16)
+            $0.size.equalTo(40)
         }
         
         nameInputView.snp.makeConstraints {
@@ -178,13 +191,26 @@ private extension GifticonRegisterViewController {
         cancelButton.rx.tap
             .bind(to: self.rx.tapCancel)
             .disposed(by: disposeBag)
+        
+        imageZoomInButton.rx.tap
+            .bind(to: self.rx.tapZoomInImage)
+            .disposed(by: disposeBag)
     }
 }
 
 private extension Reactive where Base: GifticonRegisterViewController {
     var tapCancel: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
+            MOALogger.logd()
             viewController.navigationController?.popViewController(animated: true)
+        }
+    }
+    
+    var tapZoomInImage: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            MOALogger.logd()
+            let fullImageVC = FullGifticonImageViewController(image: viewController.image)
+            viewController.present(fullImageVC, animated: true)
         }
     }
 }
