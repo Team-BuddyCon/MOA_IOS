@@ -80,6 +80,11 @@ final class GifticonRegisterViewController: BaseViewController {
         setupLayout()
         bind()
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        Toast.shared.show(message: GIFTICON_REGISTER_TOAST_MESSAGE)
+    }
 }
 
 private extension GifticonRegisterViewController {
@@ -187,7 +192,7 @@ private extension Reactive where Base: GifticonRegisterViewController {
 extension GifticonRegisterViewController {
     @objc func keyboardWillAppear(sender: Notification) {
         MOALogger.logd()
-        guard let topViewController = UIApplication.shared.topViewController as? GifticonRegisterViewController else { return }
+        guard UIApplication.shared.topViewController is GifticonRegisterViewController else { return }
         guard let keyboardFrame = sender.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
         let keyboardHeight = keyboardFrame.size.height - 96
         
@@ -198,7 +203,7 @@ extension GifticonRegisterViewController {
     
     @objc func keyboardWillDisAppear(sender: Notification) {
         MOALogger.logd()
-        guard let topViewController = UIApplication.shared.topViewController as? GifticonRegisterViewController else { return }
+        guard UIApplication.shared.topViewController is GifticonRegisterViewController else { return }
         scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
     }
 }
