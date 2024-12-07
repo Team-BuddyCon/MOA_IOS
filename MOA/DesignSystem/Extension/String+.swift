@@ -102,6 +102,7 @@ let MACDONALD_IMAGE = "Macdonald"
 let GS25_IMAGE = "GS25"
 let CU_IMAGE = "CU"
 let OTHERS_IMAGE = "Others"
+let ZOOM_IN_BUTTOn = "ZoomInButton"
 
 // MARK: Font
 let pretendard_black = "Pretendard-Black"
