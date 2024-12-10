@@ -16,6 +16,14 @@ protocol GifticonServiceProtocol {
         storeType: StoreType?,
         sortType: SortType
     ) -> Observable<Result<AvailableGifticonResponse, URLError>>
+    
+    func fetchCreateGifticon(
+        image: Data,
+        name: String,
+        expireDate: String,
+        store: String,
+        memo: String?
+    ) -> Observable<Result<CreateGifticonResponse, URLError>>
 }
 
 
@@ -36,6 +44,24 @@ final class GifticonService: GifticonServiceProtocol {
             storeCategory: storeCateogry,
             storeType: storeType,
             sortType: sortType
+        )
+        
+        return NetworkManager.shared.request(request: request)
+    }
+    
+    func fetchCreateGifticon(
+        image: Data,
+        name: String,
+        expireDate: String,
+        store: String,
+        memo: String?
+    ) -> Observable<Result<CreateGifticonResponse, URLError>> {
+        let request = CreateGifticonRequest(
+            image: image,
+            name: name,
+            expireDate: expireDate,
+            store: store,
+            memo: memo
         )
         
         return NetworkManager.shared.request(request: request)

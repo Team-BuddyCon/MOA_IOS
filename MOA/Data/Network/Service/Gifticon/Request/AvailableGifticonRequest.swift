@@ -7,23 +7,18 @@
 
 import Foundation
 
-let AVAILABLE_GIFTICON_PATH = "/api/v1/gifticons/available"
-let AVAILABLE_GIFTICON_PAGE_NUMBER = "pageNumber"
-let AVAILABLE_GIFTICON_ROW_COUNT = "rowCount"
-let AVAILABLE_GIFTICON_STORE_CATEGORY = "gifticonStoreCategory"
-let AVAILABLE_GIFTICON_STORE = "gifticonStore"
-let AVAILABLE_GIFTICON_SORT_TYPE = "gifticonSortType"
-
 final class AvailableGifticonRequest: BaseRequest {
-    var domain: NetworkDomain { .MOA }
+    var domain: HttpDomain { .MOA }
     
-    var path: String { AVAILABLE_GIFTICON_PATH }
+    var path: String { HttpPath.Gifticon.Available }
     
-    var method: NetworkMethod { .GET }
+    var method: HttpMethod { .GET }
     
     var query: [String : String?]
     
     var body: [String : Any]
+    
+    var contentType: HttpContentType { .application_json }
     
     init(
         pageNumber: Int,
@@ -33,19 +28,19 @@ final class AvailableGifticonRequest: BaseRequest {
         sortType: SortType?
     ) {
         var query: [String: String?] = [:]
-        query.updateValue(String(pageNumber), forKey: AVAILABLE_GIFTICON_PAGE_NUMBER)
-        query.updateValue(String(rowCount), forKey: AVAILABLE_GIFTICON_ROW_COUNT)
+        query.updateValue(String(pageNumber), forKey: HttpKeys.Gifticon.pageNumber)
+        query.updateValue(String(rowCount), forKey: HttpKeys.Gifticon.rowCount)
         
         if let storeCategory = storeCategory, storeCategory != .All {
-            query.updateValue(String(describing: storeCategory), forKey: AVAILABLE_GIFTICON_STORE_CATEGORY)
+            query.updateValue(String(describing: storeCategory), forKey: HttpKeys.Gifticon.gifticonStoreCategory)
         }
         
         if let storeType = storeType {
-            query.updateValue(String(describing: storeType), forKey: AVAILABLE_GIFTICON_STORE)
+            query.updateValue(String(describing: storeType), forKey: HttpKeys.Gifticon.gifticonStore)
         }
         
         if let sortType = sortType {
-            query.updateValue(String(describing: sortType), forKey: AVAILABLE_GIFTICON_SORT_TYPE)
+            query.updateValue(String(describing: sortType), forKey: HttpKeys.Gifticon.gifticonSortType)
         }
         
         self.query = query

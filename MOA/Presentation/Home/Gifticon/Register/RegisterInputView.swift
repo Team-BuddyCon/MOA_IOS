@@ -82,7 +82,7 @@ final class RegisterInputView: UIView {
         return textField
     }()
     
-    private lazy var inputLabel: UILabel = {
+    lazy var inputLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont(name: pretendard_bold, size: 15.0)
         label.textColor = .grey90
@@ -190,6 +190,10 @@ final class RegisterInputView: UIView {
                 guard let self = self else { return }
                 hintLabel.isHidden = text?.isEmpty == false
             }).disposed(by: disposeBag)
+        
+        inputTextField.rx.text
+            .bind(to: inputLabel.rx.text)
+            .disposed(by: disposeBag)
     }
     
     @objc func tapInput() {
