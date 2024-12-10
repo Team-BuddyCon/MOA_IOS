@@ -127,7 +127,7 @@ private extension BottomSheetViewController {
                     sheetType = .Other_Store
                     setupOtherStoreBottomSheet()
                 default:
-                    delegate?.selectStore(store: type.rawValue)
+                    delegate?.selectStore(type: type)
                 }
             }).disposed(by: disposeBag)
     }
@@ -158,8 +158,8 @@ private extension BottomSheetViewController {
         sheetView.completeButton.rx.tap
             .subscribe(onNext: { [weak self] in
                 guard let self = self else { return }
-                let text = sheetView.textInput.text ?? ""
-                delegate?.selectStore(store: "기타 - \(text)")
+                let store = sheetView.textInput.text ?? ""
+                delegate?.selectOtherStore(store: store)
             }).disposed(by: disposeBag)
     }
     

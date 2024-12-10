@@ -37,4 +37,21 @@ enum StoreType: String, CaseIterable {
         case .OTHERS: return UIImage(named: OTHERS_IMAGE)
         }
     }
+    
+    var code: String? {
+        switch self {
+        case .STARBUCKS: return "STARBUCKS"
+        case .TWOSOME_PLACE: return "TWOSOME_PLACE"
+        case .ANGELINUS: return "ANGELINUS"
+        case .MEGA_COFFEE: return "MEGA_COFFEE"
+        case .COFFEE_BEAN: return "COFFEE_BEAN"
+        case .GONG_CHA: return "GONG_CHA"
+        case .BASKIN_ROBBINS: return "BASKIN_ROBBINS"
+        case .MACDONALD: return "MACDONALD"
+        case .GS25: return "GS25"
+        case .CU: return "CU"
+        case .OTHERS: return "OTHERS"
+        default: return nil
+        }
+    }
 }

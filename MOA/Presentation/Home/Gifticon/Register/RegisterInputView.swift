@@ -82,7 +82,7 @@ final class RegisterInputView: UIView {
         return textField
     }()
     
-    lazy var inputLabel: UILabel = {
+    private lazy var inputLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont(name: pretendard_bold, size: 15.0)
         label.textColor = .grey90
@@ -113,6 +113,7 @@ final class RegisterInputView: UIView {
     }
     private var inputType: InputType
     private var selectDate: Date = Date()
+    var input: String? = nil
     
     init(
         inputType: InputType,
@@ -189,11 +190,8 @@ final class RegisterInputView: UIView {
             .subscribe(onNext: { [weak self] text in
                 guard let self = self else { return }
                 hintLabel.isHidden = text?.isEmpty == false
+                input = text
             }).disposed(by: disposeBag)
-        
-        inputTextField.rx.text
-            .bind(to: inputLabel.rx.text)
-            .disposed(by: disposeBag)
     }
     
     @objc func tapInput() {
@@ -226,15 +224,27 @@ extension RegisterInputView: BottomSheetDelegate {
         let formatter = DateFormatter()
         formatter.dateFormat = AVAILABLE_GIFTICON_UI_TIME_FORMAT
         inputLabel.text = formatter.string(from: date)
+        input = inputLabel.text?.transformTimeformat(origin: AVAILABLE_GIFTICON_UI_TIME_FORMAT, dest: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
         
-        UIApplication.shared.topViewController?.dismiss(animated: true)
+        UIApplication.shared.topViewController?.dismiss(animated: false)
     }
     
-    func selectStore(store: String) {
-        MOALogger.logd(store)
+    func selectStore(type: StoreType) {
+        MOALogger.logd(type.rawValue)
         hasInput = true
-        inputLabel.text = store
-        UIApplication.shared.topViewController?.dismiss(animated: true)
+        inputLabel.text = type.rawValue
+        input = type.code
+        
+        UIApplication.shared.topViewController?.dismiss(animated: false)
+    }
+    
+    func selectOtherStore(store: String) {
+        MOALogger.logd("기타 - \(store)")
+        hasInput = true
+        inputLabel.text = "기타 - \(store)"
+        input = StoreType.OTHERS.code
+        
+        UIApplication.shared.topViewController?.dismiss(animated: false)
     }
 }
 
