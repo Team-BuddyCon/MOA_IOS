@@ -8,10 +8,11 @@
 import Foundation
 
 protocol BaseRequest {
-    var domain: NetworkDomain { get }
+    var domain: HttpDomain { get }
     var path: String { get }
-    var method: NetworkMethod { get }
+    var method: HttpMethod { get }
     var query: [String: String?] { get }
     var body: [String: Any] { get }
+    var contentType: HttpContentType { get }
 }
 

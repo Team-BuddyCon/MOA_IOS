@@ -7,17 +7,17 @@
 
 import Foundation
 
-enum NetworkDomain {
+enum HttpDomain {
     case MOA
     case KAKAO
 }
 
-final class UrlProvider {
+struct UrlProvider {
     
     private static let MOA_URL = "http://3.37.254.182:8080"
     private static let KAKAO_URL = "https://dapi.kakao.com/v2"
     
-    static func getDomainUrl(domain: NetworkDomain) -> String {
+    static func getDomainUrl(domain: HttpDomain) -> String {
         switch domain {
         case .MOA:
             return MOA_URL

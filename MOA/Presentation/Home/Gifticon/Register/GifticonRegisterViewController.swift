@@ -49,25 +49,27 @@ final class GifticonRegisterViewController: BaseViewController {
         return button
     }()
     
-    private let nameInputView: RegisterInputView = {
+    let nameInputView: RegisterInputView = {
         let inputView = RegisterInputView(inputType: .name)
         return inputView
     }()
     
-    private let expireDateInputView: RegisterInputView = {
+    let expireDateInputView: RegisterInputView = {
         let inputView = RegisterInputView(inputType: .expireDate)
         return inputView
     }()
     
-    private let storeInputView: RegisterInputView = {
+    let storeInputView: RegisterInputView = {
         let inputView = RegisterInputView(inputType: .store)
         return inputView
     }()
     
-    private let memoInputView: RegisterInputView = {
+    let memoInputView: RegisterInputView = {
         let inputView = RegisterInputView(inputType: .memo)
         return inputView
     }()
+    
+    let viewModel: GifticonRegisterViewModel = GifticonRegisterViewModel(gifticonService: GifticonService.shared)
     
     var image: UIImage?
     
@@ -192,6 +194,10 @@ private extension GifticonRegisterViewController {
             .bind(to: self.rx.tapCancel)
             .disposed(by: disposeBag)
         
+        saveButton.rx.tap
+            .bind(to: self.rx.tapSave)
+            .disposed(by: disposeBag)
+        
         imageZoomInButton.rx.tap
             .bind(to: self.rx.tapZoomInImage)
             .disposed(by: disposeBag)
@@ -211,6 +217,26 @@ private extension Reactive where Base: GifticonRegisterViewController {
             MOALogger.logd()
             let fullImageVC = FullGifticonImageViewController(image: viewController.image)
             viewController.present(fullImageVC, animated: true)
+        }
+    }
+    
+    var tapSave: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            MOALogger.logd()
+            
+            if let image = viewController.image,
+               let name = viewController.nameInputView.input,
+               let expireDate = viewController.expireDateInputView.input,
+               let store = viewController.storeInputView.input,
+               let memo = viewController.memoInputView.input {
+                viewController.viewModel.createGifticon(
+                    image: image,
+                    name: name,
+                    expireDate: expireDate,
+                    store: store,
+                    memo: memo
+                )
+            }
         }
     }
 }

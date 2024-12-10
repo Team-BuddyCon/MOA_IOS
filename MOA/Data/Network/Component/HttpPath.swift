@@ -1,0 +1,17 @@
+//
+//  HttpPath.swift
+//  MOA
+//
+//  Created by 오원석 on 12/10/24.
+//
+
+struct HttpPath {
+    struct Auth {
+        static let Login = "/api/v1/auth/login"
+    }
+    
+    struct Gifticon {
+        static let Create = "/api/v1/gifticons"
+        static let Available = "/api/v1/gifticons/available"
+    }
+}

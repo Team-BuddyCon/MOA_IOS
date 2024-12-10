@@ -9,11 +9,6 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-let HEADER_VALUE_APPLICATION_JSON = "application/json"
-let HEADER_FIELD_CONTENT_TYPE = "Content-Type"
-let HEADER_VALUE_AUTHORIZATION = "Bearer %@"
-let HEADER_FIELD_AUTHORIZATION = "Authorization"
-
 final class NetworkManager {
     static let shared = NetworkManager()
     private init() {}
@@ -38,16 +33,34 @@ final class NetworkManager {
             return .just(.failure(URLError(.badURL)))
         }
         
+        // URL
         var urlReqeuset = URLRequest(url: url)
         urlReqeuset.httpMethod = request.method.rawValue
         
+        // JWT
         if !UserPreferences.getAccessToken().isEmpty {
-            urlReqeuset.addValue(String(format: HEADER_VALUE_AUTHORIZATION, UserPreferences.getAccessToken()), forHTTPHeaderField: HEADER_FIELD_AUTHORIZATION)
+            urlReqeuset.addValue(
+                String(format: HttpValues.bearer, UserPreferences.getAccessToken()),
+                forHTTPHeaderField: HttpKeys.authorization
+            )
         }
         
-        if request.method != .GET {
-            urlReqeuset.httpBody = try? JSONSerialization.data(withJSONObject: request.body, options: [])
-            urlReqeuset.setValue(HEADER_VALUE_APPLICATION_JSON, forHTTPHeaderField: HEADER_FIELD_CONTENT_TYPE)
+        // Content-Type
+        urlReqeuset.setValue(request.contentType.rawValue,forHTTPHeaderField: HttpKeys.contentType)
+        
+        // BODY
+        if request.method == .POST {
+            switch request.contentType {
+            case .application_json:
+                urlReqeuset.httpBody = try? JSONSerialization.data(withJSONObject: request.body, options: [])
+            case .multipart_form_data:
+                let boundary = "\(UUID().uuidString)"
+                urlReqeuset.setValue(
+                    "\(request.contentType.rawValue); boundary=\(boundary)",
+                    forHTTPHeaderField: HttpKeys.contentType
+                )
+                urlReqeuset.httpBody = getMultipartFormData(body: request.body, boundary: boundary)
+            }
         }
 
         return URLSession.shared.rx.data(request: urlReqeuset)
@@ -61,5 +74,38 @@ final class NetworkManager {
                 MOALogger.loge(URLError(.cannotLoadFromNetwork).localizedDescription)
                 return .just(.failure(URLError(.cannotLoadFromNetwork)))
             }
+    }
+    
+    private func getMultipartFormData(body: [String: Any], boundary: String) -> Data {
+        let boundaryPrefix = "--\(boundary)\r\n"
+        let boundarySuffix = "--\r\n"
+        let boundaryTerminator = "--\(boundary)--\r\n"
+        
+        var data = Data()
+        var jsonBody: [String: Any] = body.filter { $0.key != HttpKeys.Gifticon.image }
+        
+        if let jsonData = try? JSONSerialization.data(withJSONObject: jsonBody, options: []) {
+            data.append(boundaryPrefix.data(using: .utf8)!)
+            data.append("\(HttpKeys.contentDisposition): \(HttpValues.formData); \(HttpKeys.name)=\"\(HttpKeys.Gifticon.dto)\"\r\n".data(using: .utf8)!)
+            data.append("\(HttpKeys.contentType): \(HttpValues.applicationJson)\r\n\r\n".data(using: .utf8)!)
+            data.append(jsonData)
+            data.append(boundarySuffix.data(using: .utf8)!)
+        }
+    
+        let filename = "image.jpg"
+        let mimetype = "image/jpeg"
+                   
+        data.append(boundaryPrefix.data(using: .utf8)!)
+        data.append("\(HttpKeys.contentDisposition): \(HttpValues.formData); \(HttpKeys.name)=\"\(HttpKeys.Gifticon.image)\"; \(HttpKeys.filename)=\"\(filename)\"\r\n".data(using: .utf8)!)
+        data.append("\(HttpKeys.contentType): \(mimetype)\r\n\r\n".data(using: .utf8)!)
+        
+        if let dataValue = body[HttpKeys.Gifticon.image] as? Data {
+            data.append(dataValue)
+        }
+        
+        data.append(boundarySuffix.data(using: .utf8)!)
+        data.append(boundaryTerminator.data(using: .utf8)!)
+        
+        return data
     }
 }
