@@ -17,7 +17,6 @@ final class GifticonViewModel: BaseViewModel {
     private let categoryRelay: BehaviorRelay<StoreCategory> = BehaviorRelay(value: .All)
     private let sortTypeRelay: BehaviorRelay<SortType> = BehaviorRelay(value: .EXPIRE_DATE)
     var sortType: SortType { sortTypeRelay.value }
-    
     var sortTitle: Driver<String> {
         sortTypeRelay
             .map { $0.rawValue }
@@ -26,12 +25,12 @@ final class GifticonViewModel: BaseViewModel {
     
     private let pageNumberRelay = BehaviorRelay(value: 0)
     var pageNumber: Int { pageNumberRelay.value }
-    
-    let gifticons = BehaviorRelay<[AvailableGifticon]>(value: [])
-    
     var isScrollEnded = false
     var isLoading = false
     var isChangedOptions = false
+    
+    let gifticons = BehaviorRelay<[AvailableGifticon]>(value: [])
+    let detailGifticon = PublishRelay<DetailGifticon>()
     
     init(gifticonService: GifticonServiceProtocol) {
         self.gifticonService = gifticonService
@@ -109,11 +108,13 @@ final class GifticonViewModel: BaseViewModel {
     func fetchDetail(gifticonId: Int) {
         gifticonService.fetchDetailGifticon(gifticonId: gifticonId)
             .subscribe(onNext: { [weak self] result in
+                guard let self = self else { return }
                 switch result {
                 case .success(let response):
-                    print(response)
+                    MOALogger.logd("\(response)")
+                    detailGifticon.accept(response.info.toModel())
                 case .failure(let error):
-                    print(error.localizedDescription)
+                    MOALogger.loge(error.localizedDescription)
                 }
             }).disposed(by: disposeBag)
     }
