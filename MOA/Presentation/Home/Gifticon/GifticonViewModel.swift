@@ -105,4 +105,16 @@ final class GifticonViewModel: BaseViewModel {
         gifticons.accept([])
         pageNumberRelay.accept(0)
     }
+    
+    func fetchDetail(gifticonId: Int) {
+        gifticonService.fetchDetailGifticon(gifticonId: gifticonId)
+            .subscribe(onNext: { [weak self] result in
+                switch result {
+                case .success(let response):
+                    print(response)
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            }).disposed(by: disposeBag)
+    }
 }

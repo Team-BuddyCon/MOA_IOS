@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class CreateGifticonRequest: BaseRequest {
+struct CreateGifticonRequest: BaseRequest {
     var domain: HttpDomain { .MOA }
     
     var path: String { HttpPath.Gifticon.Create }

@@ -24,6 +24,10 @@ protocol GifticonServiceProtocol {
         store: String,
         memo: String?
     ) -> Observable<Result<CreateGifticonResponse, URLError>>
+    
+    func fetchDetailGifticon(
+        gifticonId: Int
+    ) -> Observable<Result<DetailGifticonResponse, URLError>>
 }
 
 
@@ -64,6 +68,13 @@ final class GifticonService: GifticonServiceProtocol {
             memo: memo
         )
         
+        return NetworkManager.shared.request(request: request)
+    }
+    
+    func fetchDetailGifticon(
+        gifticonId: Int
+    ) -> Observable<Result<DetailGifticonResponse, URLError>> {
+        let request = DetailGifticonRequest(gifticonId: gifticonId)
         return NetworkManager.shared.request(request: request)
     }
 }

@@ -197,6 +197,13 @@ private extension GifticonViewController {
             .bind(to: self.rx.scrollOffset)
             .disposed(by: disposeBag)
         
+        gifticonCollectionView.rx.modelSelected(AvailableGifticon.self)
+            .subscribe(onNext: { [weak self] gifticon in
+                guard let self = self else { return }
+                MOALogger.logd("\(gifticon.gifticonId)")
+                gifticonViewModel.fetchDetail(gifticonId: gifticon.gifticonId)
+            }).disposed(by: disposeBag)
+        
         gifticonViewModel.sortTitle
             .asObservable()
             .bind(to: sortButton.rx.title())
