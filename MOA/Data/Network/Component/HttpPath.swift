@@ -13,5 +13,6 @@ struct HttpPath {
     struct Gifticon {
         static let Create = "/api/v1/gifticons"
         static let Available = "/api/v1/gifticons/available"
+        static let Detail = "/api/v1/gifticons"
     }
 }
