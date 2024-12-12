@@ -300,9 +300,9 @@ extension Reactive where Base: GifticonViewController {
     }
     
     var tapDetailGifticon: Binder<DetailGifticon> {
-        return Binder<DetailGifticon>(self.base) { viewController, gifticon in
+        return Binder<DetailGifticon>(self.base) { viewController, detailGifticon in
             MOALogger.logd()
-            let detailVC = GifticonDetailViewController()
+            let detailVC = GifticonDetailViewController(detailGifticon: detailGifticon)
             viewController.navigationController?.pushViewController(detailVC, animated: true)
         }
     }
