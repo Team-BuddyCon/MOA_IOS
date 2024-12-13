@@ -204,6 +204,10 @@ private extension GifticonViewController {
                 gifticonViewModel.fetchDetail(gifticonId: gifticon.gifticonId)
             }).disposed(by: disposeBag)
         
+        gifticonViewModel.detailGifticon
+            .bind(to: self.rx.tapDetailGifticon)
+            .disposed(by: disposeBag)
+        
         gifticonViewModel.sortTitle
             .asObservable()
             .bind(to: sortButton.rx.title())
@@ -212,6 +216,7 @@ private extension GifticonViewController {
         floatingButton.rx.tap
             .bind(to: self.rx.tapFloating)
             .disposed(by: disposeBag)
+        
     }
 }
 
@@ -291,6 +296,14 @@ extension Reactive where Base: GifticonViewController {
             MOALogger.logd("\(isEmpty)")
             viewController.emptyView.isHidden = !isEmpty
             viewController.gifticonCollectionView.isHidden = isEmpty
+        }
+    }
+    
+    var tapDetailGifticon: Binder<DetailGifticon> {
+        return Binder<DetailGifticon>(self.base) { viewController, detailGifticon in
+            MOALogger.logd()
+            let detailVC = GifticonDetailViewController(detailGifticon: detailGifticon)
+            viewController.navigationController?.pushViewController(detailVC, animated: true)
         }
     }
 }

@@ -28,4 +28,20 @@ struct DetailGifticonInfo: Decodable {
     let gifticonStore: String
     let gifticonStoreCategory: String
     let used: Bool
+    
+    func toModel() -> DetailGifticon {
+        DetailGifticon(
+            gifticonId: gifticonId,
+            imageUrl: imageUrl,
+            name: name,
+            memo: memo,
+            expireDate: expireDate.transformTimeformat(
+                origin: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT,
+                dest: AVAILABLE_GIFTICON_UI_TIME_FORMAT
+            ),
+            gifticonStore: StoreType(rawValue: gifticonStore) ?? .ALL,
+            gifticonStoreCategory: StoreCategory(rawValue: gifticonStoreCategory) ?? .All,
+            used: used
+        )
+    }
 }
