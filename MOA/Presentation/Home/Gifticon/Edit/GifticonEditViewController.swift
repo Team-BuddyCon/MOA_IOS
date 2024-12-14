@@ -1,8 +1,8 @@
 //
-//  GifticonRegisterViewController.swift
+//  GifticonEditViewController.swift
 //  MOA
 //
-//  Created by 오원석 on 11/23/24.
+//  Created by 오원석 on 12/14/24.
 //
 
 import UIKit
@@ -11,12 +11,20 @@ import RxSwift
 import RxCocoa
 import RxRelay
 
-final class GifticonRegisterViewController: BaseViewController {
+final class GifticonEditViewController: BaseViewController {
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.showsVerticalScrollIndicator = false
         return scrollView
+    }()
+    
+    private let completeButton: CommonButton = {
+        let button = CommonButton(
+            status: .active,
+            title: COMPLETE
+        )
+        return button
     }()
     
     private let contentView: UIView = {
@@ -26,26 +34,16 @@ final class GifticonRegisterViewController: BaseViewController {
     
     private lazy var imageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = image
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 20
+        imageView.image = gifticonImage
         return imageView
     }()
     
     private lazy var imageZoomInButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: ZOOM_IN_BUTTON), for: .normal)
-        return button
-    }()
-    
-    private let cancelButton: CommonButton = {
-        let button = CommonButton(status: .cancel, title: CANCEL)
-        return button
-    }()
-    
-    private let saveButton: CommonButton = {
-        let button = CommonButton(title: SAVE)
         return button
     }()
     
@@ -69,12 +67,27 @@ final class GifticonRegisterViewController: BaseViewController {
         return inputView
     }()
     
-    let viewModel: GifticonRegisterViewModel = GifticonRegisterViewModel(gifticonService: GifticonService.shared)
+    private lazy var deleteButton: UIButton = {
+        let button = UIButton()
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 4)
+        button.layer.cornerRadius = 8
+        button.backgroundColor = .grey20
+        button.setTitle(DELETE, for: .normal)
+        button.setTitleColor(.grey50, for: .normal)
+        button.setImage(UIImage(named: DELETE_BUTTON), for: .normal)
+        button.titleLabel?.font = UIFont(name: pretendard_bold, size: 13.0)
+        return button
+    }()
     
-    var image: UIImage?
+    private let detailGifticon: DetailGifticon
+    let gifticonImage: UIImage?
     
-    init(image: UIImage) {
-        self.image = image
+    init(
+        detailGifticon: DetailGifticon,
+        gifticonImage: UIImage?
+    ) {
+        self.detailGifticon = detailGifticon
+        self.gifticonImage = gifticonImage
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -88,40 +101,26 @@ final class GifticonRegisterViewController: BaseViewController {
         setupLayout()
         bind()
     }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        Toast.shared.show(message: GIFTICON_REGISTER_TOAST_MESSAGE)
-    }
 }
 
-private extension GifticonRegisterViewController {
+private extension GifticonEditViewController {
     func setupLayout() {
-        setupTopBarWithBackButton(title: GIFTICON_REGISTER_TITLE)
+        setupTopBarWithBackButton(title: GIFTICON_MENU_TITLE)
         
-        [scrollView, cancelButton, saveButton].forEach {
+        [scrollView, completeButton].forEach {
             view.addSubview($0)
         }
         
-        let buttonW = getWidthByDivision(division: 2, exclude: 48)
-        cancelButton.snp.makeConstraints {
-            $0.leading.equalToSuperview().inset(20)
+        completeButton.snp.makeConstraints {
             $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(11.5)
+            $0.horizontalEdges.equalToSuperview().inset(20)
             $0.height.equalTo(54)
-            $0.width.equalTo(buttonW)
-        }
-        
-        saveButton.snp.makeConstraints {
-            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(11.5)
-            $0.height.equalTo(54)
-            $0.trailing.equalToSuperview().inset(20)
-            $0.width.equalTo(buttonW)
         }
         
         scrollView.snp.makeConstraints {
             $0.top.equalToSuperview()
             $0.horizontalEdges.equalToSuperview()
-            $0.bottom.equalTo(cancelButton.snp.top).offset(-16)
+            $0.bottom.equalTo(completeButton.snp.top).offset(-16)
         }
         
         scrollView.addSubview(contentView)
@@ -136,7 +135,8 @@ private extension GifticonRegisterViewController {
             nameInputView,
             expireDateInputView,
             storeInputView,
-            memoInputView
+            memoInputView,
+            deleteButton
         ].forEach {
             contentView.addSubview($0)
         }
@@ -171,7 +171,14 @@ private extension GifticonRegisterViewController {
         memoInputView.snp.makeConstraints {
             $0.top.equalTo(storeInputView.snp.bottom).offset(16)
             $0.horizontalEdges.equalToSuperview().inset(20)
+        }
+        
+        deleteButton.snp.makeConstraints {
+            $0.top.equalTo(memoInputView.snp.bottom).offset(12)
+            $0.trailing.equalToSuperview().inset(20)
             $0.bottom.equalToSuperview()
+            $0.width.equalTo(61)
+            $0.height.equalTo(34)
         }
     }
     
@@ -190,61 +197,36 @@ private extension GifticonRegisterViewController {
             object: nil
         )
         
-        cancelButton.rx.tap
-            .bind(to: self.rx.tapCancel)
-            .disposed(by: disposeBag)
-        
-        saveButton.rx.tap
-            .bind(to: self.rx.tapSave)
-            .disposed(by: disposeBag)
-        
         imageZoomInButton.rx.tap
             .bind(to: self.rx.tapZoomInImage)
+            .disposed(by: disposeBag)
+        
+        completeButton.rx.tap
+            .bind(to: self.rx.tapComplete)
             .disposed(by: disposeBag)
     }
 }
 
-private extension Reactive where Base: GifticonRegisterViewController {
-    var tapCancel: Binder<Void> {
-        return Binder<Void>(self.base) { viewController, _ in
-            MOALogger.logd()
-            viewController.navigationController?.popViewController(animated: true)
-        }
-    }
-    
+private extension Reactive where Base: GifticonEditViewController {
     var tapZoomInImage: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            let fullImageVC = FullGifticonImageViewController(image: viewController.image)
+            let fullImageVC = FullGifticonImageViewController(image: viewController.gifticonImage)
             viewController.present(fullImageVC, animated: true)
         }
     }
     
-    var tapSave: Binder<Void> {
+    var tapComplete: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            
-            if let image = viewController.image,
-               let name = viewController.nameInputView.input,
-               let expireDate = viewController.expireDateInputView.input,
-               let store = viewController.storeInputView.input,
-               let memo = viewController.memoInputView.input {
-                viewController.viewModel.createGifticon(
-                    image: image,
-                    name: name,
-                    expireDate: expireDate,
-                    store: store,
-                    memo: memo
-                )
-            }
         }
     }
 }
 
-extension GifticonRegisterViewController {
+extension GifticonEditViewController {
     @objc func keyboardWillAppear(sender: Notification) {
         MOALogger.logd()
-        guard UIApplication.shared.topViewController is GifticonRegisterViewController else { return }
+        guard UIApplication.shared.topViewController is GifticonEditViewController else { return }
         guard let keyboardFrame = sender.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
         let keyboardHeight = keyboardFrame.size.height - 96
         
@@ -255,7 +237,7 @@ extension GifticonRegisterViewController {
     
     @objc func keyboardWillDisAppear(sender: Notification) {
         MOALogger.logd()
-        guard UIApplication.shared.topViewController is GifticonRegisterViewController else { return }
+        guard UIApplication.shared.topViewController is GifticonEditViewController else { return }
         scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
     }
 }

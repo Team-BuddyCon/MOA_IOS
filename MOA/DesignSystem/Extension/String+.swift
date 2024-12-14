@@ -14,6 +14,9 @@ let SAVE = "저장하기"
 let EXPIRE_DATE = "유효기간"
 let STORE = "사용처"
 let OTHER_STORE = "기타"
+let EDIT = "편집"
+let COMPLETE = "완료"
+let DELETE = "삭제"
 
 // MARK: Design System
 let dday_end = "만료"
@@ -106,7 +109,8 @@ let MACDONALD_IMAGE = "Macdonald"
 let GS25_IMAGE = "GS25"
 let CU_IMAGE = "CU"
 let OTHERS_IMAGE = "Others"
-let ZOOM_IN_BUTTOn = "ZoomInButton"
+let ZOOM_IN_BUTTON = "ZoomInButton"
+let DELETE_BUTTON = "DeleteButton"
 
 // MARK: Font
 let pretendard_black = "Pretendard-Black"
