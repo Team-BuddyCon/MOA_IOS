@@ -9,14 +9,16 @@ import UIKit
 
 extension UIViewController {
     func setupTopBarWithLargeTitle(title: String) {
-        let label = UILabel()
-        label.text = title
-        label.font = UIFont(name: pretendard_bold, size: 22)
-        label.textColor = .grey90
-        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: label)
+        navigationItem.leftBarButtonItem = makeLeftLargeTitle(title: title)
     }
     
-    @objc func setupTopBarWithBackButton(title: String){
+    func setupTopBarWithBackButton(title: String){
+        navigationItem.leftBarButtonItem = makeBackButton()
+        navigationItem.titleView = makeTitle(title: title)
+    
+    }
+
+    @objc private func makeBackButton() -> UIBarButtonItem {
         navigationItem.hidesBackButton = true
         let backButtonItem = UIBarButtonItem(
             image: UIImage(named: BACK_BUTTON_IMAGE_ASSET),
@@ -25,12 +27,26 @@ extension UIViewController {
             action: #selector(tapBackButton)
         )
         backButtonItem.tintColor = .grey90
-        navigationItem.leftBarButtonItem = backButtonItem
-        navigationItem.title = title
-    
+        return backButtonItem
     }
     
     @objc func tapBackButton() {
         navigationController?.popViewController(animated: true)
+    }
+    
+    @objc private func makeTitle(title: String) -> UILabel {
+        let label = UILabel()
+        label.text = title
+        label.font = UIFont(name: pretendard_bold, size: 15.0)
+        label.textColor = .grey90
+        return label
+    }
+    
+    @objc private func makeLeftLargeTitle(title: String) -> UIBarButtonItem {
+        let label = UILabel()
+        label.text = title
+        label.font = UIFont(name: pretendard_bold, size: 22)
+        label.textColor = .grey90
+        return UIBarButtonItem(customView: label)
     }
 }

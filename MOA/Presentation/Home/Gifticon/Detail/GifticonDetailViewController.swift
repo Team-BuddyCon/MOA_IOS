@@ -40,14 +40,15 @@ final class GifticonDetailViewController: BaseViewController {
         return imageView
     }()
     
-    private let ddayButton: DDayButton = {
+    private lazy var ddayButton: DDayButton = {
         let button = DDayButton()
+        button.dday = detailGifticon.expireDate.toDday()
         return button
     }()
     
     private lazy var imageZoomInButton: UIButton = {
         let button = UIButton()
-        button.setImage(UIImage(named: ZOOM_IN_BUTTOn), for: .normal)
+        button.setImage(UIImage(named: ZOOM_IN_BUTTON), for: .normal)
         return button
     }()
     
@@ -107,7 +108,7 @@ final class GifticonDetailViewController: BaseViewController {
 
 private extension GifticonDetailViewController {
     func setupLayout() {
-        setupTopBarWithBackButton(title: GIFTICON_MENU_TITLE)
+        setupNavigationBar()
         
         [scrollView, useButton].forEach {
             view.addSubview($0)
@@ -179,6 +180,18 @@ private extension GifticonDetailViewController {
         }
     }
     
+    func setupNavigationBar() {
+        setupTopBarWithBackButton(title: GIFTICON_MENU_TITLE)
+        
+        let label = UILabel()
+        label.font = UIFont(name: pretendard_bold, size: 15.0)
+        label.textColor = .pink100
+        label.text = EDIT
+        label.isUserInteractionEnabled = true
+        label.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tapEditButton)))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: label)
+    }
+    
     func setupData() {
         ImageLoadManager.shared.load(url: detailGifticon.imageUrl)
             .observe(on: MainScheduler())
@@ -190,13 +203,8 @@ private extension GifticonDetailViewController {
                 
                 if let data = data {
                     imageView.image = UIImage(data: data)
-                    imageZoomInButton.rx.tap
-                        .bind(to: self.rx.tapZoomInImage)
-                        .disposed(by: disposeBag)
                 }
             }).disposed(by: disposeBag)
-        
-        ddayButton.dday = detailGifticon.expireDate.toDday()
     }
     
     func bind() {
@@ -204,10 +212,13 @@ private extension GifticonDetailViewController {
             .bind(to: self.rx.tapUse)
             .disposed(by: disposeBag)
         
-
+        imageZoomInButton.rx.tap
+            .bind(to: self.rx.tapZoomInImage)
+            .disposed(by: disposeBag)
     }
 }
 
+// TODO: tapZoomInImage 와 같은 공통 extension은 ImageView 확장하여 함수로 정의
 private extension Reactive where Base: GifticonDetailViewController {
     var tapZoomInImage: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
@@ -221,5 +232,16 @@ private extension Reactive where Base: GifticonDetailViewController {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
         }
+    }
+}
+
+extension GifticonDetailViewController {
+    @objc func tapEditButton() {
+        MOALogger.logd()
+        let editVC = GifticonEditViewController(
+            detailGifticon: detailGifticon,
+            gifticonImage: imageView.image
+        )
+        navigationController?.pushViewController(editVC, animated: false)
     }
 }
