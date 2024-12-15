@@ -52,7 +52,7 @@ final class GifticonEditViewController: BaseViewController {
         return button
     }()
     
-    private lazy var nameInputView: RegisterInputView = {
+    lazy var nameInputView: RegisterInputView = {
         let inputView = RegisterInputView(
             inputType: .name,
             hasInput: true,
@@ -61,7 +61,7 @@ final class GifticonEditViewController: BaseViewController {
         return inputView
     }()
     
-    private lazy var expireDateInputView: RegisterInputView = {
+    lazy var expireDateInputView: RegisterInputView = {
         let inputView = RegisterInputView(
             inputType: .expireDate,
             hasInput: true,
@@ -70,7 +70,7 @@ final class GifticonEditViewController: BaseViewController {
         return inputView
     }()
     
-    private lazy var storeInputView: RegisterInputView = {
+    lazy var storeInputView: RegisterInputView = {
         let inputView = RegisterInputView(
             inputType: .store,
             hasInput: true,
@@ -79,7 +79,7 @@ final class GifticonEditViewController: BaseViewController {
         return inputView
     }()
     
-    private lazy var memoInputView: RegisterInputView = {
+    lazy var memoInputView: RegisterInputView = {
         let inputView = RegisterInputView(
             inputType: .memo,
             hasInput: true,
@@ -255,7 +255,9 @@ private extension Reactive where Base: GifticonEditViewController {
                 confirmText: DELETE_MODAL,
                 cancelText: CLOSE
             ) {
-                viewController.gifticonEditViewModel.delete(gifticonId: viewController.detailGifticon.gifticonId)
+                viewController.gifticonEditViewModel.deleteGifticon(
+                    gifticonId: viewController.detailGifticon.gifticonId
+                )
             }
             
             viewController.present(modalVC, animated: true)
@@ -265,6 +267,27 @@ private extension Reactive where Base: GifticonEditViewController {
     var tapComplete: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
+            guard let name = viewController.nameInputView.requestInput else { return }
+            guard let expireDate = viewController.expireDateInputView.requestInput else { return }
+            guard let store = viewController.storeInputView.requestInput else { return }
+            let memo = viewController.memoInputView.requestInput
+            
+            let modalVC = ModalViewController(
+                modalType: .select,
+                title: GIFTICON_UPDATE_MODAL_TITLE,
+                confirmText: UPDATE_MODAL,
+                cancelText: CLOSE
+            ) {
+                viewController.gifticonEditViewModel.updateGifticon(
+                    gifticonId: viewController.detailGifticon.gifticonId,
+                    name: name,
+                    expireDate: expireDate,
+                    store: store,
+                    memo: memo
+                )
+            }
+            
+            viewController.present(modalVC, animated: true)
         }
     }
     
@@ -283,7 +306,14 @@ private extension Reactive where Base: GifticonEditViewController {
                 }
                 viewController.present(modalVC, animated: true)
             case .update:
-                break
+                let modalVC = ModalViewController(
+                    modalType: .alert,
+                    title: GIFTICON_UPDATE_SUCCESS_MODAL_TITLE,
+                    confirmText: CONFIRM
+                ) {
+                    viewController.navigateTo(type: GifticonDetailViewController.self)
+                }
+                viewController.present(modalVC, animated: true)
             }
         }
     }

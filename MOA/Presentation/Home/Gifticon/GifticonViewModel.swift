@@ -25,12 +25,20 @@ final class GifticonViewModel: BaseViewModel {
     
     private let pageNumberRelay = BehaviorRelay(value: 0)
     var pageNumber: Int { pageNumberRelay.value }
+    
+    // 기프티콘 마지막 데이터 시 true
     var isScrollEnded = false
+    
+    // 기프티콘 목록 API 호출 중
     var isLoading = false
+    
+    // 유효기간, 카테고리 변경 시에는 fetch 하지 않도록
     var isChangedOptions = false
     
+    var isFirstFetch = true
+    var isRefresh = false
+    
     let gifticons = BehaviorRelay<[AvailableGifticon]>(value: [])
-    let detailGifticon = PublishRelay<DetailGifticon>()
     
     init(gifticonService: GifticonServiceProtocol) {
         self.gifticonService = gifticonService
@@ -38,7 +46,6 @@ final class GifticonViewModel: BaseViewModel {
     
     func fetch() {
         MOALogger.logd()
-        clearPagingData()
         Observable.combineLatest(
             categoryRelay,
             sortTypeRelay,
@@ -75,10 +82,16 @@ final class GifticonViewModel: BaseViewModel {
                 return
             }
             
+            let dropCount = data.count % 10 == 0 ? 10 : data.count % 10
+            let current = isRefresh ? gifticons.value.dropLast(dropCount) : gifticons.value
             isLoading = false
-            let current = gifticons.value
+            isRefresh = false
             gifticons.accept(current + data)
         }).disposed(by: disposeBag)
+    }
+    
+    func refresh() {
+        pageNumberRelay.accept(pageNumber)
     }
     
     func fetchMore() {
@@ -104,19 +117,5 @@ final class GifticonViewModel: BaseViewModel {
         isScrollEnded = false
         gifticons.accept([])
         pageNumberRelay.accept(0)
-    }
-    
-    func fetchDetail(gifticonId: Int) {
-        gifticonService.fetchDetailGifticon(gifticonId: gifticonId)
-            .subscribe(onNext: { [weak self] result in
-                guard let self = self else { return }
-                switch result {
-                case .success(let response):
-                    MOALogger.logd("\(response)")
-                    detailGifticon.accept(response.info.toModel())
-                case .failure(let error):
-                    MOALogger.loge(error.localizedDescription)
-                }
-            }).disposed(by: disposeBag)
     }
 }

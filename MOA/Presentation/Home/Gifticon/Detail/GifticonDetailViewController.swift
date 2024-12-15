@@ -40,61 +40,46 @@ final class GifticonDetailViewController: BaseViewController {
         return imageView
     }()
     
-    private lazy var ddayButton: DDayButton = {
+    let ddayButton: DDayButton = {
         let button = DDayButton()
-        button.dday = detailGifticon.expireDate
-            .toString(format: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
-            .transformTimeformat(origin: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT, dest: AVAILABLE_GIFTICON_UI_TIME_FORMAT)
-            .toDday()
         return button
     }()
     
-    private lazy var imageZoomInButton: UIButton = {
+    let imageZoomInButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: ZOOM_IN_BUTTON), for: .normal)
         return button
     }()
     
-    private lazy var titleLabel: UILabel = {
+    let titleLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 1
         label.lineBreakMode = .byTruncatingTail
         label.font = UIFont(name: pretendard_bold, size: 22.0)
         label.textColor = .grey90
-        label.text = detailGifticon.name
         return label
     }()
     
-    private lazy var expireDateInfoView: DetailInfoView = {
-        let view = DetailInfoView(
-            title: GIFTICON_DETAIL_EXPIRE_DATE_TITLE,
-            info: detailGifticon.expireDate
-                .toString(format: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
-                .transformTimeformat(origin: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT, dest: AVAILABLE_GIFTICON_UI_TIME_FORMAT)
-        )
+    let expireDateInfoView: DetailInfoView = {
+        let view = DetailInfoView(title: GIFTICON_DETAIL_EXPIRE_DATE_TITLE)
         return view
     }()
     
-    private lazy var storeInfoView: DetailInfoView = {
-        let view = DetailInfoView(
-            title: GIFTICON_DETAIL_STORE_TITLE,
-            info: detailGifticon.gifticonStore.rawValue
-        )
+    let storeInfoView: DetailInfoView = {
+        let view = DetailInfoView(title: GIFTICON_DETAIL_STORE_TITLE)
         return view
     }()
     
-    private lazy var memoInfoView: DetailInfoView = {
-        let view = DetailInfoView(
-            title: GIFTICON_DETAIL_MEMO_TITLE,
-            info: detailGifticon.memo
-        )
+    let memoInfoView: DetailInfoView = {
+        let view = DetailInfoView(title: GIFTICON_DETAIL_MEMO_TITLE)
         return view
     }()
     
-    private let detailGifticon: DetailGifticon
+    let viewModel = GifticonDetailViewModel(gifticonService: GifticonService.shared)
+    private let gifticonId: Int
     
-    init(detailGifticon: DetailGifticon) {
-        self.detailGifticon = detailGifticon
+    init(gifticonId: Int) {
+        self.gifticonId = gifticonId
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -106,8 +91,12 @@ final class GifticonDetailViewController: BaseViewController {
         super.viewDidLoad()
         MOALogger.logd()
         setupLayout()
-        setupData()
         bind()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        fetchData()
     }
 }
 
@@ -197,19 +186,8 @@ private extension GifticonDetailViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: label)
     }
     
-    func setupData() {
-        ImageLoadManager.shared.load(url: detailGifticon.imageUrl)
-            .observe(on: MainScheduler())
-            .subscribe(onNext: { [weak self] data in
-                guard let self = self else {
-                    MOALogger.loge()
-                    return
-                }
-                
-                if let data = data {
-                    imageView.image = UIImage(data: data)
-                }
-            }).disposed(by: disposeBag)
+    func fetchData() {
+        viewModel.fetchDetail(gifticonId: gifticonId)
     }
     
     func bind() {
@@ -219,6 +197,10 @@ private extension GifticonDetailViewController {
         
         imageZoomInButton.rx.tap
             .bind(to: self.rx.tapZoomInImage)
+            .disposed(by: disposeBag)
+        
+        viewModel.detailGifticonRelay
+            .bind(to: self.rx.bindGifticon)
             .disposed(by: disposeBag)
     }
 }
@@ -238,13 +220,38 @@ private extension Reactive where Base: GifticonDetailViewController {
             MOALogger.logd()
         }
     }
+    
+    var bindGifticon: Binder<DetailGifticon> {
+        return Binder<DetailGifticon>(self.base) { viewController, detailGifticon in
+            ImageLoadManager.shared.load(url: detailGifticon.imageUrl)
+                .observe(on: MainScheduler())
+                .subscribe(onNext: { data in
+                    if let data = data {
+                        viewController.imageView.image = UIImage(data: data)
+                    }
+                }).disposed(by: viewController.disposeBag)
+            
+            viewController.ddayButton.dday = detailGifticon.expireDate
+                .toString(format: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
+                .transformTimeformat(origin: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT, dest: AVAILABLE_GIFTICON_UI_TIME_FORMAT)
+                .toDday()
+            
+            viewController.titleLabel.text = detailGifticon.name
+            viewController.expireDateInfoView.info = detailGifticon.expireDate
+                .toString(format: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
+                .transformTimeformat(origin: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT, dest: AVAILABLE_GIFTICON_UI_TIME_FORMAT)
+            
+            viewController.storeInfoView.info = detailGifticon.gifticonStore.rawValue
+            viewController.memoInfoView.info = detailGifticon.memo
+        }
+    }
 }
 
 extension GifticonDetailViewController {
     @objc func tapEditButton() {
         MOALogger.logd()
         let editVC = GifticonEditViewController(
-            detailGifticon: detailGifticon,
+            detailGifticon: viewModel.detailGifticon,
             gifticonImage: imageView.image
         )
         navigationController?.pushViewController(editVC, animated: false)

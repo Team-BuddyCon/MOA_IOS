@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct DetailGifticonRequest:  BaseRequest {
+struct DetailGifticonRequest: BaseRequest {
     var domain: HttpDomain { .MOA }
     
     var path: String { "\(HttpPath.Gifticon.Detail)/\(gifticonId)" }

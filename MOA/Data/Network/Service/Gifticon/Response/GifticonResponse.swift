@@ -7,9 +7,7 @@
 
 import Foundation
 
-struct DeleteGifticonResponse: BaseResponse {
+struct GifticonResponse: BaseResponse {
     var status: Int
     var message: String
-    
-    var isSuccess: Bool { status == 200 }
 }

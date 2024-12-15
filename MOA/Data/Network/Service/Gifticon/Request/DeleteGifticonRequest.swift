@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class DeleteGifticonRequest: BaseRequest {
+struct DeleteGifticonRequest: BaseRequest {
     var domain: HttpDomain { .MOA }
     
     var path: String { HttpPath.Gifticon.Detail }

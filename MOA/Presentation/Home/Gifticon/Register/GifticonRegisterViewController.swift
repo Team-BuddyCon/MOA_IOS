@@ -223,20 +223,19 @@ private extension Reactive where Base: GifticonRegisterViewController {
     var tapSave: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
+            guard let image = viewController.image else { return }
+            guard let name = viewController.nameInputView.requestInput else { return }
+            guard let expireDate = viewController.expireDateInputView.requestInput else { return }
+            guard let store = viewController.storeInputView.requestInput else { return }
+            let memo = viewController.memoInputView.requestInput
             
-            if let image = viewController.image,
-               let name = viewController.nameInputView.requestInput,
-               let expireDate = viewController.expireDateInputView.requestInput,
-               let store = viewController.storeInputView.requestInput,
-               let memo = viewController.memoInputView.requestInput {
-                viewController.viewModel.createGifticon(
-                    image: image,
-                    name: name,
-                    expireDate: expireDate,
-                    store: store,
-                    memo: memo
-                )
-            }
+            viewController.viewModel.createGifticon(
+                image: image,
+                name: name,
+                expireDate: expireDate,
+                store: store,
+                memo: memo
+            )
         }
     }
 }

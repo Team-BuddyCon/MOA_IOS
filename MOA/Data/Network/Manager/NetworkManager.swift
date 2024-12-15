@@ -49,7 +49,7 @@ final class NetworkManager {
         urlReqeuset.setValue(request.contentType.rawValue,forHTTPHeaderField: HttpKeys.contentType)
         
         // BODY
-        if request.method == .POST {
+        if request.method == .POST || request.method == .PUT {
             switch request.contentType {
             case .application_json:
                 urlReqeuset.httpBody = try? JSONSerialization.data(withJSONObject: request.body, options: [])
