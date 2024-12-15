@@ -42,7 +42,10 @@ final class GifticonDetailViewController: BaseViewController {
     
     private lazy var ddayButton: DDayButton = {
         let button = DDayButton()
-        button.dday = detailGifticon.expireDate.toDday()
+        button.dday = detailGifticon.expireDate
+            .toString(format: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
+            .transformTimeformat(origin: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT, dest: AVAILABLE_GIFTICON_UI_TIME_FORMAT)
+            .toDday()
         return button
     }()
     
@@ -66,6 +69,8 @@ final class GifticonDetailViewController: BaseViewController {
         let view = DetailInfoView(
             title: GIFTICON_DETAIL_EXPIRE_DATE_TITLE,
             info: detailGifticon.expireDate
+                .toString(format: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
+                .transformTimeformat(origin: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT, dest: AVAILABLE_GIFTICON_UI_TIME_FORMAT)
         )
         return view
     }()

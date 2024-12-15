@@ -225,10 +225,10 @@ private extension Reactive where Base: GifticonRegisterViewController {
             MOALogger.logd()
             
             if let image = viewController.image,
-               let name = viewController.nameInputView.input,
-               let expireDate = viewController.expireDateInputView.input,
-               let store = viewController.storeInputView.input,
-               let memo = viewController.memoInputView.input {
+               let name = viewController.nameInputView.requestInput,
+               let expireDate = viewController.expireDateInputView.requestInput,
+               let store = viewController.storeInputView.requestInput,
+               let memo = viewController.memoInputView.requestInput {
                 viewController.viewModel.createGifticon(
                     image: image,
                     name: name,

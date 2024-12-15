@@ -39,7 +39,7 @@ struct DetailGifticonInfo: Decodable {
                 origin: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT,
                 dest: AVAILABLE_GIFTICON_UI_TIME_FORMAT
             ),
-            gifticonStore: StoreType(rawValue: gifticonStore) ?? .ALL,
+            gifticonStore: StoreType.from(string: gifticonStore) ?? .ALL,
             gifticonStoreCategory: StoreCategory(rawValue: gifticonStoreCategory) ?? .All,
             used: used
         )

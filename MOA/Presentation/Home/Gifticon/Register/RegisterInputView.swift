@@ -113,16 +113,21 @@ final class RegisterInputView: UIView {
     }
     private var inputType: InputType
     private var selectDate: Date = Date()
-    var input: String? = nil
+    var requestInput: String? = nil
     
     init(
         inputType: InputType,
-        hasInput: Bool = false
+        hasInput: Bool = false,
+        name: String? = nil,
+        expireDate: Date? = nil,
+        gifticonStore: StoreType? = nil,
+        memo: String? = nil
     ) {
         self.inputType = inputType
         super.init(frame: .zero)
         self.hasInput = hasInput
-        
+
+        // inputType 필수 여부 확인하여 UI 표기(*)
         if inputType.isMandatory {
             titleLabel.setRangeFontColor(
                 text: "\(inputType.title)*",
@@ -133,8 +138,14 @@ final class RegisterInputView: UIView {
         } else {
             titleLabel.text = inputType.title
         }
+        
         setupLayout()
         bind()
+        
+        // 이미 값이 있는 경우
+        if hasInput {
+            setData(name: name, expireDate: expireDate, store: gifticonStore, memo: memo)
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -180,6 +191,41 @@ final class RegisterInputView: UIView {
         }
     }
     
+    private func setData(
+        name: String?,
+        expireDate: Date?,
+        store: StoreType?,
+        memo: String?
+    ) {
+        hintLabel.isHidden = true
+        inputLabel.isHidden = false
+        inputTextField.isHidden = (inputType == .expireDate || inputType == .store)
+        
+        if let name = name {
+            requestInput = name
+            inputTextField.text = name
+            return
+        }
+        
+        if let expireDate = expireDate {
+            selectDate = expireDate
+            requestInput = expireDate.toString(format: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
+            inputLabel.text = expireDate.toString(format: AVAILABLE_GIFTICON_UI_TIME_FORMAT)
+            return
+        }
+        
+        if let store = store {
+            requestInput = store.code
+            inputLabel.text = store.rawValue
+            return
+        }
+        
+        if let memo = memo {
+            requestInput = memo
+            inputTextField.text = memo
+        }
+    }
+    
     private func bind() {
         let hintTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapInput))
         let inputTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapInput))
@@ -190,7 +236,7 @@ final class RegisterInputView: UIView {
             .subscribe(onNext: { [weak self] text in
                 guard let self = self else { return }
                 hintLabel.isHidden = text?.isEmpty == false
-                input = text
+                requestInput = text
             }).disposed(by: disposeBag)
     }
     
@@ -224,7 +270,7 @@ extension RegisterInputView: BottomSheetDelegate {
         let formatter = DateFormatter()
         formatter.dateFormat = AVAILABLE_GIFTICON_UI_TIME_FORMAT
         inputLabel.text = formatter.string(from: date)
-        input = inputLabel.text?.transformTimeformat(origin: AVAILABLE_GIFTICON_UI_TIME_FORMAT, dest: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
+        requestInput = inputLabel.text?.transformTimeformat(origin: AVAILABLE_GIFTICON_UI_TIME_FORMAT, dest: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
         
         UIApplication.shared.topViewController?.dismiss(animated: false)
     }
@@ -233,7 +279,7 @@ extension RegisterInputView: BottomSheetDelegate {
         MOALogger.logd(type.rawValue)
         hasInput = true
         inputLabel.text = type.rawValue
-        input = type.code
+        requestInput = type.code
         
         UIApplication.shared.topViewController?.dismiss(animated: false)
     }
@@ -242,7 +288,7 @@ extension RegisterInputView: BottomSheetDelegate {
         MOALogger.logd("기타 - \(store)")
         hasInput = true
         inputLabel.text = "기타 - \(store)"
-        input = StoreType.OTHERS.code
+        requestInput = StoreType.OTHERS.code
         
         UIApplication.shared.topViewController?.dismiss(animated: false)
     }

@@ -47,23 +47,39 @@ final class GifticonEditViewController: BaseViewController {
         return button
     }()
     
-    let nameInputView: RegisterInputView = {
-        let inputView = RegisterInputView(inputType: .name)
+    private lazy var nameInputView: RegisterInputView = {
+        let inputView = RegisterInputView(
+            inputType: .name,
+            hasInput: true,
+            name: detailGifticon.name
+        )
         return inputView
     }()
     
-    let expireDateInputView: RegisterInputView = {
-        let inputView = RegisterInputView(inputType: .expireDate)
+    private lazy var expireDateInputView: RegisterInputView = {
+        let inputView = RegisterInputView(
+            inputType: .expireDate,
+            hasInput: true,
+            expireDate: detailGifticon.expireDate
+        )
         return inputView
     }()
     
-    let storeInputView: RegisterInputView = {
-        let inputView = RegisterInputView(inputType: .store)
+    private lazy var storeInputView: RegisterInputView = {
+        let inputView = RegisterInputView(
+            inputType: .store,
+            hasInput: true,
+            gifticonStore: detailGifticon.gifticonStore
+        )
         return inputView
     }()
     
-    let memoInputView: RegisterInputView = {
-        let inputView = RegisterInputView(inputType: .memo)
+    private lazy var memoInputView: RegisterInputView = {
+        let inputView = RegisterInputView(
+            inputType: .memo,
+            hasInput: true,
+            memo: detailGifticon.memo
+        )
         return inputView
     }()
     
