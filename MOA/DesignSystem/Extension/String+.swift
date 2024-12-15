@@ -17,6 +17,8 @@ let OTHER_STORE = "기타"
 let EDIT = "편집"
 let COMPLETE = "완료"
 let DELETE = "삭제"
+let CLOSE = "닫기"
+let DELETE_MODAL = "삭제하기"
 
 // MARK: Design System
 let dday_end = "만료"
@@ -80,6 +82,7 @@ let GIFTICON_DETAIL_EXPIRE_DATE_TITLE = "유효기간"
 let GIFTICON_DETAIL_STORE_TITLE = "사용처"
 let GIFTICON_DETAIL_MEMO_TITLE = "메모"
 let GIFTICON_USE_BUTTON_TITLE = "사용완료"
+let GIFTICON_DELETE_MODAL_TITLE = "기프티콘을 삭제할까요?"
 
 // MARK: ImageSet
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"

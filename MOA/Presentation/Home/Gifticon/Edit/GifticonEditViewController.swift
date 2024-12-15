@@ -240,7 +240,16 @@ private extension Reactive where Base: GifticonEditViewController {
     var tapDelete: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            viewController.gifticonEditViewModel.delete(gifticonId: viewController.detailGifticon.gifticonId)
+            let modalVC = ModalViewController(
+                modalType: .select,
+                title: GIFTICON_DELETE_MODAL_TITLE,
+                confirmText: DELETE_MODAL,
+                cancelText: CLOSE
+            ) {
+                
+            }
+            
+            viewController.present(modalVC, animated: true)
         }
     }
     
