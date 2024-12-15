@@ -38,6 +38,7 @@ final class GifticonViewModel: BaseViewModel {
     
     func fetch() {
         MOALogger.logd()
+        clearPagingData()
         Observable.combineLatest(
             categoryRelay,
             sortTypeRelay,

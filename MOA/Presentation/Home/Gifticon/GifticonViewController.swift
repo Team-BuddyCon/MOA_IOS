@@ -92,8 +92,13 @@ final class GifticonViewController: BaseViewController {
         super.viewDidLoad()
         MOALogger.logd()
         setupLayout()
-        setupData()
         bind()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        MOALogger.logd()
+        setupData()
     }
 }
 

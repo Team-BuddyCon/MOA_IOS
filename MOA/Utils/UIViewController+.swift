@@ -8,6 +8,13 @@
 import UIKit
 
 extension UIViewController {
+    
+    func navigateTo<T: UIViewController>(type: T.Type) {
+        if let destinationVC = navigationController?.viewControllers.first(where: { $0 is T}) {
+            navigationController?.popToViewController(destinationVC, animated: true)
+        }
+    }
+    
     func setupTopBarWithLargeTitle(title: String) {
         navigationItem.leftBarButtonItem = makeLeftLargeTitle(title: title)
     }

@@ -7,6 +7,8 @@
 
 import Foundation
 
+// 기프티콘 조회 API : yyyy.MM.dd 형태로 반환
+// 상세 기프티콘 조회 API : yyyy-MM-dd 형태로 반환
 let AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT = "yyyy-MM-dd"
 let AVAILABLE_GIFTICON_UI_TIME_FORMAT = "yyyy.MM.dd"
 
@@ -17,6 +19,12 @@ extension Date {
     
     func add(offset: Int) -> Date {
         Date().addingTimeInterval(TimeInterval(offset * 60 * 60 * 24))
+    }
+    
+    func toString(format: String) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = format
+        return formatter.string(from: self)
     }
 }
 

@@ -11,6 +11,11 @@ import RxSwift
 import RxCocoa
 import RxRelay
 
+enum EditResult {
+    case update
+    case delete
+}
+
 final class GifticonEditViewController: BaseViewController {
     
     private let scrollView: UIScrollView = {
@@ -47,23 +52,39 @@ final class GifticonEditViewController: BaseViewController {
         return button
     }()
     
-    let nameInputView: RegisterInputView = {
-        let inputView = RegisterInputView(inputType: .name)
+    private lazy var nameInputView: RegisterInputView = {
+        let inputView = RegisterInputView(
+            inputType: .name,
+            hasInput: true,
+            name: detailGifticon.name
+        )
         return inputView
     }()
     
-    let expireDateInputView: RegisterInputView = {
-        let inputView = RegisterInputView(inputType: .expireDate)
+    private lazy var expireDateInputView: RegisterInputView = {
+        let inputView = RegisterInputView(
+            inputType: .expireDate,
+            hasInput: true,
+            expireDate: detailGifticon.expireDate
+        )
         return inputView
     }()
     
-    let storeInputView: RegisterInputView = {
-        let inputView = RegisterInputView(inputType: .store)
+    private lazy var storeInputView: RegisterInputView = {
+        let inputView = RegisterInputView(
+            inputType: .store,
+            hasInput: true,
+            gifticonStore: detailGifticon.gifticonStore
+        )
         return inputView
     }()
     
-    let memoInputView: RegisterInputView = {
-        let inputView = RegisterInputView(inputType: .memo)
+    private lazy var memoInputView: RegisterInputView = {
+        let inputView = RegisterInputView(
+            inputType: .memo,
+            hasInput: true,
+            memo: detailGifticon.memo
+        )
         return inputView
     }()
     
@@ -79,8 +100,9 @@ final class GifticonEditViewController: BaseViewController {
         return button
     }()
     
-    private let detailGifticon: DetailGifticon
+    let detailGifticon: DetailGifticon
     let gifticonImage: UIImage?
+    let gifticonEditViewModel = GifticonEditViewModel(gifticonService: GifticonService.shared)
     
     init(
         detailGifticon: DetailGifticon,
@@ -197,8 +219,16 @@ private extension GifticonEditViewController {
             object: nil
         )
         
+        gifticonEditViewModel.navigationResult
+            .bind(to: self.rx.navigation)
+            .disposed(by: disposeBag)
+        
         imageZoomInButton.rx.tap
             .bind(to: self.rx.tapZoomInImage)
+            .disposed(by: disposeBag)
+        
+        deleteButton.rx.tap
+            .bind(to: self.rx.tapDelete)
             .disposed(by: disposeBag)
         
         completeButton.rx.tap
@@ -216,9 +246,45 @@ private extension Reactive where Base: GifticonEditViewController {
         }
     }
     
+    var tapDelete: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            MOALogger.logd()
+            let modalVC = ModalViewController(
+                modalType: .select,
+                title: GIFTICON_DELETE_MODAL_TITLE,
+                confirmText: DELETE_MODAL,
+                cancelText: CLOSE
+            ) {
+                viewController.gifticonEditViewModel.delete(gifticonId: viewController.detailGifticon.gifticonId)
+            }
+            
+            viewController.present(modalVC, animated: true)
+        }
+    }
+    
     var tapComplete: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
+        }
+    }
+    
+    var navigation: Binder<EditResult> {
+        return Binder<EditResult>(self.base) { viewController, result in
+            MOALogger.logd()
+            
+            switch result {
+            case .delete:
+                let modalVC = ModalViewController(
+                    modalType: .alert,
+                    title: GIFTICON_DELETE_SUCCESS_MODAL_TITLE,
+                    confirmText: GIFTICON_DELETE_NAVIGATION_HOME_MODAL_TITLE
+                ) {
+                    viewController.navigateTo(type: HomeTabBarController.self)
+                }
+                viewController.present(modalVC, animated: true)
+            case .update:
+                break
+            }
         }
     }
 }

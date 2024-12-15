@@ -12,7 +12,7 @@ struct DetailGifticon {
     let imageUrl: String
     let name: String
     let memo: String
-    let expireDate: String
+    let expireDate: Date
     let gifticonStore: StoreType
     let gifticonStoreCategory: StoreCategory
     let used: Bool
@@ -31,7 +31,16 @@ struct DetailGifticon {
         self.imageUrl = imageUrl
         self.name = name
         self.memo = memo
-        self.expireDate = expireDate
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT
+        
+        if let date = formatter.date(from: expireDate) {
+            self.expireDate = date
+        } else {
+            self.expireDate = Date()
+        }
+        
         self.gifticonStore = gifticonStore
         self.gifticonStoreCategory = gifticonStoreCategory
         self.used = used

@@ -17,7 +17,7 @@ final class ModalViewController: BaseViewController {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont(name: pretendard_bold, size: 18.0)
+        label.font = UIFont(name: pretendard_bold, size: 16.0)
         label.textAlignment = .center
         label.textColor = .grey90
         return label
@@ -25,7 +25,7 @@ final class ModalViewController: BaseViewController {
     
     private lazy var subTitleLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont(name: pretendard_regular, size: 14.0)
+        label.font = UIFont(name: pretendard_regular, size: 12.0)
         label.textColor = .grey70
         label.textAlignment = .center
         label.numberOfLines = 2
@@ -34,21 +34,21 @@ final class ModalViewController: BaseViewController {
     }()
     
     private lazy var cancelButton: CommonButton = {
-        let button = CommonButton(status: .cancel, title: cancelText ?? "")
+        let button = CommonButton(status: .cancel, title: cancelText ?? "", fontSize: 14.0)
         button.isHidden = modalType == .alert || modalType == .alertDetail
         button.addTarget(self, action: #selector(tapDismiss), for: .touchUpInside)
         return button
     }()
     
     private lazy var activeButton: CommonButton = {
-        let button = CommonButton(status: .active, title: confirmText ?? "")
+        let button = CommonButton(status: .active, title: confirmText ?? "", fontSize: 14.0)
         button.isHidden = modalType == .alert || modalType == .alertDetail
         button.addTarget(self, action: #selector(tapConfirm), for: .touchUpInside)
         return button
     }()
     
     private lazy var confirmButton: CommonButton = {
-        let button = CommonButton(status: .active, title: confirmText ?? "")
+        let button = CommonButton(status: .active, title: confirmText ?? "", fontSize: 14.0)
         button.isHidden = modalType == .select || modalType == .selectDetail
         button.addTarget(self, action: #selector(tapConfirm), for: .touchUpInside)
         return button
@@ -103,16 +103,16 @@ final class ModalViewController: BaseViewController {
         contentView.snp.makeConstraints {
             $0.centerY.equalToSuperview()
             $0.centerX.equalToSuperview()
-            $0.horizontalEdges.equalToSuperview().inset(30)
+            $0.horizontalEdges.equalToSuperview().inset(38)
         }
             
         titleLabel.snp.makeConstraints {
-            $0.top.equalToSuperview().inset(24)
+            $0.top.equalToSuperview().inset(29.5)
             $0.horizontalEdges.equalToSuperview().inset(16)
         }
         
         subTitleLabel.snp.makeConstraints {
-            $0.top.equalTo(titleLabel.snp.bottom).offset(8)
+            $0.top.equalTo(titleLabel.snp.bottom).offset(4)
             $0.horizontalEdges.equalToSuperview().inset(16)
         }
         
@@ -121,18 +121,19 @@ final class ModalViewController: BaseViewController {
             $0.bottom.equalToSuperview().inset(16)
             $0.top.equalTo(
                 subTitleLabel.isHidden ? titleLabel.snp.bottom : subTitleLabel.snp.bottom
-            ).offset(32)
-            $0.height.equalTo(44)
+            ).offset(48)
+            $0.height.equalTo(46)
         }
         
-        let buttonW = (view.frame.size.width - 108) / 2
+        // 38 + 38 + 32 + 8
+        let buttonW = (view.frame.size.width - 116) / 2
         cancelButton.snp.makeConstraints {
             $0.leading.equalToSuperview().inset(16)
             $0.bottom.equalToSuperview().inset(16)
             $0.top.equalTo(
                 subTitleLabel.isHidden ? titleLabel.snp.bottom : subTitleLabel.snp.bottom
-            ).offset(32)
-            $0.height.equalTo(44)
+            ).offset(48)
+            $0.height.equalTo(46)
             $0.width.equalTo(buttonW)
         }
         
@@ -141,9 +142,9 @@ final class ModalViewController: BaseViewController {
             $0.bottom.equalToSuperview().inset(16)
             $0.top.equalTo(
                 subTitleLabel.isHidden ? titleLabel.snp.bottom : subTitleLabel.snp.bottom
-            ).offset(32)
-            $0.height.equalTo(44)
-            $0.leading.equalTo(cancelButton.snp.trailing).offset(16)
+            ).offset(48)
+            $0.height.equalTo(46)
+            $0.leading.equalTo(cancelButton.snp.trailing).offset(8)
             $0.width.equalTo(buttonW)
         }
         

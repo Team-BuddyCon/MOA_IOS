@@ -54,4 +54,33 @@ enum StoreType: String, CaseIterable {
         default: return nil
         }
     }
+    
+    static func from(string: String) -> StoreType? {
+        switch string {
+        case "STARBUCKS":
+            return .STARBUCKS
+        case "TWOSOME_PLACE":
+            return .TWOSOME_PLACE
+        case "ANGELINUS":
+            return .ANGELINUS
+        case "MEGA_COFFEE":
+            return .MEGA_COFFEE
+        case "COFFEE_BEAN":
+            return .COFFEE_BEAN
+        case "GONG_CHA":
+            return .GONG_CHA
+        case "BASKIN_ROBBINS":
+            return .BASKIN_ROBBINS
+        case "MACDONALD":
+            return .MACDONALD
+        case "GS25":
+            return .GS25
+        case "CU":
+            return .CU
+        case "OTHERS":
+            return .OTHERS
+        default:
+            return nil
+        }
+    }
 }
