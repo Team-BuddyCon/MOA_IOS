@@ -121,22 +121,19 @@ final class ModalViewController: BaseViewController {
             $0.bottom.equalToSuperview().inset(16)
             $0.top.equalTo(
                 subTitleLabel.isHidden ? titleLabel.snp.bottom : subTitleLabel.snp.bottom
-            ).offset(
-                subTitleLabel.isHidden ? 48 : 57.5
-            )
-            $0.height.equalTo(44)
+            ).offset(48)
+            $0.height.equalTo(46)
         }
         
-        let buttonW = (view.frame.size.width - 108) / 2
+        // 38 + 38 + 32 + 8
+        let buttonW = (view.frame.size.width - 116) / 2
         cancelButton.snp.makeConstraints {
             $0.leading.equalToSuperview().inset(16)
             $0.bottom.equalToSuperview().inset(16)
             $0.top.equalTo(
                 subTitleLabel.isHidden ? titleLabel.snp.bottom : subTitleLabel.snp.bottom
-            ).offset(
-                subTitleLabel.isHidden ? 48 : 57.5
-            )
-            $0.height.equalTo(44)
+            ).offset(48)
+            $0.height.equalTo(46)
             $0.width.equalTo(buttonW)
         }
         
@@ -145,11 +142,9 @@ final class ModalViewController: BaseViewController {
             $0.bottom.equalToSuperview().inset(16)
             $0.top.equalTo(
                 subTitleLabel.isHidden ? titleLabel.snp.bottom : subTitleLabel.snp.bottom
-            ).offset(
-                subTitleLabel.isHidden ? 48 : 57.5
-            )
-            $0.height.equalTo(44)
-            $0.leading.equalTo(cancelButton.snp.trailing).offset(16)
+            ).offset(48)
+            $0.height.equalTo(46)
+            $0.leading.equalTo(cancelButton.snp.trailing).offset(8)
             $0.width.equalTo(buttonW)
         }
         

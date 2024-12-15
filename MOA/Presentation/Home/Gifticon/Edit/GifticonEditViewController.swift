@@ -11,6 +11,11 @@ import RxSwift
 import RxCocoa
 import RxRelay
 
+enum EditResult {
+    case update
+    case delete
+}
+
 final class GifticonEditViewController: BaseViewController {
     
     private let scrollView: UIScrollView = {
@@ -214,6 +219,10 @@ private extension GifticonEditViewController {
             object: nil
         )
         
+        gifticonEditViewModel.navigationResult
+            .bind(to: self.rx.navigation)
+            .disposed(by: disposeBag)
+        
         imageZoomInButton.rx.tap
             .bind(to: self.rx.tapZoomInImage)
             .disposed(by: disposeBag)
@@ -246,7 +255,7 @@ private extension Reactive where Base: GifticonEditViewController {
                 confirmText: DELETE_MODAL,
                 cancelText: CLOSE
             ) {
-                
+                viewController.gifticonEditViewModel.delete(gifticonId: viewController.detailGifticon.gifticonId)
             }
             
             viewController.present(modalVC, animated: true)
@@ -256,6 +265,26 @@ private extension Reactive where Base: GifticonEditViewController {
     var tapComplete: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
+        }
+    }
+    
+    var navigation: Binder<EditResult> {
+        return Binder<EditResult>(self.base) { viewController, result in
+            MOALogger.logd()
+            
+            switch result {
+            case .delete:
+                let modalVC = ModalViewController(
+                    modalType: .alert,
+                    title: GIFTICON_DELETE_SUCCESS_MODAL_TITLE,
+                    confirmText: GIFTICON_DELETE_NAVIGATION_HOME_MODAL_TITLE
+                ) {
+                    viewController.navigateTo(type: HomeTabBarController.self)
+                }
+                viewController.present(modalVC, animated: true)
+            case .update:
+                break
+            }
         }
     }
 }
