@@ -28,6 +28,10 @@ protocol GifticonServiceProtocol {
     func fetchDetailGifticon(
         gifticonId: Int
     ) -> Observable<Result<DetailGifticonResponse, URLError>>
+    
+    func fetchDeleteGifticon(
+        gifticonId: Int
+    ) -> Observable<Result<DeleteGifticonResponse, URLError>>
 }
 
 
@@ -75,6 +79,13 @@ final class GifticonService: GifticonServiceProtocol {
         gifticonId: Int
     ) -> Observable<Result<DetailGifticonResponse, URLError>> {
         let request = DetailGifticonRequest(gifticonId: gifticonId)
+        return NetworkManager.shared.request(request: request)
+    }
+    
+    func fetchDeleteGifticon(
+        gifticonId: Int
+    ) -> Observable<Result<DeleteGifticonResponse, URLError>> {
+        let request = DeleteGifticonRequest(gifticonId: gifticonId)
         return NetworkManager.shared.request(request: request)
     }
 }

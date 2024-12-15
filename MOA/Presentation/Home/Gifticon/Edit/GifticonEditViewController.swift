@@ -95,8 +95,9 @@ final class GifticonEditViewController: BaseViewController {
         return button
     }()
     
-    private let detailGifticon: DetailGifticon
+    let detailGifticon: DetailGifticon
     let gifticonImage: UIImage?
+    let gifticonEditViewModel = GifticonEditViewModel(gifticonService: GifticonService.shared)
     
     init(
         detailGifticon: DetailGifticon,
@@ -217,6 +218,10 @@ private extension GifticonEditViewController {
             .bind(to: self.rx.tapZoomInImage)
             .disposed(by: disposeBag)
         
+        deleteButton.rx.tap
+            .bind(to: self.rx.tapDelete)
+            .disposed(by: disposeBag)
+        
         completeButton.rx.tap
             .bind(to: self.rx.tapComplete)
             .disposed(by: disposeBag)
@@ -229,6 +234,13 @@ private extension Reactive where Base: GifticonEditViewController {
             MOALogger.logd()
             let fullImageVC = FullGifticonImageViewController(image: viewController.gifticonImage)
             viewController.present(fullImageVC, animated: true)
+        }
+    }
+    
+    var tapDelete: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            MOALogger.logd()
+            viewController.gifticonEditViewModel.delete(gifticonId: viewController.detailGifticon.gifticonId)
         }
     }
     
