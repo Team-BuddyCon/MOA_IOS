@@ -29,10 +29,15 @@ final class DetailInfoView: UIView {
         return view
     }()
     
-    init(title: String, info: String) {
+    var info: String = "" {
+        didSet {
+            infoLabel.text = info
+        }
+    }
+    
+    init(title: String) {
         super.init(frame: .zero)
         titleLabel.text = title
-        infoLabel.text = info
         setupLayout()
     }
     

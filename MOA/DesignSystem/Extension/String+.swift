@@ -19,6 +19,8 @@ let COMPLETE = "완료"
 let DELETE = "삭제"
 let CLOSE = "닫기"
 let DELETE_MODAL = "삭제하기"
+let UPDATE_MODAL = "수정하기"
+let CONFIRM = "확인"
 
 // MARK: Design System
 let dday_end = "만료"
@@ -85,6 +87,8 @@ let GIFTICON_USE_BUTTON_TITLE = "사용완료"
 let GIFTICON_DELETE_MODAL_TITLE = "기프티콘을 삭제할까요?"
 let GIFTICON_DELETE_SUCCESS_MODAL_TITLE = "기프티콘이 삭제되었어요"
 let GIFTICON_DELETE_NAVIGATION_HOME_MODAL_TITLE = "홈으로 이동"
+let GIFTICON_UPDATE_MODAL_TITLE = "기프티콘을 수정할까요?"
+let GIFTICON_UPDATE_SUCCESS_MODAL_TITLE = "기프티콘이 수정되었어요"
 
 // MARK: ImageSet
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"

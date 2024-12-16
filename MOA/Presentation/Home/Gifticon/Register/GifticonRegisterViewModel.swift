@@ -22,7 +22,7 @@ final class GifticonRegisterViewModel: BaseViewModel {
         name: String,
         expireDate: String,
         store: String,
-        memo: String
+        memo: String?
     ) {
         if let data = image.pngData() {
             gifticonService.fetchCreateGifticon(

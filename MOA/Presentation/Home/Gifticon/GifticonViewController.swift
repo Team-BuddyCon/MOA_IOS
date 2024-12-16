@@ -164,7 +164,14 @@ private extension GifticonViewController {
         if let button = categoryStackView.arrangedSubviews.first as? CategoryButton {
             button.isClicked.accept(true)
         }
-        gifticonViewModel.fetch()
+        
+        if gifticonViewModel.isFirstFetch {
+            gifticonViewModel.isFirstFetch = false
+            gifticonViewModel.fetch()
+        } else {
+            gifticonViewModel.isRefresh = true
+            gifticonViewModel.refresh()
+        }
     }
     
     func bind() {
@@ -193,6 +200,13 @@ private extension GifticonViewController {
             }.disposed(by: disposeBag)
         
         gifticonViewModel.gifticons
+            .observe(on: MainScheduler())
+            .subscribe(onNext: { [weak self] _ in
+                guard let self = self else { return }
+                gifticonCollectionView.layoutIfNeeded()
+            }).disposed(by: disposeBag)
+        
+        gifticonViewModel.gifticons
             .map { $0.isEmpty }
             .bind(to: self.rx.isEmptyUI)
             .disposed(by: disposeBag)
@@ -206,12 +220,9 @@ private extension GifticonViewController {
             .subscribe(onNext: { [weak self] gifticon in
                 guard let self = self else { return }
                 MOALogger.logd("\(gifticon.gifticonId)")
-                gifticonViewModel.fetchDetail(gifticonId: gifticon.gifticonId)
+                let detailVC = GifticonDetailViewController(gifticonId: gifticon.gifticonId)
+                navigationController?.pushViewController(detailVC, animated: true)
             }).disposed(by: disposeBag)
-        
-        gifticonViewModel.detailGifticon
-            .bind(to: self.rx.tapDetailGifticon)
-            .disposed(by: disposeBag)
         
         gifticonViewModel.sortTitle
             .asObservable()
@@ -301,14 +312,6 @@ extension Reactive where Base: GifticonViewController {
             MOALogger.logd("\(isEmpty)")
             viewController.emptyView.isHidden = !isEmpty
             viewController.gifticonCollectionView.isHidden = isEmpty
-        }
-    }
-    
-    var tapDetailGifticon: Binder<DetailGifticon> {
-        return Binder<DetailGifticon>(self.base) { viewController, detailGifticon in
-            MOALogger.logd()
-            let detailVC = GifticonDetailViewController(detailGifticon: detailGifticon)
-            viewController.navigationController?.pushViewController(detailVC, animated: true)
         }
     }
 }

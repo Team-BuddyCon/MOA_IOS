@@ -8,6 +8,10 @@
 import Foundation
 
 protocol BaseResponse: Decodable {
-    var status: Int { get set }
-    var message: String { get set }
+    var status: Int { get }
+    var message: String { get }
+}
+
+extension BaseResponse {
+    var isSuccess: Bool { status == 200 }
 }
