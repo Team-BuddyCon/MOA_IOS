@@ -92,13 +92,14 @@ final class GifticonViewController: BaseViewController {
         super.viewDidLoad()
         MOALogger.logd()
         setupLayout()
+        setupData()
         bind()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         MOALogger.logd()
-        setupData()
+        gifticonViewModel.refresh()
     }
 }
 
@@ -165,13 +166,7 @@ private extension GifticonViewController {
             button.isClicked.accept(true)
         }
         
-        if gifticonViewModel.isFirstFetch {
-            gifticonViewModel.isFirstFetch = false
-            gifticonViewModel.fetch()
-        } else {
-            gifticonViewModel.isRefresh = true
-            gifticonViewModel.refresh()
-        }
+        gifticonViewModel.fetch()
     }
     
     func bind() {
@@ -203,6 +198,7 @@ private extension GifticonViewController {
             .observe(on: MainScheduler())
             .subscribe(onNext: { [weak self] _ in
                 guard let self = self else { return }
+                gifticonCollectionView.reloadData()
                 gifticonCollectionView.layoutIfNeeded()
             }).disposed(by: disposeBag)
         
@@ -215,6 +211,12 @@ private extension GifticonViewController {
             .map { _ in self.gifticonCollectionView }
             .bind(to: self.rx.scrollOffset)
             .disposed(by: disposeBag)
+        
+        gifticonCollectionView.rx.itemSelected
+            .subscribe(onNext: { [weak self] indexPath in
+                guard let self = self else { return }
+                gifticonViewModel.selectedIndex = indexPath.row
+            }).disposed(by: disposeBag)
         
         gifticonCollectionView.rx.modelSelected(AvailableGifticon.self)
             .subscribe(onNext: { [weak self] gifticon in
