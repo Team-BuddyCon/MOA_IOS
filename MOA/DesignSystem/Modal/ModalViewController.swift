@@ -15,6 +15,16 @@ final class ModalViewController: BaseViewController {
         return view
     }()
     
+    private let titleView: UIView = {
+        let view = UIView()
+        return view
+    }()
+    
+    private let titleContentView: UIView = {
+        let view = UIView()
+        return view
+    }()
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont(name: pretendard_bold, size: 16.0)
@@ -89,9 +99,31 @@ final class ModalViewController: BaseViewController {
         view.backgroundColor = .black.withAlphaComponent(0.5)
         contentView.layer.cornerRadius = 20
         
+        [titleLabel, subTitleLabel].forEach {
+            titleContentView.addSubview($0)
+        }
+        
+        titleLabel.snp.makeConstraints {
+            $0.top.equalToSuperview()
+            $0.centerX.equalToSuperview()
+            $0.horizontalEdges.equalToSuperview()
+        }
+        
+        subTitleLabel.snp.makeConstraints {
+            $0.top.equalTo(titleLabel.snp.bottom).offset(4)
+            $0.centerX.equalToSuperview()
+            $0.horizontalEdges.equalToSuperview()
+            $0.bottom.equalToSuperview()
+        }
+        
+        titleView.addSubview(titleContentView)
+        titleContentView.snp.makeConstraints {
+            $0.centerY.equalToSuperview().offset(8)
+            $0.horizontalEdges.equalToSuperview().inset(16)
+        }
+        
         [
-            titleLabel,
-            subTitleLabel,
+            titleView,
             cancelButton,
             activeButton,
             confirmButton
@@ -104,25 +136,20 @@ final class ModalViewController: BaseViewController {
             $0.centerY.equalToSuperview()
             $0.centerX.equalToSuperview()
             $0.horizontalEdges.equalToSuperview().inset(38)
-        }
-            
-        titleLabel.snp.makeConstraints {
-            $0.top.equalToSuperview().inset(29.5)
-            $0.horizontalEdges.equalToSuperview().inset(16)
+            $0.height.equalTo(170)
         }
         
-        subTitleLabel.snp.makeConstraints {
-            $0.top.equalTo(titleLabel.snp.bottom).offset(4)
-            $0.horizontalEdges.equalToSuperview().inset(16)
+        titleView.snp.makeConstraints {
+            $0.height.equalTo(94)
+            $0.horizontalEdges.equalToSuperview()
+            $0.top.equalToSuperview()
         }
         
         confirmButton.snp.makeConstraints {
             $0.horizontalEdges.equalToSuperview().inset(16)
             $0.bottom.equalToSuperview().inset(16)
-            $0.top.equalTo(
-                subTitleLabel.isHidden ? titleLabel.snp.bottom : subTitleLabel.snp.bottom
-            ).offset(48)
-            $0.height.equalTo(46)
+            $0.top.equalTo(titleView.snp.bottom).offset(16)
+            $0.height.equalTo(44)
         }
         
         // 38 + 38 + 32 + 8
@@ -130,20 +157,16 @@ final class ModalViewController: BaseViewController {
         cancelButton.snp.makeConstraints {
             $0.leading.equalToSuperview().inset(16)
             $0.bottom.equalToSuperview().inset(16)
-            $0.top.equalTo(
-                subTitleLabel.isHidden ? titleLabel.snp.bottom : subTitleLabel.snp.bottom
-            ).offset(48)
-            $0.height.equalTo(46)
+            $0.top.equalTo(titleView.snp.bottom).offset(16)
+            $0.height.equalTo(44)
             $0.width.equalTo(buttonW)
         }
         
         activeButton.snp.makeConstraints {
             $0.trailing.equalToSuperview().inset(16)
             $0.bottom.equalToSuperview().inset(16)
-            $0.top.equalTo(
-                subTitleLabel.isHidden ? titleLabel.snp.bottom : subTitleLabel.snp.bottom
-            ).offset(48)
-            $0.height.equalTo(46)
+            $0.top.equalTo(titleView.snp.bottom).offset(16)
+            $0.height.equalTo(44)
             $0.leading.equalTo(cancelButton.snp.trailing).offset(8)
             $0.width.equalTo(buttonW)
         }
