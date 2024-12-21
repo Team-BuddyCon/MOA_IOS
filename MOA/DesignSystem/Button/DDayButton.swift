@@ -25,6 +25,7 @@ final class DDayButton: UIButton {
                 setTitle(String(format: dday_format, dday), for: .normal)
                 backgroundColor = .grey60
             }
+            sizeToFit()
         }
     }
     
@@ -36,6 +37,7 @@ final class DDayButton: UIButton {
         self.dday = dday
         super.init(frame: .zero)
         titleLabel?.font = UIFont(name: fontName, size: fontSize)
+        contentEdgeInsets = UIEdgeInsets(top: 4, left: 12, bottom: 4, right: 12)
     }
     
     override func layoutSubviews() {

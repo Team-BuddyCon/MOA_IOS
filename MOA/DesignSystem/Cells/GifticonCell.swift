@@ -118,10 +118,9 @@ final class GifticonCell: UICollectionViewCell {
         }
         
         ddayButton.snp.makeConstraints {
-            $0.width.equalTo(shadowView.snp.width).multipliedBy(0.2)
-            $0.height.equalTo(ddayButton.snp.width).multipliedBy(22.0 / 32.0)
             $0.top.equalTo(shadowView.snp.top).offset(8)
             $0.left.equalTo(shadowView.snp.left).offset(8)
+            $0.height.equalTo(22)
         }
         
         storeLabel.snp.makeConstraints {

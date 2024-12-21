@@ -273,7 +273,7 @@ extension RegisterInputView: BottomSheetDelegate {
         let formatter = DateFormatter()
         formatter.dateFormat = AVAILABLE_GIFTICON_UI_TIME_FORMAT
         inputLabel.text = formatter.string(from: date)
-        requestInput = inputLabel.text?.transformTimeformat(origin: AVAILABLE_GIFTICON_UI_TIME_FORMAT, dest: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
+        requestInput = date.toString(format: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
         
         UIApplication.shared.topViewController?.dismiss(animated: false)
     }

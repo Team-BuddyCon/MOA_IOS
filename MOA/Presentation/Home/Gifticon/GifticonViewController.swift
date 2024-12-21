@@ -212,12 +212,6 @@ private extension GifticonViewController {
             .bind(to: self.rx.scrollOffset)
             .disposed(by: disposeBag)
         
-        gifticonCollectionView.rx.itemSelected
-            .subscribe(onNext: { [weak self] indexPath in
-                guard let self = self else { return }
-                gifticonViewModel.selectedIndex = indexPath.row
-            }).disposed(by: disposeBag)
-        
         gifticonCollectionView.rx.modelSelected(AvailableGifticon.self)
             .subscribe(onNext: { [weak self] gifticon in
                 guard let self = self else { return }
