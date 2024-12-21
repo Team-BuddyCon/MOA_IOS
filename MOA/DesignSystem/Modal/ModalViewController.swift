@@ -223,7 +223,7 @@ extension UIViewController {
         cancelText: String,
         onConfirm: @escaping () -> Void = {}
     ) {
-        let modalType = subTitle == nil ? ModalType.alert : ModalType.alertDetail
+        let modalType = subTitle == nil ? ModalType.select : ModalType.selectDetail
         let modalVC = ModalViewController(
             modalType: modalType,
             title: title,

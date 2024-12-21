@@ -208,7 +208,13 @@ private extension Reactive where Base: GifticonRegisterViewController {
     var tapCancel: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            viewController.navigationController?.popViewController(animated: true)
+            viewController.showSelectModal(
+                title: GIFTICON_REGISTER_STOP_TITLE,
+                confirmText: GIFTICON_REGISTER_STOP_CONFIRM_TEXT,
+                cancelText: GIFTICON_REGISTER_STOP_CONTINUE_TEXT
+            ) {
+                viewController.navigationController?.popViewController(animated: true)
+            }
         }
     }
     
