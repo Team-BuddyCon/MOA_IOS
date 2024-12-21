@@ -236,7 +236,10 @@ final class RegisterInputView: UIView {
             .subscribe(onNext: { [weak self] text in
                 guard let self = self else { return }
                 hintLabel.isHidden = text?.isEmpty == false
-                requestInput = text
+                
+                if inputType == .name || inputType == .memo {
+                    requestInput = text
+                }
             }).disposed(by: disposeBag)
     }
     

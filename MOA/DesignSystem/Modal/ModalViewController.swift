@@ -197,3 +197,41 @@ extension ModalViewController: UIGestureRecognizerDelegate {
         return true
     }
 }
+
+extension UIViewController {
+    func showAlertModal(
+        title: String,
+        subTitle: String? = nil,
+        confirmText: String,
+        onConfirm: @escaping () -> Void = {}
+    ) {
+        let modalType = subTitle == nil ? ModalType.alert : ModalType.alertDetail
+        let modalVC = ModalViewController(
+            modalType: modalType,
+            title: title,
+            subTitle: subTitle,
+            confirmText: confirmText,
+            onConfirm: onConfirm
+        )
+        present(modalVC, animated: true)
+    }
+    
+    func showSelectModal(
+        title: String,
+        subTitle: String? = nil,
+        confirmText: String,
+        cancelText: String,
+        onConfirm: @escaping () -> Void = {}
+    ) {
+        let modalType = subTitle == nil ? ModalType.alert : ModalType.alertDetail
+        let modalVC = ModalViewController(
+            modalType: modalType,
+            title: title,
+            subTitle: subTitle,
+            confirmText: confirmText,
+            cancelText: cancelText,
+            onConfirm: onConfirm
+        )
+        present(modalVC, animated: true)
+    }
+}
