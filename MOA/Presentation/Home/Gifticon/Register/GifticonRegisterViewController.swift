@@ -208,7 +208,13 @@ private extension Reactive where Base: GifticonRegisterViewController {
     var tapCancel: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            viewController.navigationController?.popViewController(animated: true)
+            viewController.showSelectModal(
+                title: GIFTICON_REGISTER_STOP_TITLE,
+                confirmText: GIFTICON_REGISTER_STOP_CONFIRM_TEXT,
+                cancelText: GIFTICON_REGISTER_STOP_CONTINUE_TEXT
+            ) {
+                viewController.navigationController?.popViewController(animated: true)
+            }
         }
     }
     
@@ -225,10 +231,47 @@ private extension Reactive where Base: GifticonRegisterViewController {
             MOALogger.logd()
             guard let image = viewController.image else { return }
             guard let name = viewController.nameInputView.requestInput else { return }
-            guard let expireDate = viewController.expireDateInputView.requestInput else { return }
-            guard let store = viewController.storeInputView.requestInput else { return }
-            let memo = viewController.memoInputView.requestInput
+            if name.count == 0 {
+                viewController.showAlertModal(
+                    title: GIFTICON_REGISTER_EMPTY_NAME_MODAL_TITLE,
+                    confirmText: CONFIRM
+                )
+                return
+            }
             
+            if name.count > 16 {
+                viewController.showAlertModal(
+                    title: GIFTICON_REGISTER_MAX_LENGTH_MODAL_TITLE,
+                    subTitle: GIFTICON_REGISTER_MAX_LENGTH_NAME_MODAL_SUBTITLE,
+                    confirmText: CONFIRM
+                )
+                return
+            }
+            
+            guard let expireDate = viewController.expireDateInputView.requestInput else {
+                viewController.showAlertModal(
+                    title: GIFTICON_REGISTER_EMPTY_EXPIRE_DATE_MODAL_TITLE,
+                    confirmText: CONFIRM
+                )
+                return
+            }
+            guard let store = viewController.storeInputView.requestInput else {
+                viewController.showAlertModal(
+                    title: GIFTICON_REGISTER_EMPTY_STORE_MODAL_TITLE,
+                    confirmText: CONFIRM
+                )
+                return
+            }
+            let memo = viewController.memoInputView.requestInput
+            if let memo = memo, memo.count > 50 {
+                viewController.showAlertModal(
+                    title: GIFTICON_REGISTER_MAX_LENGTH_MODAL_TITLE,
+                    subTitle: GIFTICON_REGISTER_MAX_LENGTH_MEMO_MODAL_SUBTITLE,
+                    confirmText: CONFIRM
+                )
+                return
+            }
+        
             viewController.viewModel.createGifticon(
                 image: image,
                 name: name,

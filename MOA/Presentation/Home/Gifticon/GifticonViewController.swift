@@ -335,6 +335,13 @@ extension GifticonViewController: PHPickerViewControllerDelegate {
                 if error != nil {
                     // TODO 에러 팝업 노출
                     MOALogger.loge("PHPicker load Image error: \(error?.localizedDescription)")
+                    let modalVC = ModalViewController(
+                        modalType: .alertDetail,
+                        title: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_TITLE,
+                        subTitle: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_SUBTITLE,
+                        confirmText: CONFIRM
+                    )
+                    present(modalVC, animated: true)
                     return
                 }
                 
@@ -363,6 +370,13 @@ extension GifticonViewController: PHPickerViewControllerDelegate {
             
             guard error == nil, let features = features, !features.isEmpty else {
                 MOALogger.loge("PHPicker image is not contained barcode")
+                let modalVC = ModalViewController(
+                    modalType: .alertDetail,
+                    title: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_TITLE,
+                    subTitle: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_SUBTITLE,
+                    confirmText: CONFIRM
+                )
+                present(modalVC, animated: true)
                 return
             }
             
