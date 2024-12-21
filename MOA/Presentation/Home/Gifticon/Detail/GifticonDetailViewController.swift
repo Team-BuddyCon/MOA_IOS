@@ -41,7 +41,7 @@ final class GifticonDetailViewController: BaseViewController {
     }()
     
     let ddayButton: DDayButton = {
-        let button = DDayButton()
+        let button = DDayButton(fontSize: 12.0)
         return button
     }()
     
@@ -147,7 +147,6 @@ private extension GifticonDetailViewController {
         ddayButton.snp.makeConstraints {
             $0.top.equalTo(imageView.snp.top).inset(16)
             $0.leading.equalTo(imageView.snp.leading).inset(16)
-            $0.width.equalTo(40)
             $0.height.equalTo(26)
         }
         
@@ -252,7 +251,7 @@ private extension Reactive where Base: GifticonDetailViewController {
             viewController.storeInfoView.info = detailGifticon.gifticonStore.rawValue
             viewController.memoInfoView.info = detailGifticon.memo
             
-            if dday < 0 {
+            if !detailGifticon.imageUrl.isEmpty && dday < 0 {
                 viewController.showAlertModal(
                     title: GIFTICON_REGISTER_EXPIRE_MODAL_TITLE,
                     subTitle: GIFTICON_REGISTER_EXPIRE_MODAL_SUBTITLE,

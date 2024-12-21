@@ -35,9 +35,6 @@ final class GifticonViewModel: BaseViewModel {
     // 유효기간, 카테고리 변경 시에는 fetch 하지 않도록
     var isChangedOptions = false
     
-    // 상세화면
-    var selectedIndex: Int? = nil
-    
     let gifticons = BehaviorRelay<[AvailableGifticon]>(value: [])
     
     init(gifticonService: GifticonServiceProtocol) {
@@ -89,39 +86,7 @@ final class GifticonViewModel: BaseViewModel {
     }
     
     func refresh() {
-        if let index = selectedIndex {
-            isLoading = true
-            gifticonService.fetchAvailableGifticon(
-                pageNumber: index / 10,
-                rowCount: 10,
-                storeCateogry: categoryRelay.value,
-                storeType: nil,
-                sortType: sortTypeRelay.value
-            ).map { result -> [AvailableGifticon] in
-                switch result {
-                case .success(let response):
-                    return response.gifticonInfos.content.map { $0.toModel() }
-                case .failure(let error):
-                    MOALogger.loge(error.localizedDescription)
-                    return []
-                }
-            }.subscribe(onNext: { [weak self] data in
-                guard let self = self else {
-                    MOALogger.loge()
-                    return
-                }
-                
-                isLoading = false
-                selectedIndex = nil
-                var current = gifticons.value
-                let startIndex = (index / 10) * 10
-                let endIndex = startIndex + data.count
-                current.replaceSubrange(startIndex..<endIndex, with: data)
-                gifticons.accept(current)
-            }).disposed(by: disposeBag)
-        } else {
-            clearPagingData()
-        }
+        clearPagingData()
     }
     
     func fetchMore() {

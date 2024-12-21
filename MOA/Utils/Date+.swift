@@ -34,13 +34,7 @@ extension String {
         formatter.dateFormat = AVAILABLE_GIFTICON_UI_TIME_FORMAT
         let date = formatter.date(from: self)
         let calendar = Calendar.current
-        
-        if let date = date {
-            let day = calendar.component(.day, from: date)
-            let today = calendar.component(.day, from: Date())
-            return day - today
-        }
-        return 0
+        return calendar.dateComponents([.day], from: Date(), to: date ?? Date()).day ?? 0
     }
     
     func transformTimeformat(
