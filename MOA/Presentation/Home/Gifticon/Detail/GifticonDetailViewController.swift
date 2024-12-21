@@ -128,6 +128,7 @@ private extension GifticonDetailViewController {
         
         [
             imageView,
+            ddayButton,
             imageZoomInButton,
             titleLabel,
             expireDateInfoView,
@@ -141,6 +142,13 @@ private extension GifticonDetailViewController {
             $0.top.equalToSuperview().inset(8)
             $0.horizontalEdges.equalToSuperview().inset(20)
             $0.height.equalTo(imageView.snp.width).multipliedBy(328 / 335.0)
+        }
+        
+        ddayButton.snp.makeConstraints {
+            $0.top.equalTo(imageView.snp.top).inset(16)
+            $0.leading.equalTo(imageView.snp.leading).inset(16)
+            $0.width.equalTo(40)
+            $0.height.equalTo(26)
         }
         
         imageZoomInButton.snp.makeConstraints {
@@ -231,10 +239,10 @@ private extension Reactive where Base: GifticonDetailViewController {
                     }
                 }).disposed(by: viewController.disposeBag)
             
-            viewController.ddayButton.dday = detailGifticon.expireDate
-                .toString(format: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
-                .transformTimeformat(origin: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT, dest: AVAILABLE_GIFTICON_UI_TIME_FORMAT)
+            let dday = detailGifticon.expireDate
+                .toString(format: AVAILABLE_GIFTICON_UI_TIME_FORMAT)
                 .toDday()
+            viewController.ddayButton.dday = dday
             
             viewController.titleLabel.text = detailGifticon.name
             viewController.expireDateInfoView.info = detailGifticon.expireDate
@@ -243,6 +251,14 @@ private extension Reactive where Base: GifticonDetailViewController {
             
             viewController.storeInfoView.info = detailGifticon.gifticonStore.rawValue
             viewController.memoInfoView.info = detailGifticon.memo
+            
+            if dday < 0 {
+                viewController.showAlertModal(
+                    title: GIFTICON_REGISTER_EXPIRE_MODAL_TITLE,
+                    subTitle: GIFTICON_REGISTER_EXPIRE_MODAL_SUBTITLE,
+                    confirmText: CONFIRM
+                )
+            }
         }
     }
 }
