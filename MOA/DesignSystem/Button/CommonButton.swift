@@ -15,6 +15,7 @@ enum ButtonStatus {
     case active
     case disabled
     case cancel
+    case used
 }
 
 final class CommonButton: UIButton {
@@ -62,6 +63,9 @@ final class CommonButton: UIButton {
                 case .cancel:
                     backgroundColor = .grey30
                     setTitleColor(.grey70, for: .normal)
+                case .used:
+                    backgroundColor = .grey90
+                    setTitleColor(.white, for: .normal)
                 }
             }.disposed(by: disposeBag)
     }

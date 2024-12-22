@@ -16,6 +16,10 @@ final class GifticonDetailViewModel: BaseViewModel {
     let detailGifticonRelay = BehaviorRelay(value: DetailGifticon())
     var detailGifticon: DetailGifticon { detailGifticonRelay.value }
     
+    // 사용여부는 usedRelay로 관리
+    var usedRelay = PublishRelay<Bool>()
+    private var used: Bool = false
+    
     init(gifticonService: GifticonServiceProtocol) {
         self.gifticonService = gifticonService
     }
@@ -28,6 +32,23 @@ final class GifticonDetailViewModel: BaseViewModel {
                 case .success(let response):
                     MOALogger.logd("\(response)")
                     detailGifticonRelay.accept(response.info.toModel())
+                    usedRelay.accept(response.info.used)
+                    used = response.info.used
+                case .failure(let error):
+                    MOALogger.loge(error.localizedDescription)
+                }
+            }).disposed(by: disposeBag)
+    }
+    
+    func fetchUpdateUsed(gifticonId: Int) {
+        gifticonService.fetchUpdateUsedGifticon(gifticonId: gifticonId, used: !used)
+            .subscribe(onNext: { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success(let response):
+                    MOALogger.logd("\(response)")
+                    usedRelay.accept(!used)
+                    used = !used
                 case .failure(let error):
                     MOALogger.loge(error.localizedDescription)
                 }

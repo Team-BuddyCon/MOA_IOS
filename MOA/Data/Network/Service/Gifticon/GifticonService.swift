@@ -40,6 +40,11 @@ protocol GifticonServiceProtocol {
         store: String,
         memo: String?
     ) -> Observable<Result<GifticonResponse, URLError>>
+    
+    func fetchUpdateUsedGifticon(
+        gifticonId: Int,
+        used: Bool
+    ) -> Observable<Result<GifticonResponse, URLError>>
 }
 
 
@@ -110,6 +115,17 @@ final class GifticonService: GifticonServiceProtocol {
             expireDate: expireDate,
             store: store,
             memo: memo
+        )
+        return NetworkManager.shared.request(request: request)
+    }
+    
+    func fetchUpdateUsedGifticon(
+        gifticonId: Int,
+        used: Bool
+    ) -> Observable<Result<GifticonResponse, URLError>> {
+        let request = UpdateUsedGifticonRequest(
+            gifticonId: gifticonId,
+            used: used
         )
         return NetworkManager.shared.request(request: request)
     }
