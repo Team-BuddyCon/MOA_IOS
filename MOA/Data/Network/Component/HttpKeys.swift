@@ -33,5 +33,6 @@ struct HttpKeys {
         static let gifticonSortType = "gifticonSortType"
         static let dto = "dto"
         static let gifticonId = "gifticonId"
+        static let used = "used"
     }
 }

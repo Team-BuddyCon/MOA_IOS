@@ -15,7 +15,7 @@ struct DetailGifticon {
     let expireDate: Date
     let gifticonStore: StoreType
     let gifticonStoreCategory: StoreCategory
-    let used: Bool
+    var used: Bool
     
     init(
         gifticonId: Int = 0,

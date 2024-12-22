@@ -19,7 +19,7 @@ final class GifticonDetailViewController: BaseViewController {
         return scrollView
     }()
     
-    private let useButton: CommonButton = {
+    let useButton: CommonButton = {
         let button = CommonButton(
             status: .active,
             title: GIFTICON_USE_BUTTON_TITLE
@@ -37,6 +37,17 @@ final class GifticonDetailViewController: BaseViewController {
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 20
+        imageView.backgroundColor = .black.withAlphaComponent(0.5)
+        return imageView
+    }()
+    
+    let imageDimView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: USED_GIFTICON)
+        imageView.contentMode = .center
+        imageView.layer.cornerRadius = 20
+        imageView.backgroundColor = .black.withAlphaComponent(0.5)
+        imageView.isHidden = true
         return imageView
     }()
     
@@ -76,7 +87,7 @@ final class GifticonDetailViewController: BaseViewController {
     }()
     
     let viewModel = GifticonDetailViewModel(gifticonService: GifticonService.shared)
-    private let gifticonId: Int
+    let gifticonId: Int
     
     init(gifticonId: Int) {
         self.gifticonId = gifticonId
@@ -128,6 +139,7 @@ private extension GifticonDetailViewController {
         
         [
             imageView,
+            imageDimView,
             ddayButton,
             imageZoomInButton,
             titleLabel,
@@ -139,6 +151,12 @@ private extension GifticonDetailViewController {
         }
         
         imageView.snp.makeConstraints {
+            $0.top.equalToSuperview().inset(8)
+            $0.horizontalEdges.equalToSuperview().inset(20)
+            $0.height.equalTo(imageView.snp.width).multipliedBy(328 / 335.0)
+        }
+        
+        imageDimView.snp.makeConstraints {
             $0.top.equalToSuperview().inset(8)
             $0.horizontalEdges.equalToSuperview().inset(20)
             $0.height.equalTo(imageView.snp.width).multipliedBy(328 / 335.0)
@@ -209,6 +227,10 @@ private extension GifticonDetailViewController {
         viewModel.detailGifticonRelay
             .bind(to: self.rx.bindGifticon)
             .disposed(by: disposeBag)
+        
+        viewModel.usedRelay
+            .bind(to: self.rx.bindUsedState)
+            .disposed(by: disposeBag)
     }
 }
 
@@ -225,6 +247,18 @@ private extension Reactive where Base: GifticonDetailViewController {
     var tapUse: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
+            viewController.viewModel.fetchUpdateUsed(gifticonId: viewController.gifticonId)
+        }
+    }
+    
+    var bindUsedState: Binder<Bool> {
+        return Binder<Bool>(self.base) { viewController, used in
+            MOALogger.logd("\(used)")
+            viewController.ddayButton.isHidden = used
+            viewController.imageZoomInButton.isHidden = used
+            viewController.imageDimView.isHidden = !used
+            viewController.useButton.status.accept(used ? .used : .active)
+            viewController.useButton.setTitle(used ? GIFTICON_USED_BUTTON_TITLE : GIFTICON_USE_BUTTON_TITLE, for: .normal)
         }
     }
     
