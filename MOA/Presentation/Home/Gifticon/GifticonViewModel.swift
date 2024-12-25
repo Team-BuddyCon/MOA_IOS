@@ -48,6 +48,7 @@ final class GifticonViewModel: BaseViewModel {
             sortTypeRelay,
             pageNumberRelay
         ).flatMapLatest { (category, sortType, pageNumber) in
+            self.gifticons.accept(self.gifticons.value + [AvailableGifticon](repeating: AvailableGifticon(), count: 6))
             return self.gifticonService
                 .fetchAvailableGifticon(
                     pageNumber: pageNumber,
@@ -79,7 +80,7 @@ final class GifticonViewModel: BaseViewModel {
                 return
             }
             
-            let current = gifticons.value
+            let current = gifticons.value.filter { $0.gifticonId != Int.min }
             isLoading = false
             gifticons.accept(current + data)
         }).disposed(by: disposeBag)

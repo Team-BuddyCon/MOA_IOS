@@ -17,7 +17,7 @@ struct AvailableGifticon {
     let gifticonStoreCategory: StoreCategory
     
     init(
-        gifticonId: Int = 0,
+        gifticonId: Int = Int.min,
         imageUrl: String = "",
         name: String = "",
         memo: String = "",
