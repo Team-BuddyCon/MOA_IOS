@@ -50,6 +50,7 @@ final class GifticonViewController: BaseViewController {
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.register(GifticonCell.self, forCellWithReuseIdentifier: GifticonCell.identifier)
+        collectionView.register(GifticonSkeletonCell.self, forCellWithReuseIdentifier: GifticonSkeletonCell.identifier)
         return collectionView
     }()
     
@@ -184,7 +185,24 @@ private extension GifticonViewController {
             .disposed(by: disposeBag)
         
         gifticonViewModel.gifticons
-            .bind(to: gifticonCollectionView.rx.items(cellIdentifier: GifticonCell.identifier, cellType: GifticonCell.self)) { row, gifticon, cell in
+            .bind(to: gifticonCollectionView.rx.items) { collectionView, row, gifticon in
+                if gifticon.gifticonId == Int.min {
+                    guard let cell = collectionView.dequeueReusableCell(
+                        withReuseIdentifier: GifticonSkeletonCell.identifier,
+                        for: IndexPath(row: row, section: 0)
+                    ) as? GifticonSkeletonCell else {
+                        return UICollectionViewCell()
+                    }
+                    return cell
+                }
+
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: GifticonCell.identifier,
+                    for: IndexPath(row: row, section: 0)
+                ) as? GifticonCell else {
+                    return UICollectionViewCell()
+                }
+                
                 cell.setData(
                     dday: gifticon.expireDate.toDday(),
                     imageURL: gifticon.imageUrl,
@@ -192,6 +210,7 @@ private extension GifticonViewController {
                     title: gifticon.name,
                     date: gifticon.expireDate
                 )
+                return cell
             }.disposed(by: disposeBag)
         
         gifticonViewModel.gifticons
