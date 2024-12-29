@@ -22,7 +22,6 @@ extension UIViewController {
     func setupTopBarWithBackButton(title: String){
         navigationItem.leftBarButtonItem = makeBackButton()
         navigationItem.titleView = makeTitle(title: title)
-    
     }
 
     @objc private func makeBackButton() -> UIBarButtonItem {

@@ -11,7 +11,6 @@ import RxSwift
 import RxCocoa
 import RxRelay
 import KakaoMapsSDK
-import KakaoMapsSDK_SPM
 
 final class GifticonDetailViewController: BaseViewController {
     
@@ -100,6 +99,16 @@ final class GifticonDetailViewController: BaseViewController {
         return container
     }()
     
+    let kmZoomInButton: UIButton = {
+        let button = UIButton()
+        button.setTitle(GIFTICON_DETAIL_MAP_ZOOM_IN_BUTTON_TITLE, for: .normal)
+        button.setTitleColor(.pink100, for: .normal)
+        button.titleLabel?.font = UIFont(name: pretendard_bold, size: 12.0)
+        button.backgroundColor = .pink50
+        button.layer.cornerRadius = 18.5
+        return button
+    }()
+    
     var kmController: KMController? = nil
     private var kmAuth: Bool = false
     
@@ -182,7 +191,8 @@ private extension GifticonDetailViewController {
             expireDateInfoView,
             storeInfoView,
             memoInfoView,
-            kmContainer
+            kmContainer,
+            kmZoomInButton
         ].forEach {
             contentView.addSubview($0)
         }
@@ -240,6 +250,13 @@ private extension GifticonDetailViewController {
             $0.bottom.equalToSuperview()
             $0.height.equalTo(kmContainer.snp.width).multipliedBy(166 / 335.0)
         }
+        
+        kmZoomInButton.snp.makeConstraints {
+            $0.bottom.equalTo(kmContainer.snp.bottom).inset(12)
+            $0.trailing.equalTo(kmContainer.snp.trailing).inset(12)
+            $0.width.equalTo(109)
+            $0.height.equalTo(37)
+        }
     }
     
     func setupNavigationBar() {
@@ -280,6 +297,10 @@ private extension GifticonDetailViewController {
         viewModel.usedRelay
             .bind(to: self.rx.bindUsedState)
             .disposed(by: disposeBag)
+        
+        kmZoomInButton.rx.tap
+            .bind(to: self.rx.tapZoomInMap)
+            .disposed(by: disposeBag)
     }
 }
 
@@ -297,6 +318,14 @@ private extension Reactive where Base: GifticonDetailViewController {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
             viewController.viewModel.fetchUpdateUsed(gifticonId: viewController.gifticonId)
+        }
+    }
+    
+    var tapZoomInMap: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            MOALogger.logd()
+            let gifticonMapVC = GifticonDetailMapViewController()
+            viewController.navigationController?.pushViewController(gifticonMapVC, animated: true)
         }
     }
     
@@ -365,6 +394,8 @@ extension GifticonDetailViewController: MapControllerDelegate {
     func authenticationFailed(_ errorCode: Int, desc: String) {
         MOALogger.loge(desc)
         kmAuth = false
+        
+        // TODO 지도 로딩 몇번 실패 시 지도 안보여주기
     }
 }
 
