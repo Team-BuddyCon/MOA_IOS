@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>사용자 근처에 있는 기프티콘 사용처를 찾기 위해 위치 정보가 필요합니다.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>&quot;MOA&quot;앱이 사용자의 위치를 사용하도록 허용하겠습니까?</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
