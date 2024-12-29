@@ -7,6 +7,7 @@
 
 import UIKit
 import RxKakaoSDKCommon
+import KakaoMapsSDK
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -27,6 +28,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         
         RxKakaoSDK.initSDK(appKey: appKey)
+        SDKInitializer.InitSDK(appKey: appKey)
         return true
     }
 

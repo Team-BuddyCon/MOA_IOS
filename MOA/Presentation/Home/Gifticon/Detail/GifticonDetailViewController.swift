@@ -10,6 +10,8 @@ import SnapKit
 import RxSwift
 import RxCocoa
 import RxRelay
+import KakaoMapsSDK
+import KakaoMapsSDK_SPM
 
 final class GifticonDetailViewController: BaseViewController {
     
@@ -85,9 +87,21 @@ final class GifticonDetailViewController: BaseViewController {
         let view = DetailInfoView(title: GIFTICON_DETAIL_MEMO_TITLE)
         return view
     }()
-    
+
     let viewModel = GifticonDetailViewModel(gifticonService: GifticonService.shared)
     let gifticonId: Int
+    
+    let kmContainer: KMViewContainer = {
+        let width = Int(UIScreen.main.bounds.width) - 40
+        let height = Int(Double(width) * 166.0 / 335.0)
+        let container = KMViewContainer(frame: CGRect(x: 0, y: 0, width: width, height: height))
+        container.layer.cornerRadius = 20
+        container.layer.masksToBounds = true
+        return container
+    }()
+    
+    var kmController: KMController? = nil
+    private var kmAuth: Bool = false
     
     init(gifticonId: Int) {
         self.gifticonId = gifticonId
@@ -102,12 +116,34 @@ final class GifticonDetailViewController: BaseViewController {
         super.viewDidLoad()
         MOALogger.logd()
         setupLayout()
+        setupMap()
         bind()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        MOALogger.logd()
         fetchData()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        MOALogger.logd()
+        
+        if kmController?.isEngineActive == false {
+            kmController?.activateEngine()
+        }
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        kmAuth = false
+        kmController?.pauseEngine()
+        super.viewWillDisappear(animated)
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        kmController?.resetEngine()
+        super.viewDidDisappear(animated)
     }
 }
 
@@ -145,7 +181,8 @@ private extension GifticonDetailViewController {
             titleLabel,
             expireDateInfoView,
             storeInfoView,
-            memoInfoView
+            memoInfoView,
+            kmContainer
         ].forEach {
             contentView.addSubview($0)
         }
@@ -195,7 +232,13 @@ private extension GifticonDetailViewController {
             $0.top.equalTo(storeInfoView.snp.bottom)
             $0.horizontalEdges.equalToSuperview().inset(20)
             $0.height.equalTo(54)
+        }
+        
+        kmContainer.snp.makeConstraints {
+            $0.top.equalTo(memoInfoView.snp.bottom).offset(24)
+            $0.horizontalEdges.equalToSuperview().inset(20)
             $0.bottom.equalToSuperview()
+            $0.height.equalTo(kmContainer.snp.width).multipliedBy(166 / 335.0)
         }
     }
     
@@ -209,6 +252,12 @@ private extension GifticonDetailViewController {
         label.isUserInteractionEnabled = true
         label.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tapEditButton)))
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: label)
+    }
+    
+    func setupMap() {
+        kmController = KMController(viewContainer: kmContainer)
+        kmController?.delegate = self
+        kmController?.prepareEngine()
     }
     
     func fetchData() {
@@ -293,6 +342,29 @@ private extension Reactive where Base: GifticonDetailViewController {
                 )
             }
         }
+    }
+}
+
+extension GifticonDetailViewController: MapControllerDelegate {
+    func addViews() {
+        MOALogger.logd()
+        let defaultPosition: MapPoint = MapPoint(longitude: 127.108678, latitude: 37.402001)
+        let mapViewInfo = MapviewInfo(viewName: "mapview", defaultPosition: defaultPosition, defaultLevel: 15)
+        kmController?.addView(mapViewInfo)
+    }
+    
+    func containerDidResized(_ size: CGSize) {
+        MOALogger.logd()
+    }
+    
+    func authenticationSucceeded() {
+        MOALogger.logd()
+        kmAuth = true
+    }
+    
+    func authenticationFailed(_ errorCode: Int, desc: String) {
+        MOALogger.loge(desc)
+        kmAuth = false
     }
 }
 
