@@ -9,6 +9,8 @@ import UIKit
 import CoreLocation
 
 final class LocationManager: NSObject, CLLocationManagerDelegate {
+    static let defaultLatitude: Double = 37.402001
+    static let defaultLongitude: Double = 127.108678
     static let shared = LocationManager()
     private let manager = CLLocationManager()
     
@@ -27,11 +29,26 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         manager.requestWhenInUseAuthorization()
     }
     
+    func startUpdatingLocation() {
+        MOALogger.logd()
+        if isGranted {
+            manager.startUpdatingLocation()
+        } else {
+            manager.requestWhenInUseAuthorization()
+        }
+    }
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.first {
+            MOALogger.logd("\(location.coordinate)")
             self.latitude = location.coordinate.latitude
             self.longitude = location.coordinate.longitude
+            manager.stopUpdatingLocation()
         }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
+        MOALogger.loge("\(error.localizedDescription)")
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -40,7 +57,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         switch manager.authorizationStatus {
         case .authorizedAlways, .authorizedWhenInUse:
             isGranted = true
-            manager.requestWhenInUseAuthorization()
+            manager.startUpdatingLocation()
         default:
             isGranted = false
         }

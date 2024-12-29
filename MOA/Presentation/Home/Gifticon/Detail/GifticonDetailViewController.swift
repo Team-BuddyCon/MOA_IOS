@@ -127,6 +127,8 @@ final class GifticonDetailViewController: BaseViewController {
         setupLayout()
         setupMap()
         bind()
+        
+        LocationManager.shared.startUpdatingLocation()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -377,7 +379,9 @@ private extension Reactive where Base: GifticonDetailViewController {
 extension GifticonDetailViewController: MapControllerDelegate {
     func addViews() {
         MOALogger.logd()
-        let defaultPosition: MapPoint = MapPoint(longitude: 127.108678, latitude: 37.402001)
+        let longitude = LocationManager.shared.longitude ?? LocationManager.defaultLongitude
+        let latitude = LocationManager.shared.latitude ?? LocationManager.defaultLatitude
+        let defaultPosition = MapPoint(longitude: longitude, latitude: latitude)
         let mapViewInfo = MapviewInfo(viewName: "mapview", defaultPosition: defaultPosition, defaultLevel: 15)
         kmController?.addView(mapViewInfo)
     }

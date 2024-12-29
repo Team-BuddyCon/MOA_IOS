@@ -92,8 +92,10 @@ final class GifticonDetailMapViewController: BaseViewController, MapControllerDe
     
     func addViews() {
         MOALogger.logd()
-        let defaultPosition: MapPoint = MapPoint(longitude: 127.108678, latitude: 37.402001)
-        let mapViewInfo = MapviewInfo(viewName: "mapview", defaultPosition: defaultPosition, defaultLevel: 17)
+        let longitude = LocationManager.shared.longitude ?? LocationManager.defaultLongitude
+        let latitude = LocationManager.shared.latitude ?? LocationManager.defaultLatitude
+        let defaultPosition = MapPoint(longitude: longitude, latitude: latitude)
+        let mapViewInfo = MapviewInfo(viewName: "mapview", defaultPosition: defaultPosition, defaultLevel: 15)
         kmController?.addView(mapViewInfo)
     }
     
@@ -105,8 +107,6 @@ final class GifticonDetailMapViewController: BaseViewController, MapControllerDe
     func authenticationFailed(_ errorCode: Int, desc: String) {
         MOALogger.loge(desc)
         kmAuth = false
-        
-        // TODO 지도 로딩 몇번 실패 시 지도 안보여주기
     }
 }
 
