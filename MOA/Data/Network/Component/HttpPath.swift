@@ -15,4 +15,8 @@ struct HttpPath {
         static let Available = "/api/v1/gifticons/available"
         static let Detail = "/api/v1/gifticons"
     }
+    
+    struct Kakao {
+        static let SearchPlaceByKeyword = "/local/search/keyword"
+    }
 }

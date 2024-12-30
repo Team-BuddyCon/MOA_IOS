@@ -9,4 +9,5 @@ struct HttpValues {
     static let bearer = "Bearer %@"
     static let formData = "form-data"
     static let applicationJson = "application/json"
+    static let kakaoAK = "KakaoAK %@"
 }

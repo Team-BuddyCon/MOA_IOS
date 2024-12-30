@@ -87,7 +87,11 @@ final class GifticonDetailViewController: BaseViewController {
         return view
     }()
 
-    let viewModel = GifticonDetailViewModel(gifticonService: GifticonService.shared)
+    let viewModel = GifticonDetailViewModel(
+        gifticonService: GifticonService.shared,
+        kakaoService: KakaoService.shared
+    )
+    
     let gifticonId: Int
     
     let kmContainer: KMViewContainer = {
@@ -372,6 +376,8 @@ private extension Reactive where Base: GifticonDetailViewController {
                     confirmText: CONFIRM
                 )
             }
+            
+            viewController.viewModel.searchByKeyword(keyword: detailGifticon.gifticonStore.rawValue)
         }
     }
 }
