@@ -61,8 +61,8 @@ final class GifticonDetailViewModel: BaseViewModel {
     }
     
     func searchByKeyword(keyword: String) {
-        let longitude = LocationManager.defaultLongitude
-        let latitude = LocationManager.defaultLatitude
+        let longitude = LocationManager.shared.longitude ?? LocationManager.defaultLongitude
+        let latitude = LocationManager.shared.latitude ?? LocationManager.defaultLatitude
         
         kakaoService.searchPlaceByKeyword(
             query: keyword,

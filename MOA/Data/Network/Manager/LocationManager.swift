@@ -9,8 +9,8 @@ import UIKit
 import CoreLocation
 
 final class LocationManager: NSObject, CLLocationManagerDelegate {
-    static let defaultLatitude: Double = 37.4
-    static let defaultLongitude: Double = 127.1
+    static let defaultLatitude: Double = 37.402001
+    static let defaultLongitude: Double = 127.108678
     static let shared = LocationManager()
     private let manager = CLLocationManager()
     
