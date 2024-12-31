@@ -39,10 +39,19 @@ final class NetworkManager {
         
         // JWT
         if !UserPreferences.getAccessToken().isEmpty {
-            urlReqeuset.addValue(
-                String(format: HttpValues.bearer, UserPreferences.getAccessToken()),
-                forHTTPHeaderField: HttpKeys.authorization
-            )
+            if request.domain == .MOA {
+                urlReqeuset.addValue(
+                    String(format: HttpValues.bearer, UserPreferences.getAccessToken()),
+                    forHTTPHeaderField: HttpKeys.authorization
+                )
+            } else {
+                if let apiKey = Bundle.main.infoDictionary?["RestApiKey"] as? String {
+                    urlReqeuset.addValue(
+                        String(format: HttpValues.kakaoAK, apiKey),
+                        forHTTPHeaderField: HttpKeys.authorization
+                    )
+                }
+            }
         }
         
         // Content-Type
@@ -82,7 +91,7 @@ final class NetworkManager {
         let boundaryTerminator = "--\(boundary)--\r\n"
         
         var data = Data()
-        var jsonBody: [String: Any] = body.filter { $0.key != HttpKeys.Gifticon.image }
+        let jsonBody: [String: Any] = body.filter { $0.key != HttpKeys.Gifticon.image }
         
         if let jsonData = try? JSONSerialization.data(withJSONObject: jsonBody, options: []) {
             data.append(boundaryPrefix.data(using: .utf8)!)

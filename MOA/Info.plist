@@ -19,6 +19,8 @@
 	</array>
 	<key>KakaoApiKey</key>
 	<string>$(KAKAO_API_KEY)</string>
+	<key>RestApiKey</key>
+	<string>$(REST_API_KEY)</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>kakaotalk</string>

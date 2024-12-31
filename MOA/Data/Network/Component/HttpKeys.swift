@@ -35,4 +35,11 @@ struct HttpKeys {
         static let gifticonId = "gifticonId"
         static let used = "used"
     }
+    
+    struct Kakao {
+        static let query = "query"
+        static let x = "x"
+        static let y = "y"
+        static let radius = "radius"
+    }
 }

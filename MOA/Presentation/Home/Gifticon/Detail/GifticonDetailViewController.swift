@@ -87,7 +87,11 @@ final class GifticonDetailViewController: BaseViewController {
         return view
     }()
 
-    let viewModel = GifticonDetailViewModel(gifticonService: GifticonService.shared)
+    let viewModel = GifticonDetailViewModel(
+        gifticonService: GifticonService.shared,
+        kakaoService: KakaoService.shared
+    )
+    
     let gifticonId: Int
     
     let kmContainer: KMViewContainer = {
@@ -143,6 +147,10 @@ final class GifticonDetailViewController: BaseViewController {
         
         if kmController?.isEngineActive == false {
             kmController?.activateEngine()
+            
+            if viewModel.detailGifticon.gifticonStore != .ALL || viewModel.detailGifticon.gifticonStore != .OTHERS {
+                viewModel.searchByKeyword(keyword: viewModel.detailGifticon.gifticonStore.rawValue)
+            }
         }
     }
     
@@ -303,6 +311,10 @@ private extension GifticonDetailViewController {
         kmZoomInButton.rx.tap
             .bind(to: self.rx.tapZoomInMap)
             .disposed(by: disposeBag)
+        
+        viewModel.searchPlaceRelay
+            .bind(to: self.rx.bindSearchPlaces)
+            .disposed(by: disposeBag)
     }
 }
 
@@ -374,6 +386,14 @@ private extension Reactive where Base: GifticonDetailViewController {
             }
         }
     }
+    
+    var bindSearchPlaces: Binder<[SearchPlace]> {
+        return Binder<[SearchPlace]>(self.base) { viewController, searchPlaces in
+            viewController.createLabelLayer()
+            viewController.createPoiStyle()
+            viewController.createPois(searchPlaces: searchPlaces)
+        }
+    }
 }
 
 extension GifticonDetailViewController: MapControllerDelegate {
@@ -398,8 +418,49 @@ extension GifticonDetailViewController: MapControllerDelegate {
     func authenticationFailed(_ errorCode: Int, desc: String) {
         MOALogger.loge(desc)
         kmAuth = false
-        
         // TODO 지도 로딩 몇번 실패 시 지도 안보여주기
+    }
+    
+    // Poi 생성을 위한 LabelLayer 생성
+    // LabelLayer: Poi, WaveText를 담을 수 있는 Layer
+    func createLabelLayer() {
+        MOALogger.logd()
+        if let view = kmController?.getView("mapview") as? KakaoMap {
+            let manager = view.getLabelManager()
+            let layerOption = LabelLayerOptions(layerID: "PoiLayer", competitionType: .none, competitionUnit: .symbolFirst, orderType: .rank, zOrder: 0)
+            let _ = manager.addLabelLayer(option: layerOption)
+        }
+    }
+    
+    func createPoiStyle() {
+        MOALogger.logd()
+        if let view = kmController?.getView("mapview") as? KakaoMap {
+            let manager = view.getLabelManager()
+            let poiImage = UIImage(named: "CafePoiIcon")?.resize(scale: 0.3)
+            let iconStyle = PoiIconStyle(symbol: poiImage, anchorPoint: CGPoint(x: 0.5, y: 1.0), badges: nil)
+            let poiStyle = PoiStyle(styleID: "PerLevelStyle", styles: [
+                PerLevelPoiStyle(iconStyle: iconStyle, level: 5)
+            ])
+            manager.addPoiStyle(poiStyle)
+        }
+    }
+    
+    func createPois(searchPlaces: [SearchPlace]) {
+        MOALogger.logd()
+        if let view = kmController?.getView("mapview") as? KakaoMap {
+            let manager = view.getLabelManager()
+            let layer = manager.getLabelLayer(layerID: "PoiLayer")
+            let poiOption = PoiOptions(styleID: "PerLevelStyle")
+            poiOption.rank = 0
+            
+            for searchPlace in searchPlaces {
+                guard let longitude = Double(searchPlace.x) else { return }
+                guard let latitude = Double(searchPlace.y) else { return }
+                let mapPosition = MapPoint(longitude: longitude, latitude: latitude)
+                let poi = layer?.addPoi(option: poiOption, at: mapPosition)
+                poi?.show()
+            }
+        }
     }
 }
 

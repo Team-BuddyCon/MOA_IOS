@@ -12,6 +12,7 @@ import RxCocoa
 
 final class GifticonDetailViewModel: BaseViewModel {
     private let gifticonService: GifticonServiceProtocol
+    private let kakaoService: KakaoServiceProtocol
     
     let detailGifticonRelay = BehaviorRelay(value: DetailGifticon())
     var detailGifticon: DetailGifticon { detailGifticonRelay.value }
@@ -20,8 +21,14 @@ final class GifticonDetailViewModel: BaseViewModel {
     var usedRelay = PublishRelay<Bool>()
     private var used: Bool = false
     
-    init(gifticonService: GifticonServiceProtocol) {
+    let searchPlaceRelay = BehaviorRelay<[SearchPlace]>(value: [])
+    
+    init(
+        gifticonService: GifticonServiceProtocol,
+        kakaoService: KakaoServiceProtocol
+    ) {
         self.gifticonService = gifticonService
+        self.kakaoService = kakaoService
     }
     
     func fetchDetail(gifticonId: Int) {
@@ -53,5 +60,26 @@ final class GifticonDetailViewModel: BaseViewModel {
                     MOALogger.loge(error.localizedDescription)
                 }
             }).disposed(by: disposeBag)
+    }
+    
+    func searchByKeyword(keyword: String) {
+        let longitude = LocationManager.shared.longitude ?? LocationManager.defaultLongitude
+        let latitude = LocationManager.shared.latitude ?? LocationManager.defaultLatitude
+        
+        kakaoService.searchPlaceByKeyword(
+            query: keyword,
+            x: String(longitude),
+            y: String(latitude),
+            radius: 2000
+        ).subscribe(onNext: { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let response):
+                MOALogger.logd("\(response)")
+                searchPlaceRelay.accept(response.places.map { $0.toModel() })
+            case .failure(let error):
+                MOALogger.loge(error.localizedDescription)
+            }
+        }).disposed(by: disposeBag)
     }
 }

@@ -6,6 +6,6 @@
 //
 
 enum HttpContentType: String {
-    case application_json = "application/json"
+    case application_json = "application/json;charset=UTF-8"
     case multipart_form_data = "multipart/form-data"
 }
