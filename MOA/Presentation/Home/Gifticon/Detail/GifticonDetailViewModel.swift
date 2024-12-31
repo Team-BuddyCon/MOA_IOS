@@ -21,6 +21,8 @@ final class GifticonDetailViewModel: BaseViewModel {
     var usedRelay = PublishRelay<Bool>()
     private var used: Bool = false
     
+    let searchPlaceRelay = BehaviorRelay<[SearchPlace]>(value: [])
+    
     init(
         gifticonService: GifticonServiceProtocol,
         kakaoService: KakaoServiceProtocol
@@ -71,10 +73,10 @@ final class GifticonDetailViewModel: BaseViewModel {
             radius: 2000
         ).subscribe(onNext: { [weak self] result in
             guard let self = self else { return }
-            
             switch result {
             case .success(let response):
                 MOALogger.logd("\(response)")
+                searchPlaceRelay.accept(response.places.map { $0.toModel() })
             case .failure(let error):
                 MOALogger.loge(error.localizedDescription)
             }
