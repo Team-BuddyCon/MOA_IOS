@@ -358,9 +358,9 @@ private extension Reactive where Base: GifticonDetailViewController {
         return Binder<DetailGifticon>(self.base) { viewController, detailGifticon in
             ImageLoadManager.shared.load(url: detailGifticon.imageUrl)
                 .observe(on: MainScheduler())
-                .subscribe(onNext: { data in
-                    if let data = data {
-                        viewController.imageView.image = UIImage(data: data)
+                .subscribe(onNext: { image in
+                    if let image = image {
+                        viewController.imageView.image = image
                     }
                 }).disposed(by: viewController.disposeBag)
             
