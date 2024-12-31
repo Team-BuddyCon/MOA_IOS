@@ -103,7 +103,7 @@ private extension GifticonRegisterViewController {
             view.addSubview($0)
         }
         
-        let buttonW = getWidthByDivision(division: 2, exclude: 48)
+        let buttonW = UIScreen.getWidthByDivision(division: 2, exclude: 48)
         cancelButton.snp.makeConstraints {
             $0.leading.equalToSuperview().inset(20)
             $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(11.5)

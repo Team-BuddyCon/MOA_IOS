@@ -82,14 +82,14 @@ final class GifticonCell: UICollectionViewCell {
         
         ImageLoadManager.shared.load(url: imageURL)
             .observe(on: MainScheduler())
-            .subscribe(onNext: { [weak self] data in
+            .subscribe(onNext: { [weak self] image in
                 guard let self = self else {
                     MOALogger.loge()
                     return
                 }
                 
-                if let data = data {
-                    imageView.image = UIImage(data: data)
+                if let image = image {
+                    imageView.image = image
                 }
             }).disposed(by: disposeBag)
     }
