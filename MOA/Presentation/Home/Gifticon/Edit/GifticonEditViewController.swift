@@ -302,7 +302,7 @@ private extension Reactive where Base: GifticonEditViewController {
                     title: GIFTICON_DELETE_SUCCESS_MODAL_TITLE,
                     confirmText: GIFTICON_DELETE_NAVIGATION_HOME_MODAL_TITLE
                 ) {
-                    viewController.navigateTo(type: HomeTabBarController.self)
+                    viewController.navigatePopUpTo(type: HomeTabBarController.self)
                 }
                 viewController.present(modalVC, animated: true)
             case .update:
@@ -311,7 +311,7 @@ private extension Reactive where Base: GifticonEditViewController {
                     title: GIFTICON_UPDATE_SUCCESS_MODAL_TITLE,
                     confirmText: CONFIRM
                 ) {
-                    viewController.navigateTo(type: GifticonDetailViewController.self)
+                    viewController.navigatePopUpTo(type: GifticonDetailViewController.self)
                 }
                 viewController.present(modalVC, animated: true)
             }

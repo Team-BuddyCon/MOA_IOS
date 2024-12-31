@@ -9,7 +9,7 @@ import UIKit
 
 extension UIViewController {
     
-    func navigateTo<T: UIViewController>(type: T.Type) {
+    func navigatePopUpTo<T: UIViewController>(type: T.Type) {
         if let destinationVC = navigationController?.viewControllers.first(where: { $0 is T}) {
             navigationController?.popToViewController(destinationVC, animated: true)
         }

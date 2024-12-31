@@ -34,7 +34,7 @@ final class StoreSheetView: UIView {
         layout.minimumLineSpacing = 32
         layout.minimumInteritemSpacing = 21
         
-        let itemWidth = getWidthByDivision(division: 4, exclude: 103)
+        let itemWidth = UIScreen.getWidthByDivision(division: 4, exclude: 103)
         layout.itemSize = CGSize(width: itemWidth, height: 102)
         layout.sectionInset = UIEdgeInsets(top: 16, left: 20, bottom: 0, right: 20)
             

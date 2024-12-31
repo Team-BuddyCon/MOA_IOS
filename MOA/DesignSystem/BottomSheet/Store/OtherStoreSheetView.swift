@@ -146,7 +146,7 @@ final class OtherStoreSheetView: UIView {
             $0.horizontalEdges.equalToSuperview().inset(20)
         }
         
-        let buttonW = getWidthByDivision(division: 2, exclude: 48)
+        let buttonW = UIScreen.getWidthByDivision(division: 2, exclude: 48)
         prevButton.snp.makeConstraints {
             $0.leading.equalToSuperview().inset(20)
             $0.width.equalTo(buttonW)

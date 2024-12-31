@@ -40,7 +40,7 @@ final class GifticonViewController: BaseViewController {
     }()
     
     lazy var gifticonCollectionView: UICollectionView = {
-        let width = getWidthByDivision(division: 2, exclude: 20 + 16 + 20) // left + middle + right
+        let width = UIScreen.getWidthByDivision(division: 2, exclude: 20 + 16 + 20) // left + middle + right
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         layout.itemSize = CGSize(width: Double(width), height: Double(width) * 234 / 159.5)
@@ -266,7 +266,7 @@ extension Reactive where Base: GifticonViewController {
             let contentOffsetY = collectionView.contentOffset.y
             let scrollViewHeight = collectionView.bounds.size.height
             let contentHeight = collectionView.contentSize.height
-            let height = CGFloat(getWidthByDivision(division: 2, exclude: 20 + 16 + 20))
+            let height = CGFloat(UIScreen.getWidthByDivision(division: 2, exclude: 20 + 16 + 20))
             
             // 스크롤 할 필요 없는 데이터의 양일 때는 페이징 처리하지 않음
             if contentHeight <= scrollViewHeight {
