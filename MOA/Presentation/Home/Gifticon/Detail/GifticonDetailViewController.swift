@@ -338,7 +338,7 @@ private extension Reactive where Base: GifticonDetailViewController {
     var tapZoomInMap: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            let gifticonMapVC = GifticonDetailMapViewController()
+            let gifticonMapVC = GifticonDetailMapViewController(searchPlaces: viewController.viewModel.searchPlaceRelay.value)
             viewController.navigationController?.pushViewController(gifticonMapVC, animated: true)
         }
     }
