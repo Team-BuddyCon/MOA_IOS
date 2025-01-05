@@ -9,20 +9,23 @@ import UIKit
 import KakaoMapsSDK
 
 let KAKAO_MAP_DEFAULT_VIEW = "mapview"
-let KAKAO_MAP_DEFAULT_LEVEL = 15
+let KAKAO_MAP_LEVEL_15 = 15
+let KAKAO_MAP_LEVEL_17 = 17
 let LAYER_ID = "PoiLayer"
 let STYLE_ID = "PerLevelStyle"
 
 public class KakaoMapManager {
     static weak var instance: KakaoMapManager? = nil
+    private static var rect: CGRect = CGRect(x: 0, y: 0, width: 0, height: 0)
     var controller: KMController?
     var container: KMViewContainer?
     var kakaoMap: KakaoMap?
 
     public init(rect: CGRect) {
         MOALogger.logd()
-        container = KMViewContainer(frame: rect)
-        controller = KMController(viewContainer: container!)
+        KakaoMapManager.rect = rect
+        self.container = KMViewContainer(frame: rect)
+        self.controller = KMController(viewContainer: container!)
     }
     
     deinit {
@@ -32,7 +35,7 @@ public class KakaoMapManager {
     }
     
     public static func getInstance(rect: CGRect) -> KakaoMapManager {
-        if let instance = instance {
+        if let instance = instance, KakaoMapManager.rect == rect {
             return instance
         } else {
             let ref = KakaoMapManager(rect: rect)
@@ -41,24 +44,26 @@ public class KakaoMapManager {
         }
     }
     
-    public func addObserver(_ observer: Any) {
+    public func addObserver() {
+        MOALogger.logd()
         NotificationCenter.default.addObserver(
-            observer,
+            self,
             selector: #selector(didBecomeActive),
             name: UIApplication.didBecomeActiveNotification,
             object: nil
         )
         
         NotificationCenter.default.addObserver(
-            observer,
+            self,
             selector: #selector(willResignActive),
             name: UIApplication.willResignActiveNotification,
             object: nil
         )
     }
     
-    public func removeObserver(_ observer: Any) {
-        NotificationCenter.default.removeObserver(observer)
+    public func removeObserver() {
+        MOALogger.logd()
+        NotificationCenter.default.removeObserver(self)
     }
     
     // Poi 생성을 위한 LabelLayer(Poi, WaveText를 담을 수 있는 Layer) 생성

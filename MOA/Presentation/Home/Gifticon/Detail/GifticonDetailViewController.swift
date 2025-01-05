@@ -128,7 +128,7 @@ final class GifticonDetailViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         MOALogger.logd()
-        mapManager?.addObserver(self)
+        mapManager?.addObserver()
         fetchData()
     }
     
@@ -147,9 +147,11 @@ final class GifticonDetailViewController: BaseViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         kmAuth = false
-        mapManager?.removeObserver(self)
+        mapManager?.removeObserver()
         mapManager?.controller?.pauseEngine()
+        mapManager?.controller?.resetEngine()
         super.viewWillDisappear(animated)
+        MOALogger.logd()
     }
 }
 
@@ -243,7 +245,7 @@ private extension GifticonDetailViewController {
             $0.height.equalTo(54)
         }
         
-        kmContainer.snp.makeConstraints {
+        kmContainer.snp.remakeConstraints {
             $0.top.equalTo(memoInfoView.snp.bottom).offset(24)
             $0.horizontalEdges.equalToSuperview().inset(20)
             $0.bottom.equalToSuperview()
@@ -400,7 +402,7 @@ extension GifticonDetailViewController: MapControllerDelegate {
         let longitude = LocationManager.shared.longitude ?? LocationManager.defaultLongitude
         let latitude = LocationManager.shared.latitude ?? LocationManager.defaultLatitude
         let defaultPosition = MapPoint(longitude: longitude, latitude: latitude)
-        let mapViewInfo = MapviewInfo(viewName: KAKAO_MAP_DEFAULT_VIEW, defaultPosition: defaultPosition, defaultLevel: KAKAO_MAP_DEFAULT_LEVEL)
+        let mapViewInfo = MapviewInfo(viewName: KAKAO_MAP_DEFAULT_VIEW, defaultPosition: defaultPosition, defaultLevel: KAKAO_MAP_LEVEL_15)
         mapManager?.controller?.addView(mapViewInfo)
     }
     

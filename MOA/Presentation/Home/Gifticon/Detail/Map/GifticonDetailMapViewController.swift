@@ -12,23 +12,16 @@ import RxCocoa
 import RxRelay
 import KakaoMapsSDK
 
-final class GifticonDetailMapViewController: BaseViewController, MapControllerDelegate {
-    
-    let kmContainer: KMViewContainer = {
-        let width = Int(UIScreen.main.bounds.width)
-        let height = Int(UIScreen.main.bounds.height)
-        let container = KMViewContainer(frame: CGRect(x: 0, y: 0, width: width, height: height))
-        return container
-    }()
-    
+final class GifticonDetailMapViewController: BaseViewController {
+
     let confirmButton: CommonButton = {
         let button = CommonButton(title: GIFTICON_DETAIL_MAP_CONFIRM_BUTTON_TITLE)
         return button
     }()
     
-    var kmController: KMController? = nil
+    var mapManager: KakaoMapManager?
     private var kmAuth: Bool = false
-    private let searchPlaces: [SearchPlace]
+    let searchPlaces: [SearchPlace]
     
     init(searchPlaces: [SearchPlace]) {
         self.searchPlaces = searchPlaces
@@ -42,38 +35,44 @@ final class GifticonDetailMapViewController: BaseViewController, MapControllerDe
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
-        setupLayout()
         setupMap()
+        setupLayout()
         bind()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        mapManager?.addObserver()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         MOALogger.logd()
         
-        if kmController?.isEngineActive == false {
-            kmController?.activateEngine()
+        if mapManager?.controller?.isEngineActive == false {
+            mapManager?.controller?.activateEngine()
         }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         kmAuth = false
-        kmController?.pauseEngine()
+        mapManager?.removeObserver()
+        mapManager?.controller?.pauseEngine()
         super.viewWillDisappear(animated)
+        MOALogger.logd()
     }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        kmController?.resetEngine()
-        super.viewDidDisappear(animated)
-    }
-    
-    private func setupLayout() {
+}
+
+private extension GifticonDetailMapViewController {
+    func setupLayout() {
         setupTopBarWithBackButton(title: MAP_MENU_TITLE)
+        
+        guard let kmContainer = mapManager?.container else { return }
         
         view.addSubview(kmContainer)
         view.addSubview(confirmButton)
         
-        kmContainer.snp.makeConstraints {
+        kmContainer.snp.remakeConstraints {
             $0.horizontalEdges.equalToSuperview()
             $0.bottom.equalToSuperview()
             $0.top.equalTo(view.safeAreaLayoutGuide)
@@ -86,10 +85,12 @@ final class GifticonDetailMapViewController: BaseViewController, MapControllerDe
         }
     }
     
-    private func setupMap() {
-        kmController = KMController(viewContainer: kmContainer)
-        kmController?.delegate = self
-        kmController?.prepareEngine()
+    func setupMap() {
+        let width = Int(UIScreen.main.bounds.width)
+        let height = Int(UIScreen.main.bounds.height)
+        mapManager = KakaoMapManager.getInstance(rect: CGRect(x: 0, y: 0, width: width, height: height))
+        mapManager?.controller?.delegate = self
+        mapManager?.controller?.prepareEngine()
     }
     
     func bind() {
@@ -100,13 +101,20 @@ final class GifticonDetailMapViewController: BaseViewController, MapControllerDe
             }).disposed(by: disposeBag)
     }
     
+}
+
+extension GifticonDetailMapViewController: MapControllerDelegate {
     func addViews() {
         MOALogger.logd()
         let longitude = LocationManager.shared.longitude ?? LocationManager.defaultLongitude
         let latitude = LocationManager.shared.latitude ?? LocationManager.defaultLatitude
         let defaultPosition = MapPoint(longitude: longitude, latitude: latitude)
-        let mapViewInfo = MapviewInfo(viewName: "mapview", defaultPosition: defaultPosition, defaultLevel: 15)
-        kmController?.addView(mapViewInfo)
+        let mapViewInfo = MapviewInfo(viewName: KAKAO_MAP_DEFAULT_VIEW, defaultPosition: defaultPosition, defaultLevel: KAKAO_MAP_LEVEL_17)
+        mapManager?.controller?.addView(mapViewInfo)
+    }
+    
+    func containerDidResized(_ size: CGSize) {
+        MOALogger.logd()
     }
     
     func authenticationSucceeded() {
@@ -121,49 +129,10 @@ final class GifticonDetailMapViewController: BaseViewController, MapControllerDe
     
     func addViewSucceeded(_ viewName: String, viewInfoName: String) {
         MOALogger.logd()
-        createLabelLayer()
-        createPoiStyle()
-        createPois(searchPlaces: searchPlaces)
-    }
-
-    func createLabelLayer() {
-        MOALogger.logd()
-        if let view = kmController?.getView("mapview") as? KakaoMap {
-            let manager = view.getLabelManager()
-            let layerOption = LabelLayerOptions(layerID: "PoiLayer", competitionType: .none, competitionUnit: .symbolFirst, orderType: .rank, zOrder: 0)
-            let _ = manager.addLabelLayer(option: layerOption)
-        }
-    }
-    
-    func createPoiStyle() {
-        MOALogger.logd()
-        if let view = kmController?.getView("mapview") as? KakaoMap {
-            let manager = view.getLabelManager()
-            let poiImage = UIImage(named: "CafePoiIcon")?.resize(scale: 0.3)
-            let iconStyle = PoiIconStyle(symbol: poiImage, anchorPoint: CGPoint(x: 0.5, y: 1.0), badges: nil)
-            let poiStyle = PoiStyle(styleID: "PerLevelStyle", styles: [
-                PerLevelPoiStyle(iconStyle: iconStyle, level: 5)
-            ])
-            manager.addPoiStyle(poiStyle)
-        }
-    }
-    
-    func createPois(searchPlaces: [SearchPlace]) {
-        MOALogger.logd("\(searchPlaces.count)")
-        if let view = kmController?.getView("mapview") as? KakaoMap {
-            let manager = view.getLabelManager()
-            let layer = manager.getLabelLayer(layerID: "PoiLayer")
-            let poiOption = PoiOptions(styleID: "PerLevelStyle")
-            poiOption.rank = 0
-            
-            for searchPlace in searchPlaces {
-                guard let longitude = Double(searchPlace.x) else { return }
-                guard let latitude = Double(searchPlace.y) else { return }
-                let mapPosition = MapPoint(longitude: longitude, latitude: latitude)
-                let poi = layer?.addPoi(option: poiOption, at: mapPosition)
-                poi?.show()
-            }
+        if searchPlaces.count > 0 {
+            mapManager?.createLabelLayer()
+            mapManager?.createPoiStyle(scale: 0.3)
+            mapManager?.createPois(searchPlaces: searchPlaces)
         }
     }
 }
-
