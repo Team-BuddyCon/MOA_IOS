@@ -137,6 +137,9 @@ let OTHERS_IMAGE = "Others"
 let ZOOM_IN_BUTTON = "ZoomInButton"
 let DELETE_BUTTON = "DeleteButton"
 let USED_GIFTICON = "UsedGifticon"
+let CAFE_POI_ICON = "CafePoiIcon"
+let FAST_FOOD_POI_ICON = "FastFoodPoiIcon"
+let STORE_POI_ICON = "StorePoiIcon"
 
 // MARK: Font
 let pretendard_black = "Pretendard-Black"

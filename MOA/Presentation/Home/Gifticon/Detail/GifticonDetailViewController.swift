@@ -94,15 +94,6 @@ final class GifticonDetailViewController: BaseViewController {
     
     let gifticonId: Int
     
-    let kmContainer: KMViewContainer = {
-        let width = Int(UIScreen.main.bounds.width) - 40
-        let height = Int(Double(width) * 166.0 / 335.0)
-        let container = KMViewContainer(frame: CGRect(x: 0, y: 0, width: width, height: height))
-        container.layer.cornerRadius = 20
-        container.layer.masksToBounds = true
-        return container
-    }()
-    
     let kmZoomInButton: UIButton = {
         let button = UIButton()
         button.setTitle(GIFTICON_DETAIL_MAP_ZOOM_IN_BUTTON_TITLE, for: .normal)
@@ -113,8 +104,8 @@ final class GifticonDetailViewController: BaseViewController {
         return button
     }()
     
-    var kmController: KMController? = nil
     private var kmAuth: Bool = false
+    var mapManager: KakaoMapManager?
     
     init(gifticonId: Int) {
         self.gifticonId = gifticonId
@@ -128,16 +119,16 @@ final class GifticonDetailViewController: BaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
-        setupLayout()
         setupMap()
+        setupLayout()
         bind()
-        
         LocationManager.shared.startUpdatingLocation()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         MOALogger.logd()
+        mapManager?.addObserver()
         fetchData()
     }
     
@@ -145,8 +136,8 @@ final class GifticonDetailViewController: BaseViewController {
         super.viewDidAppear(animated)
         MOALogger.logd()
         
-        if kmController?.isEngineActive == false {
-            kmController?.activateEngine()
+        if mapManager?.controller?.isEngineActive == false {
+            mapManager?.controller?.activateEngine()
             
             if viewModel.detailGifticon.gifticonStore != .ALL || viewModel.detailGifticon.gifticonStore != .OTHERS {
                 viewModel.searchByKeyword(keyword: viewModel.detailGifticon.gifticonStore.rawValue)
@@ -156,13 +147,11 @@ final class GifticonDetailViewController: BaseViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         kmAuth = false
-        kmController?.pauseEngine()
+        mapManager?.removeObserver()
+        mapManager?.controller?.pauseEngine()
+        mapManager?.controller?.resetEngine()
         super.viewWillDisappear(animated)
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        kmController?.resetEngine()
-        super.viewDidDisappear(animated)
+        MOALogger.logd()
     }
 }
 
@@ -191,6 +180,8 @@ private extension GifticonDetailViewController {
             $0.edges.equalToSuperview()
             $0.width.equalTo(scrollView.snp.width)
         }
+        
+        guard let kmContainer = mapManager?.container else { return }
         
         [
             imageView,
@@ -254,7 +245,7 @@ private extension GifticonDetailViewController {
             $0.height.equalTo(54)
         }
         
-        kmContainer.snp.makeConstraints {
+        kmContainer.snp.remakeConstraints {
             $0.top.equalTo(memoInfoView.snp.bottom).offset(24)
             $0.horizontalEdges.equalToSuperview().inset(20)
             $0.bottom.equalToSuperview()
@@ -282,9 +273,16 @@ private extension GifticonDetailViewController {
     }
     
     func setupMap() {
-        kmController = KMController(viewContainer: kmContainer)
-        kmController?.delegate = self
-        kmController?.prepareEngine()
+        let width = Int(UIScreen.main.bounds.width) - 40
+        let height = Int(Double(width) * 166.0 / 335.0)
+        let rect = CGRect(x: 0, y: 0, width: width, height: height)
+        mapManager = KakaoMapManager.getInstance(rect: rect)
+        mapManager?.controller?.delegate = self
+        mapManager?.controller?.prepareEngine()
+        
+        guard let container = mapManager?.container else { return }
+        container.layer.cornerRadius = 20
+        container.layer.masksToBounds = true
     }
     
     func fetchData() {
@@ -389,9 +387,11 @@ private extension Reactive where Base: GifticonDetailViewController {
     
     var bindSearchPlaces: Binder<[SearchPlace]> {
         return Binder<[SearchPlace]>(self.base) { viewController, searchPlaces in
-            viewController.createLabelLayer()
-            viewController.createPoiStyle()
-            viewController.createPois(searchPlaces: searchPlaces)
+            if searchPlaces.count > 0 {
+                viewController.mapManager?.createLabelLayer()
+                viewController.mapManager?.createPoiStyle(scale: 0.3)
+                viewController.mapManager?.createPois(searchPlaces: searchPlaces)
+            }
         }
     }
 }
@@ -402,12 +402,8 @@ extension GifticonDetailViewController: MapControllerDelegate {
         let longitude = LocationManager.shared.longitude ?? LocationManager.defaultLongitude
         let latitude = LocationManager.shared.latitude ?? LocationManager.defaultLatitude
         let defaultPosition = MapPoint(longitude: longitude, latitude: latitude)
-        let mapViewInfo = MapviewInfo(viewName: "mapview", defaultPosition: defaultPosition, defaultLevel: 15)
-        kmController?.addView(mapViewInfo)
-    }
-    
-    func containerDidResized(_ size: CGSize) {
-        MOALogger.logd()
+        let mapViewInfo = MapviewInfo(viewName: KAKAO_MAP_DEFAULT_VIEW, defaultPosition: defaultPosition, defaultLevel: KAKAO_MAP_LEVEL_15)
+        mapManager?.controller?.addView(mapViewInfo)
     }
     
     func authenticationSucceeded() {
@@ -419,48 +415,6 @@ extension GifticonDetailViewController: MapControllerDelegate {
         MOALogger.loge(desc)
         kmAuth = false
         // TODO 지도 로딩 몇번 실패 시 지도 안보여주기
-    }
-    
-    // Poi 생성을 위한 LabelLayer 생성
-    // LabelLayer: Poi, WaveText를 담을 수 있는 Layer
-    func createLabelLayer() {
-        MOALogger.logd()
-        if let view = kmController?.getView("mapview") as? KakaoMap {
-            let manager = view.getLabelManager()
-            let layerOption = LabelLayerOptions(layerID: "PoiLayer", competitionType: .none, competitionUnit: .symbolFirst, orderType: .rank, zOrder: 0)
-            let _ = manager.addLabelLayer(option: layerOption)
-        }
-    }
-    
-    func createPoiStyle() {
-        MOALogger.logd()
-        if let view = kmController?.getView("mapview") as? KakaoMap {
-            let manager = view.getLabelManager()
-            let poiImage = UIImage(named: "CafePoiIcon")?.resize(scale: 0.3)
-            let iconStyle = PoiIconStyle(symbol: poiImage, anchorPoint: CGPoint(x: 0.5, y: 1.0), badges: nil)
-            let poiStyle = PoiStyle(styleID: "PerLevelStyle", styles: [
-                PerLevelPoiStyle(iconStyle: iconStyle, level: 5)
-            ])
-            manager.addPoiStyle(poiStyle)
-        }
-    }
-    
-    func createPois(searchPlaces: [SearchPlace]) {
-        MOALogger.logd()
-        if let view = kmController?.getView("mapview") as? KakaoMap {
-            let manager = view.getLabelManager()
-            let layer = manager.getLabelLayer(layerID: "PoiLayer")
-            let poiOption = PoiOptions(styleID: "PerLevelStyle")
-            poiOption.rank = 0
-            
-            for searchPlace in searchPlaces {
-                guard let longitude = Double(searchPlace.x) else { return }
-                guard let latitude = Double(searchPlace.y) else { return }
-                let mapPosition = MapPoint(longitude: longitude, latitude: latitude)
-                let poi = layer?.addPoi(option: poiOption, at: mapPosition)
-                poi?.show()
-            }
-        }
     }
 }
 
