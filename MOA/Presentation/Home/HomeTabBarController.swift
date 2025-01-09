@@ -62,7 +62,7 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         }
         
         if viewController is MypageViewController {
-            setupTopBarWithLargeTitle(title: MYPAGE_MENU_TITLE)
+            setupTopBarWithNotification()
         }
         
         return true

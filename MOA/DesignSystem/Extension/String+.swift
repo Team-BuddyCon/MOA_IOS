@@ -106,6 +106,9 @@ let GIFTICON_DELETE_NAVIGATION_HOME_MODAL_TITLE = "홈으로 이동"
 let GIFTICON_UPDATE_MODAL_TITLE = "기프티콘을 수정할까요?"
 let GIFTICON_UPDATE_SUCCESS_MODAL_TITLE = "기프티콘이 수정되었어요"
 
+// MARK: Mypage
+let MYPAGE_UNAVAILABLE_GIFTICON = "사용한 기프티콘"
+
 // MARK: ImageSet
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"
 let CHECK_BUTTON_IMAGE_ASSET = "CheckButton"
@@ -140,6 +143,8 @@ let USED_GIFTICON = "UsedGifticon"
 let CAFE_POI_ICON = "CafePoiIcon"
 let FAST_FOOD_POI_ICON = "FastFoodPoiIcon"
 let STORE_POI_ICON = "StorePoiIcon"
+let UNAVAILABLE_GIFTICON = "UnavailableGifticon"
+let NOTIFICATION_ICON = "NotificationIcon"
 
 // MARK: Font
 let pretendard_black = "Pretendard-Black"
