@@ -15,8 +15,14 @@ extension UIViewController {
         }
     }
     
+    func setupTopBarWithNotification() {
+        navigationItem.leftBarButtonItem = nil
+        navigationItem.rightBarButtonItem = makeNotificationButton()
+    }
+    
     func setupTopBarWithLargeTitle(title: String) {
         navigationItem.leftBarButtonItem = makeLeftLargeTitle(title: title)
+        navigationItem.rightBarButtonItem = nil
     }
     
     func setupTopBarWithBackButton(title: String){
@@ -54,5 +60,13 @@ extension UIViewController {
         label.font = UIFont(name: pretendard_bold, size: 22)
         label.textColor = .grey90
         return UIBarButtonItem(customView: label)
+    }
+    
+    @objc private func makeNotificationButton() -> UIBarButtonItem {
+        let button = UIButton()
+        button.setImage(UIImage(named: NOTIFICATION_ICON), for: .normal)
+        button.tintColor = .grey90
+        button.clipsToBounds = true
+        return UIBarButtonItem(customView: button)
     }
 }
