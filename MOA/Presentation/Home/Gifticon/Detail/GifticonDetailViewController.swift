@@ -375,7 +375,7 @@ private extension Reactive where Base: GifticonDetailViewController {
             viewController.storeInfoView.info = detailGifticon.gifticonStore.rawValue
             viewController.memoInfoView.info = detailGifticon.memo
             
-            if !detailGifticon.imageUrl.isEmpty && dday < 0 {
+            if !detailGifticon.used && !detailGifticon.imageUrl.isEmpty && dday < 0 {
                 viewController.showAlertModal(
                     title: GIFTICON_REGISTER_EXPIRE_MODAL_TITLE,
                     subTitle: GIFTICON_REGISTER_EXPIRE_MODAL_SUBTITLE,

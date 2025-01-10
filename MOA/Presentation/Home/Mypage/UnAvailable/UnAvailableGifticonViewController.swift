@@ -24,6 +24,7 @@ final class UnAvailableGifticonViewController: BaseViewController {
         let layout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 24.0
         layout.minimumInteritemSpacing = 16.0
+        layout.sectionInset = UIEdgeInsets(top: 16.0, left: 0.0, bottom: 0.0, right: 0.0)
         
         let width = Double(UIScreen.getWidthByDivision(division: 2, exclude: 56))
         layout.itemSize = CGSize(width: width, height: width * 234 / 159.5)
@@ -70,9 +71,9 @@ private extension UnAvailableGifticonViewController {
         }
         
         gifticonCollectionView.snp.makeConstraints {
-            $0.top.equalTo(titleLabel.snp.bottom).offset(16.0)
+            $0.top.equalTo(titleLabel.snp.bottom)
             $0.horizontalEdges.equalToSuperview().inset(20.0)
-            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(11.5)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide)
         }
     }
     
@@ -121,6 +122,15 @@ private extension UnAvailableGifticonViewController {
             .map { _ in self.gifticonCollectionView }
             .bind(to: self.rx.scrollOffset)
             .disposed(by: disposeBag)
+        
+        gifticonCollectionView.rx.modelSelected(UnAvailableGifticon.self)
+            .subscribe(onNext: { [weak self] gifticon in
+                guard let self = self else { return }
+                MOALogger.logd("\(gifticon.gifticonId)")
+                
+                let detailVC = GifticonDetailViewController(gifticonId: gifticon.gifticonId)
+                navigationController?.pushViewController(detailVC, animated: true)
+            }).disposed(by: disposeBag)
         
         viewModel.count
             .bind(to: self.rx.bindCount)
