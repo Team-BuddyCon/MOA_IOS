@@ -45,6 +45,18 @@ protocol GifticonServiceProtocol {
         gifticonId: Int,
         used: Bool
     ) -> Observable<Result<GifticonResponse, URLError>>
+    
+    func fetchUnAvailableGifticon(
+        pageNumber: Int,
+        rowCount: Int
+    ) -> Observable<Result<UnAvailableGifticonResponse, URLError>>
+    
+    func fetchGifticonCount(
+        used: Bool,
+        storeCateogry: StoreCategory?,
+        storeType: StoreType?,
+        remainingDays: Int?
+    ) -> Observable<Result<GifticonCountResponse, URLError>>
 }
 
 
@@ -126,6 +138,32 @@ final class GifticonService: GifticonServiceProtocol {
         let request = UpdateUsedGifticonRequest(
             gifticonId: gifticonId,
             used: used
+        )
+        return NetworkManager.shared.request(request: request)
+    }
+    
+    func fetchUnAvailableGifticon(
+        pageNumber: Int,
+        rowCount: Int
+    ) -> Observable<Result<UnAvailableGifticonResponse, URLError>> {
+        let request = UnAvailableGifticonRequest(
+            pageNumber: pageNumber,
+            rowCount: rowCount
+        )
+        return NetworkManager.shared.request(request: request)
+    }
+    
+    func fetchGifticonCount(
+        used: Bool,
+        storeCateogry: StoreCategory?,
+        storeType: StoreType?,
+        remainingDays: Int?
+    ) -> Observable<Result<GifticonCountResponse, URLError>> {
+        let request = GifticonCountRequest(
+            used: used,
+            storeCategory: storeCateogry,
+            storeType: storeType,
+            remainingDays: remainingDays
         )
         return NetworkManager.shared.request(request: request)
     }

@@ -108,6 +108,7 @@ let GIFTICON_UPDATE_SUCCESS_MODAL_TITLE = "기프티콘이 수정되었어요"
 
 // MARK: Mypage
 let MYPAGE_UNAVAILABLE_GIFTICON = "사용한 기프티콘"
+let UNAVAILABLE_GIFTIFON_TITLE = "사용완료 기프티콘"
 
 // MARK: ImageSet
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"
