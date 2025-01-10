@@ -13,7 +13,7 @@ import RxRelay
 
 final class UnAvailableGifticonViewController: BaseViewController {
     
-    private let titleLabel: UILabel = {
+    let titleLabel: UILabel = {
         let label = UILabel()
         label.textColor = .grey90
         label.font = UIFont(name: pretendard_bold, size: 18.0)
@@ -41,7 +41,7 @@ final class UnAvailableGifticonViewController: BaseViewController {
         super.viewDidLoad()
         MOALogger.logd()
         setupLayout()
-        viewModel.fetch()
+        setupData()
         bind()
     }
     
@@ -75,6 +75,11 @@ private extension UnAvailableGifticonViewController {
         }
     }
     
+    func setupData() {
+        viewModel.fetch()
+        viewModel.fetchGifticonCount()
+    }
+    
     func bind() {
         viewModel.gifticons
             .bind(to: gifticonCollectionView.rx.items) { collectionView, row, gifticon in
@@ -106,6 +111,10 @@ private extension UnAvailableGifticonViewController {
             .map { _ in self.gifticonCollectionView }
             .bind(to: self.rx.scrollOffset)
             .disposed(by: disposeBag)
+        
+        viewModel.count
+            .bind(to: self.rx.bindCount)
+            .disposed(by: disposeBag)
     }
 }
 
@@ -129,6 +138,12 @@ extension Reactive where Base: UnAvailableGifticonViewController {
                 viewController.viewModel.isLoading = true
                 viewController.viewModel.fetchMore()
             }
+        }
+    }
+    
+    var bindCount: Binder<Int> {
+        return Binder<Int>(self.base) { viewController, count in
+            viewController.titleLabel.text = String(format: UNAVAILABLE_GIFTICON_COUNT_TITLE_FORMAT, count)
         }
     }
 }

@@ -63,7 +63,7 @@ final class GifticonCell: UICollectionViewCell {
         let imageView = UIImageView()
         imageView.contentMode = .center
         imageView.layer.cornerRadius = 8
-        imageView.backgroundColor = .black.withAlphaComponent(0.3)
+        imageView.backgroundColor = .black.withAlphaComponent(0.2)
         imageView.isHidden = true
         return imageView
     }()

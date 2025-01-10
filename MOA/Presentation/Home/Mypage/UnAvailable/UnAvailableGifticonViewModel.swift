@@ -20,6 +20,7 @@ final class UnAvailableGifticonViewModel: BaseViewModel {
     var isScrollEnded = false
     var isLoading = false
     
+    let count = BehaviorRelay(value: 0)
     let gifticons = BehaviorRelay<[UnAvailableGifticon]>(value: [])
     
     init(gifticonService: GifticonServiceProtocol) {
@@ -65,6 +66,27 @@ final class UnAvailableGifticonViewModel: BaseViewModel {
             let current = gifticons.value.filter { $0.gifticonId != Int.min }
             isLoading = false
             gifticons.accept(current + data)
+        }).disposed(by: disposeBag)
+    }
+    
+    func fetchGifticonCount() {
+        gifticonService.fetchGifticonCount(
+            used: true,
+            storeCateogry: nil,
+            storeType: nil,
+            remainingDays: nil
+        ).subscribe(onNext: { [weak self] result in
+            guard let self = self else {
+                MOALogger.loge()
+                return
+            }
+            
+            switch result {
+            case .success(let response):
+                count.accept(response.count)
+            case .failure(let error):
+                MOALogger.loge(error.localizedDescription)
+            }
         }).disposed(by: disposeBag)
     }
     
