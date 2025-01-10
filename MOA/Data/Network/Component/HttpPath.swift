@@ -14,6 +14,8 @@ struct HttpPath {
         static let Create = "/api/v1/gifticons"
         static let Available = "/api/v1/gifticons/available"
         static let Detail = "/api/v1/gifticons"
+        static let UnAvailable = "/api/v1/gifticons/unavailable"
+        static let Count = "/api/v1/gifticons/count"
     }
     
     struct Kakao {

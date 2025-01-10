@@ -48,6 +48,7 @@ final class GifticonViewModel: BaseViewModel {
             sortTypeRelay,
             pageNumberRelay
         ).flatMapLatest { (category, sortType, pageNumber) in
+            self.isLoading = true
             self.gifticons.accept(self.gifticons.value + [AvailableGifticon](repeating: AvailableGifticon(), count: 6))
             return self.gifticonService
                 .fetchAvailableGifticon(

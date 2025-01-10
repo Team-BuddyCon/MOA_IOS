@@ -34,6 +34,7 @@ struct HttpKeys {
         static let dto = "dto"
         static let gifticonId = "gifticonId"
         static let used = "used"
+        static let remainingDays = "remainingDays"
     }
     
     struct Kakao {

@@ -7,6 +7,9 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
+import RxRelay
 
 final class MypageViewController: BaseViewController {
     
@@ -43,6 +46,7 @@ final class MypageViewController: BaseViewController {
         super.viewDidLoad()
         MOALogger.logd()
         setupLayout()
+        bind()
     }
 }
 
@@ -67,6 +71,26 @@ private extension MypageViewController {
             $0.top.equalTo(unavailableBox.snp.bottom).offset(8)
             $0.horizontalEdges.equalToSuperview().inset(20.0)
             $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(11.5)
+        }
+    }
+    
+    func bind() {
+        let tapGesture = UITapGestureRecognizer()
+        unavailableBox.addGestureRecognizer(tapGesture)
+        
+        tapGesture.rx.event
+            .map({ _ in })
+            .bind(to: self.rx.bindUnavailableBox)
+            .disposed(by: disposeBag)
+    }
+}
+
+extension Reactive where Base: MypageViewController {
+    var bindUnavailableBox: Binder<Void> {
+        return Binder(base) { viewController, _ in
+            MOALogger.logd()
+            let unavailableVC = UnAvailableGifticonViewController()
+            viewController.navigationController?.pushViewController(unavailableVC, animated: true)
         }
     }
 }

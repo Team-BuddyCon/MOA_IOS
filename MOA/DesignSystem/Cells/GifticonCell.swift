@@ -59,6 +59,15 @@ final class GifticonCell: UICollectionViewCell {
         return label
     }()
     
+    private let dimView: UIView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .center
+        imageView.layer.cornerRadius = 8
+        imageView.backgroundColor = .black.withAlphaComponent(0.2)
+        imageView.isHidden = true
+        return imageView
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupLayout()
@@ -73,7 +82,8 @@ final class GifticonCell: UICollectionViewCell {
         imageURL: String,
         storeType: StoreType,
         title: String,
-        date: String
+        date: String,
+        used: Bool = false
     ) {
         ddayButton.dday = dday
         storeLabel.text = storeType.rawValue
@@ -89,9 +99,17 @@ final class GifticonCell: UICollectionViewCell {
                 }
                 
                 if let image = image {
+                    dimView.isHidden = !used
                     imageView.image = image
+                    
                 }
             }).disposed(by: disposeBag)
+        
+        if used {
+            ddayButton.isHidden = true
+            storeLabel.textColor = .grey70
+            dateLabel.textColor = .grey70
+        }
     }
     
     private func setupLayout() {
@@ -106,7 +124,8 @@ final class GifticonCell: UICollectionViewCell {
             ddayButton,
             storeLabel,
             titleLabel,
-            dateLabel
+            dateLabel,
+            dimView
         ].forEach {
             addSubview($0)
         }
@@ -115,6 +134,10 @@ final class GifticonCell: UICollectionViewCell {
             $0.horizontalEdges.equalToSuperview()
             $0.top.equalToSuperview()
             $0.height.equalTo(shadowView.snp.width).multipliedBy(1.0)
+        }
+        
+        dimView.snp.makeConstraints {
+            $0.edges.equalTo(shadowView.snp.edges)
         }
         
         ddayButton.snp.makeConstraints {

@@ -87,6 +87,7 @@ final class GifticonViewController: BaseViewController {
         return view
     }()
 
+    private var isFirstEntry = true
     let gifticonViewModel = GifticonViewModel(gifticonService: GifticonService.shared)
     
     override func viewDidLoad() {
@@ -100,7 +101,11 @@ final class GifticonViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         MOALogger.logd()
-        gifticonViewModel.refresh()
+        
+        if !isFirstEntry {
+            gifticonViewModel.refresh()
+        }
+        isFirstEntry = false
     }
 }
 
