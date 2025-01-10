@@ -30,6 +30,8 @@ final class UnAvailableGifticonViewModel: BaseViewModel {
     func fetch() {
         MOALogger.logd()
         pageNumberRelay.flatMapLatest { pageNumber in
+            self.isLoading = true
+            self.gifticons.accept(self.gifticons.value + [UnAvailableGifticon](repeating: UnAvailableGifticon(), count: 6))
             return self.gifticonService
                 .fetchUnAvailableGifticon(
                     pageNumber: pageNumber,
@@ -92,6 +94,7 @@ final class UnAvailableGifticonViewModel: BaseViewModel {
     
     func refresh() {
         clearPagingData()
+        fetchGifticonCount()
     }
     
     func fetchMore() {

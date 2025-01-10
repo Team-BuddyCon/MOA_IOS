@@ -26,11 +26,12 @@ final class UnAvailableGifticonViewController: BaseViewController {
         layout.minimumInteritemSpacing = 16.0
         
         let width = Double(UIScreen.getWidthByDivision(division: 2, exclude: 56))
-        layout.itemSize = CGSize(width: width, height: 234)
+        layout.itemSize = CGSize(width: width, height: width * 234 / 159.5)
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.showsVerticalScrollIndicator = false
         collectionView.register(GifticonCell.self, forCellWithReuseIdentifier: GifticonCell.identifier)
+        collectionView.register(GifticonSkeletonCell.self, forCellWithReuseIdentifier: GifticonSkeletonCell.identifier)
         return collectionView
     }()
     
@@ -83,6 +84,15 @@ private extension UnAvailableGifticonViewController {
     func bind() {
         viewModel.gifticons
             .bind(to: gifticonCollectionView.rx.items) { collectionView, row, gifticon in
+                if gifticon.gifticonId == Int.min {
+                    guard let cell = collectionView.dequeueReusableCell(
+                        withReuseIdentifier: GifticonSkeletonCell.identifier,
+                        for: IndexPath(row: row, section: 0)
+                    ) as? GifticonSkeletonCell else {
+                        return UICollectionViewCell()
+                    }
+                    return cell
+                }
                 
                 guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: GifticonCell.identifier, for: IndexPath(row: row, section: 0)) as? GifticonCell else {
                     return UICollectionViewCell()
