@@ -35,9 +35,7 @@ final class ModalViewController: BaseViewController {
     
     private lazy var subTitleLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont(name: pretendard_regular, size: 12.0)
         label.textColor = .grey70
-        label.textAlignment = .center
         label.numberOfLines = 2
         label.isHidden = modalType == .alert || modalType == .select
         return label
@@ -87,7 +85,16 @@ final class ModalViewController: BaseViewController {
         modalTransitionStyle = .crossDissolve
         
         titleLabel.text = title
-        subTitleLabel.text = subTitle
+        
+        if let subTitle = subTitle {
+            subTitleLabel.setTextWithLineHeight(
+                text: subTitle,
+                font: pretendard_regular,
+                size: 12.0,
+                lineSpacing: 16.8
+            )
+        }
+
         setupLayout()
     }
     

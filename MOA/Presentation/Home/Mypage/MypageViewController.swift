@@ -28,7 +28,7 @@ final class MypageViewController: BaseViewController {
     }()
     
     private lazy var unavailableBox: UnAvailableGifticonBox = {
-        let box = UnAvailableGifticonBox(count: 3)
+        let box = UnAvailableGifticonBox()
         return box
     }()
     
@@ -42,11 +42,18 @@ final class MypageViewController: BaseViewController {
         return tableView
     }()
     
+    let mypageViewModel = MypageViewModel(gifticonService: GifticonService.shared)
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
         setupLayout()
         bind()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        mypageViewModel.fetchGifticonCount()
     }
 }
 
@@ -82,6 +89,11 @@ private extension MypageViewController {
             .map({ _ in })
             .bind(to: self.rx.bindUnavailableBox)
             .disposed(by: disposeBag)
+        
+        mypageViewModel.count
+            .map { String(format: UNAVAILABLE_GIFTICON_COUNT_FORMAT, $0) }
+            .bind(to: self.unavailableBox.countLabel.rx.text)
+            .disposed(by: disposeBag)
     }
 }
 
@@ -91,6 +103,13 @@ extension Reactive where Base: MypageViewController {
             MOALogger.logd()
             let unavailableVC = UnAvailableGifticonViewController()
             viewController.navigationController?.pushViewController(unavailableVC, animated: true)
+        }
+    }
+    
+    var bindUnavailableGifticonCount: Binder<Int> {
+        return Binder(base) { viewController, count in
+            MOALogger.logd()
+            
         }
     }
 }
@@ -120,6 +139,19 @@ extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
             case .Notification:
                 let notificationVC = NotificationViewController()
                 navigationController?.pushViewController(notificationVC, animated: true)
+            case .Logout:
+                showSelectModal(
+                    title: LOGOUT_ALERT_TITLE,
+                    subTitle: LOGOUT_ALERT_SUBTITLE,
+                    confirmText: LOGOUT_CONFIRM_BUTTON_TITLE,
+                    cancelText: LOGOUT_CANCEL_BUTTON_TITLE
+                )
+            case .SignOut:
+                showAlertModal(
+                    title: PREPARATION_FEATURE_ALERT_TITLE,
+                    subTitle: PREPARATION_FEATURE_ALERT_SUBTITLE,
+                    confirmText: CONFIRM
+                )
             default:
                 break
             }
