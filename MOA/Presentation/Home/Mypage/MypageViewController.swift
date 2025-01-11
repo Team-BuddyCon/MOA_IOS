@@ -139,6 +139,9 @@ extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
             case .Notification:
                 let notificationVC = NotificationViewController()
                 navigationController?.pushViewController(notificationVC, animated: true)
+            case .Version:
+                let versionVC = VersionViewController()
+                navigationController?.pushViewController(versionVC, animated: true)
             case .Logout:
                 showSelectModal(
                     title: LOGOUT_ALERT_TITLE,

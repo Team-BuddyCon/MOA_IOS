@@ -123,9 +123,9 @@ let LOGOUT_ALERT_TITLE = "로그아웃 할까요?"
 let LOGOUT_ALERT_SUBTITLE = "로그아웃을 해도 등록한\n기프티콘은 사라지지 않아요"
 let LOGOUT_CONFIRM_BUTTON_TITLE = "로그아웃"
 let LOGOUT_CANCEL_BUTTON_TITLE = "다음에"
-
 let PREPARATION_FEATURE_ALERT_TITLE = "아직 준비 중인 기능이에요"
 let PREPARATION_FEATURE_ALERT_SUBTITLE = "알림과 탈퇴 기능은 곧 출시 예정이니\n조금만 기다려 주세요."
+let MOA_VERSION_TITLE = "모아 버전 정보"
 
 // MARK: ImageSet
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"
