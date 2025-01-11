@@ -110,6 +110,7 @@ let GIFTICON_UPDATE_SUCCESS_MODAL_TITLE = "기프티콘이 수정되었어요"
 // MARK: Mypage
 let MYPAGE_UNAVAILABLE_GIFTICON = "사용한 기프티콘"
 let UNAVAILABLE_GIFTIFON_TITLE = "사용완료 기프티콘"
+let UNAVAILABLE_GIFTICON_COUNT_FORMAT = "%d개"
 let UNAVAILABLE_GIFTICON_COUNT_TITLE_FORMAT = "%d개 사용했어요!"
 let SETTING_NOTIFICATION_TITLE = "알림 설정"
 let NOTIFICATION_DESCRIPTION_TEXT = "유효기간 만료 알림 (다중선택 가능)"
@@ -118,6 +119,13 @@ let NOTIFICATION_D_DAY_7 = "7일 전"
 let NOTIFICATION_D_DAY_3 = "3일 전"
 let NOTIFICATION_D_DAY_1 = "1일 전"
 let NOTIFICATION_D_DAY = "당일"
+let LOGOUT_ALERT_TITLE = "로그아웃 할까요?"
+let LOGOUT_ALERT_SUBTITLE = "로그아웃을 해도 등록한\n기프티콘은 사라지지 않아요"
+let LOGOUT_CONFIRM_BUTTON_TITLE = "로그아웃"
+let LOGOUT_CANCEL_BUTTON_TITLE = "다음에"
+
+let PREPARATION_FEATURE_ALERT_TITLE = "아직 준비 중인 기능이에요"
+let PREPARATION_FEATURE_ALERT_SUBTITLE = "알림과 탈퇴 기능은 곧 출시 예정이니\n조금만 기다려 주세요."
 
 // MARK: ImageSet
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"

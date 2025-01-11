@@ -32,16 +32,15 @@ final class UnAvailableGifticonBox: UIView {
         return label
     }()
     
-    private let countLabel: UILabel = {
+    let countLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont(name: pretendard_bold, size: 16.0)
         label.textColor = .white
         return label
     }()
     
-    init(count: Int) {
+    init() {
         super.init(frame: .zero)
-        countLabel.text = "\(count)개"
         setupLayout()
     }
     
