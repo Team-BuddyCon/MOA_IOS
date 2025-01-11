@@ -39,16 +39,6 @@ final class SignUpWebViewController: BaseViewController {
     
     private func setupAppearance() {
         setupTopBarWithBackButton(title: barTitle)
-//        navigationItem.hidesBackButton = true
-//        let backButtonItem = UIBarButtonItem(
-//            image: UIImage(named: BACK_BUTTON_IMAGE_ASSET),
-//            style: .plain,
-//            target: self,
-//            action: #selector(tapBackButton)
-//        )
-//        backButtonItem.tintColor = .grey90
-//        navigationItem.leftBarButtonItem = backButtonItem
-//        navigationItem.title = barTitle
         
         view.addSubview(webView)
         webView.snp.makeConstraints {
@@ -63,8 +53,4 @@ final class SignUpWebViewController: BaseViewController {
             webView.load(URLRequest(url: url))
         }
     }
-    
-//    @objc private func tapBackButton() {
-//        navigationController?.popViewController(animated: true)
-//    }
 }

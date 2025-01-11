@@ -105,13 +105,6 @@ extension Reactive where Base: MypageViewController {
             viewController.navigationController?.pushViewController(unavailableVC, animated: true)
         }
     }
-    
-    var bindUnavailableGifticonCount: Binder<Int> {
-        return Binder(base) { viewController, count in
-            MOALogger.logd()
-            
-        }
-    }
 }
 
 extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
@@ -139,6 +132,15 @@ extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
             case .Notification:
                 let notificationVC = NotificationViewController()
                 navigationController?.pushViewController(notificationVC, animated: true)
+            case .Version:
+                let versionVC = VersionViewController()
+                navigationController?.pushViewController(versionVC, animated: true)
+            case .Policy:
+                let termsVC = PolicyWebViewController(
+                    policyUrl: SERVICE_TERMS_URL,
+                    privacyUrl: PRIVACY_INFORMATION_URL
+                )
+                navigationController?.pushViewController(termsVC, animated: true)
             case .Logout:
                 showSelectModal(
                     title: LOGOUT_ALERT_TITLE,

@@ -22,6 +22,8 @@ let DELETE_MODAL = "삭제하기"
 let UPDATE_MODAL = "수정하기"
 let CONFIRM = "확인"
 let NOTIFICATION = "알림"
+let SERVICE_TERMS_URL = "https://scarce-cartoon-27d.notion.site/e09da35361e142b7936c12e38396475e"
+let PRIVACY_INFORMATION_URL = "https://scarce-cartoon-27d.notion.site/c4e5ff54f9bd434e971a2631d122252c"
 
 // MARK: Design System
 let dday_end = "만료"
@@ -53,8 +55,6 @@ let SIGNUP_AGREE_TO_PRIVACY_POLICY = "[필수] 개인정보 처리방침 동의"
 let SIGNUP_COMPLETE = "회원가입 완료"
 let SIGNUP_COMPLETE_TITLE = "회원가입 완료!"
 let SIGNUP_COMPLETE_SUBTITLE_FORMAT = "MOA의 소중한 회원이 되신 %@님,\n만나서 반가워요!"
-let SIGNUP_SERVICE_TERMS_URL = "https://scarce-cartoon-27d.notion.site/e09da35361e142b7936c12e38396475e"
-let SIGNUP_PRIVACY_INFORMATION_URL = "https://scarce-cartoon-27d.notion.site/c4e5ff54f9bd434e971a2631d122252c"
 
 // MARK: Home
 let GIFTICON_MENU_TITLE = "기프티콘"
@@ -123,9 +123,10 @@ let LOGOUT_ALERT_TITLE = "로그아웃 할까요?"
 let LOGOUT_ALERT_SUBTITLE = "로그아웃을 해도 등록한\n기프티콘은 사라지지 않아요"
 let LOGOUT_CONFIRM_BUTTON_TITLE = "로그아웃"
 let LOGOUT_CANCEL_BUTTON_TITLE = "다음에"
-
 let PREPARATION_FEATURE_ALERT_TITLE = "아직 준비 중인 기능이에요"
 let PREPARATION_FEATURE_ALERT_SUBTITLE = "알림과 탈퇴 기능은 곧 출시 예정이니\n조금만 기다려 주세요."
+let MOA_VERSION_TITLE = "모아 버전 정보"
+let MOA_TERMS_POLICY_TITLE = "모아 약관 및 정책"
 
 // MARK: ImageSet
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"
