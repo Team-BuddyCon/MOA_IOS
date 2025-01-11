@@ -21,6 +21,7 @@ let CLOSE = "닫기"
 let DELETE_MODAL = "삭제하기"
 let UPDATE_MODAL = "수정하기"
 let CONFIRM = "확인"
+let NOTIFICATION = "알림"
 
 // MARK: Design System
 let dday_end = "만료"
@@ -110,6 +111,13 @@ let GIFTICON_UPDATE_SUCCESS_MODAL_TITLE = "기프티콘이 수정되었어요"
 let MYPAGE_UNAVAILABLE_GIFTICON = "사용한 기프티콘"
 let UNAVAILABLE_GIFTIFON_TITLE = "사용완료 기프티콘"
 let UNAVAILABLE_GIFTICON_COUNT_TITLE_FORMAT = "%d개 사용했어요!"
+let SETTING_NOTIFICATION_TITLE = "알림 설정"
+let NOTIFICATION_DESCRIPTION_TEXT = "유효기간 만료 알림 (다중선택 가능)"
+let NOTIFICATION_D_DAY_14 = "14일 전"
+let NOTIFICATION_D_DAY_7 = "7일 전"
+let NOTIFICATION_D_DAY_3 = "3일 전"
+let NOTIFICATION_D_DAY_1 = "1일 전"
+let NOTIFICATION_D_DAY = "당일"
 
 // MARK: ImageSet
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"
