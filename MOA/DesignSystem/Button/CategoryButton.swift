@@ -24,7 +24,6 @@ final class CategoryButton: UIButton {
         super.init(frame: frame)
         setUp()
         bind()
-    
     }
     
     required init?(coder: NSCoder) {
