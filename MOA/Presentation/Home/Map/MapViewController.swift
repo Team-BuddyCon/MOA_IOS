@@ -6,6 +6,11 @@
 //
 
 import UIKit
+import SnapKit
+import RxSwift
+import RxCocoa
+import RxRelay
+import KakaoMapsSDK
 
 final class MapViewController: BaseViewController {
     
@@ -23,24 +28,56 @@ final class MapViewController: BaseViewController {
         return collectionView
     }()
     
-    var isFirstEntry = false
+    private var kmAuth: Bool = false
+    var mapManager: KakaoMapManager?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
+        setupMap()
         setupLayout()
+        setupData()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        setupData()
+        MOALogger.logd()
+        mapManager?.addObserver()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        MOALogger.logd()
+        
+        if mapManager?.isEngineActive == false {
+            mapManager?.activeEngine()
+        }
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        mapManager?.kmAuth = false
+        mapManager?.removeObserver()
+        mapManager?.pauseEngine()
+        mapManager?.resetEngine()
+        super.viewWillDisappear(animated)
+        MOALogger.logd()
     }
 }
 
 private extension MapViewController {
+    func setupMap() {
+        let width = Int(UIScreen.main.bounds.width)
+        let height = Int(UIScreen.main.bounds.height) - (Int(navigationController?.navigationBar.frame.height ?? 0) + 16)
+        let rect = CGRect(x: 0, y: 0, width: width, height: height)
+        mapManager = KakaoMapManager.getInstance(rect: rect)
+        mapManager?.prepareEngine()
+    }
+    
     func setupLayout() {
+        guard let kmContrainer = mapManager?.container else { return }
         [
-            storeTypeCollectionView
+            storeTypeCollectionView,
+            kmContrainer
         ].forEach {
             view.addSubview($0)
         }
@@ -50,6 +87,12 @@ private extension MapViewController {
             $0.left.equalToSuperview().inset(20)
             $0.trailing.equalToSuperview()
             $0.height.equalTo(32)
+        }
+        
+        kmContrainer.snp.makeConstraints {
+            $0.top.equalTo(storeTypeCollectionView.snp.bottom).offset(8)
+            $0.horizontalEdges.equalToSuperview()
+            $0.bottom.equalToSuperview()
         }
     }
     
