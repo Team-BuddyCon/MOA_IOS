@@ -14,18 +14,29 @@ let KAKAO_MAP_LEVEL_17 = 17
 let LAYER_ID = "PoiLayer"
 let STYLE_ID = "PerLevelStyle"
 
-public class KakaoMapManager {
+public class KakaoMapManager: NSObject {
     static weak var instance: KakaoMapManager? = nil
     private static var rect: CGRect = CGRect(x: 0, y: 0, width: 0, height: 0)
+    
+    var kmAuth: Bool = false
     var controller: KMController?
     var container: KMViewContainer?
     var kakaoMap: KakaoMap?
-
+    
+    var isEngineActive: Bool { controller?.isEngineActive ?? false }
+    var delegate: MapControllerDelegate? {
+        didSet {
+            controller?.delegate = delegate
+        }
+    }
+    
     public init(rect: CGRect) {
         MOALogger.logd()
         KakaoMapManager.rect = rect
         self.container = KMViewContainer(frame: rect)
         self.controller = KMController(viewContainer: container!)
+        super.init()
+        LocationManager.shared.startUpdatingLocation()
     }
     
     deinit {
@@ -42,6 +53,26 @@ public class KakaoMapManager {
             instance = ref
             return ref;
         }
+    }
+    
+    public func prepareEngine() {
+        controller?.prepareEngine()
+    }
+    
+    public func activateEngine() {
+        controller?.activateEngine()
+    }
+    
+    public func pauseEngine() {
+        controller?.pauseEngine()
+    }
+    
+    public func resetEngine() {
+        controller?.resetEngine()
+    }
+    
+    public func addView(_ mapViewInfo: MapviewInfo) {
+        controller?.addView(mapViewInfo)
     }
     
     public func addObserver() {
@@ -132,5 +163,27 @@ extension KakaoMapManager {
     @objc func willResignActive() {
         MOALogger.logd()
         controller?.pauseEngine()
+    }
+}
+
+extension KakaoMapManager: MapControllerDelegate {
+    public func addViews() {
+        MOALogger.logd()
+        let longitude = LocationManager.shared.longitude ?? LocationManager.defaultLongitude
+        let latitude = LocationManager.shared.latitude ?? LocationManager.defaultLatitude
+        let defaultPosition = MapPoint(longitude: longitude, latitude: latitude)
+        let mapViewInfo = MapviewInfo(viewName: KAKAO_MAP_DEFAULT_VIEW, defaultPosition: defaultPosition, defaultLevel: KAKAO_MAP_LEVEL_15)
+        controller?.addView(mapViewInfo)
+    }
+    
+    public func authenticationSucceeded() {
+        MOALogger.logd()
+        kmAuth = true
+    }
+    
+    public func authenticationFailed(_ errorCode: Int, desc: String) {
+        MOALogger.loge(desc)
+        kmAuth = false
+        // TODO 지도 로딩 몇번 실패 시 지도 안보여주기
     }
 }

@@ -20,7 +20,6 @@ final class GifticonDetailMapViewController: BaseViewController {
     }()
     
     var mapManager: KakaoMapManager?
-    private var kmAuth: Bool = false
     let searchPlaces: [SearchPlace]
     
     init(searchPlaces: [SearchPlace]) {
@@ -49,15 +48,15 @@ final class GifticonDetailMapViewController: BaseViewController {
         super.viewDidAppear(animated)
         MOALogger.logd()
         
-        if mapManager?.controller?.isEngineActive == false {
-            mapManager?.controller?.activateEngine()
+        if mapManager?.isEngineActive == false {
+            mapManager?.activateEngine()
         }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        kmAuth = false
+        mapManager?.kmAuth = false
         mapManager?.removeObserver()
-        mapManager?.controller?.pauseEngine()
+        mapManager?.pauseEngine()
         super.viewWillDisappear(animated)
         MOALogger.logd()
     }
@@ -89,8 +88,8 @@ private extension GifticonDetailMapViewController {
         let width = Int(UIScreen.main.bounds.width)
         let height = Int(UIScreen.main.bounds.height)
         mapManager = KakaoMapManager.getInstance(rect: CGRect(x: 0, y: 0, width: width, height: height))
-        mapManager?.controller?.delegate = self
-        mapManager?.controller?.prepareEngine()
+        mapManager?.delegate = self
+        mapManager?.prepareEngine()
     }
     
     func bind() {
@@ -110,21 +109,17 @@ extension GifticonDetailMapViewController: MapControllerDelegate {
         let latitude = LocationManager.shared.latitude ?? LocationManager.defaultLatitude
         let defaultPosition = MapPoint(longitude: longitude, latitude: latitude)
         let mapViewInfo = MapviewInfo(viewName: KAKAO_MAP_DEFAULT_VIEW, defaultPosition: defaultPosition, defaultLevel: KAKAO_MAP_LEVEL_17)
-        mapManager?.controller?.addView(mapViewInfo)
-    }
-    
-    func containerDidResized(_ size: CGSize) {
-        MOALogger.logd()
+        mapManager?.addView(mapViewInfo)
     }
     
     func authenticationSucceeded() {
         MOALogger.logd()
-        kmAuth = true
+        mapManager?.kmAuth = true
     }
     
     func authenticationFailed(_ errorCode: Int, desc: String) {
         MOALogger.loge(desc)
-        kmAuth = false
+        mapManager?.kmAuth = false
     }
     
     func addViewSucceeded(_ viewName: String, viewInfoName: String) {
