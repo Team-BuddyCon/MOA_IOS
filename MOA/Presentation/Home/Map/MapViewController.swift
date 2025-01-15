@@ -50,7 +50,7 @@ final class MapViewController: BaseViewController {
         MOALogger.logd()
         
         if mapManager?.isEngineActive == false {
-            mapManager?.activeEngine()
+            mapManager?.activateEngine()
         }
     }
     
@@ -58,7 +58,6 @@ final class MapViewController: BaseViewController {
         mapManager?.kmAuth = false
         mapManager?.removeObserver()
         mapManager?.pauseEngine()
-        mapManager?.resetEngine()
         super.viewWillDisappear(animated)
         MOALogger.logd()
     }
@@ -70,6 +69,7 @@ private extension MapViewController {
         let height = Int(UIScreen.main.bounds.height) - (Int(navigationController?.navigationBar.frame.height ?? 0) + 16)
         let rect = CGRect(x: 0, y: 0, width: width, height: height)
         mapManager = KakaoMapManager.getInstance(rect: rect)
+        mapManager?.delegate = mapManager
         mapManager?.prepareEngine()
     }
     

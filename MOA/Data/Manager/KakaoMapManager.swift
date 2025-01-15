@@ -24,6 +24,11 @@ public class KakaoMapManager: NSObject {
     var kakaoMap: KakaoMap?
     
     var isEngineActive: Bool { controller?.isEngineActive ?? false }
+    var delegate: MapControllerDelegate? {
+        didSet {
+            controller?.delegate = delegate
+        }
+    }
     
     public init(rect: CGRect) {
         MOALogger.logd()
@@ -31,8 +36,6 @@ public class KakaoMapManager: NSObject {
         self.container = KMViewContainer(frame: rect)
         self.controller = KMController(viewContainer: container!)
         super.init()
-        
-        controller?.delegate = self
         LocationManager.shared.startUpdatingLocation()
     }
     
@@ -56,7 +59,7 @@ public class KakaoMapManager: NSObject {
         controller?.prepareEngine()
     }
     
-    public func activeEngine() {
+    public func activateEngine() {
         controller?.activateEngine()
     }
     
@@ -66,6 +69,10 @@ public class KakaoMapManager: NSObject {
     
     public func resetEngine() {
         controller?.resetEngine()
+    }
+    
+    public func addView(_ mapViewInfo: MapviewInfo) {
+        controller?.addView(mapViewInfo)
     }
     
     public func addObserver() {

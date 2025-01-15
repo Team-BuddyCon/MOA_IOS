@@ -104,7 +104,6 @@ final class GifticonDetailViewController: BaseViewController {
         return button
     }()
     
-    private var kmAuth: Bool = false
     var mapManager: KakaoMapManager?
     
     init(gifticonId: Int) {
@@ -122,7 +121,6 @@ final class GifticonDetailViewController: BaseViewController {
         setupMap()
         setupLayout()
         bind()
-        LocationManager.shared.startUpdatingLocation()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -136,8 +134,8 @@ final class GifticonDetailViewController: BaseViewController {
         super.viewDidAppear(animated)
         MOALogger.logd()
         
-        if mapManager?.controller?.isEngineActive == false {
-            mapManager?.controller?.activateEngine()
+        if mapManager?.isEngineActive == false {
+            mapManager?.activateEngine()
             
             if viewModel.detailGifticon.gifticonStore != .ALL || viewModel.detailGifticon.gifticonStore != .OTHERS {
                 viewModel.searchByKeyword(keyword: viewModel.detailGifticon.gifticonStore.rawValue)
@@ -146,10 +144,9 @@ final class GifticonDetailViewController: BaseViewController {
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        kmAuth = false
+        mapManager?.kmAuth = false
         mapManager?.removeObserver()
-        mapManager?.controller?.pauseEngine()
-        mapManager?.controller?.resetEngine()
+        mapManager?.pauseEngine()
         super.viewWillDisappear(animated)
         MOALogger.logd()
     }
@@ -277,8 +274,8 @@ private extension GifticonDetailViewController {
         let height = Int(Double(width) * 166.0 / 335.0)
         let rect = CGRect(x: 0, y: 0, width: width, height: height)
         mapManager = KakaoMapManager.getInstance(rect: rect)
-        mapManager?.controller?.delegate = self
-        mapManager?.controller?.prepareEngine()
+        mapManager?.delegate = mapManager
+        mapManager?.prepareEngine()
         
         guard let container = mapManager?.container else { return }
         container.layer.cornerRadius = 20
@@ -393,28 +390,6 @@ private extension Reactive where Base: GifticonDetailViewController {
                 viewController.mapManager?.createPois(searchPlaces: searchPlaces)
             }
         }
-    }
-}
-
-extension GifticonDetailViewController: MapControllerDelegate {
-    func addViews() {
-        MOALogger.logd()
-        let longitude = LocationManager.shared.longitude ?? LocationManager.defaultLongitude
-        let latitude = LocationManager.shared.latitude ?? LocationManager.defaultLatitude
-        let defaultPosition = MapPoint(longitude: longitude, latitude: latitude)
-        let mapViewInfo = MapviewInfo(viewName: KAKAO_MAP_DEFAULT_VIEW, defaultPosition: defaultPosition, defaultLevel: KAKAO_MAP_LEVEL_15)
-        mapManager?.controller?.addView(mapViewInfo)
-    }
-    
-    func authenticationSucceeded() {
-        MOALogger.logd()
-        kmAuth = true
-    }
-    
-    func authenticationFailed(_ errorCode: Int, desc: String) {
-        MOALogger.loge(desc)
-        kmAuth = false
-        // TODO 지도 로딩 몇번 실패 시 지도 안보여주기
     }
 }
 
