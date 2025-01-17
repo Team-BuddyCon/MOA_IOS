@@ -21,9 +21,14 @@ final class GifticonDetailMapViewController: BaseViewController {
     
     var mapManager: KakaoMapManager?
     let searchPlaces: [SearchPlace]
+    let storeType: StoreType
     
-    init(searchPlaces: [SearchPlace]) {
+    init(
+        searchPlaces: [SearchPlace],
+        storeType: StoreType
+    ) {
         self.searchPlaces = searchPlaces
+        self.storeType = storeType
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -57,6 +62,7 @@ final class GifticonDetailMapViewController: BaseViewController {
         mapManager?.kmAuth = false
         mapManager?.removeObserver()
         mapManager?.pauseEngine()
+        mapManager?.resetEngine()
         super.viewWillDisappear(animated)
         MOALogger.logd()
     }
@@ -87,7 +93,7 @@ private extension GifticonDetailMapViewController {
     func setupMap() {
         let width = Int(UIScreen.main.bounds.width)
         let height = Int(UIScreen.main.bounds.height)
-        mapManager = KakaoMapManager.getInstance(rect: CGRect(x: 0, y: 0, width: width, height: height))
+        mapManager = KakaoMapManager(rect: CGRect(x: 0, y: 0, width: width, height: height))
         mapManager?.delegate = self
         mapManager?.prepareEngine()
     }
@@ -125,9 +131,11 @@ extension GifticonDetailMapViewController: MapControllerDelegate {
     func addViewSucceeded(_ viewName: String, viewInfoName: String) {
         MOALogger.logd()
         if searchPlaces.count > 0 {
-            mapManager?.createLabelLayer()
-            mapManager?.createPoiStyle(scale: 0.3)
-            mapManager?.createPois(searchPlaces: searchPlaces)
+            mapManager?.createPois(
+                searchPlaces: searchPlaces,
+                storeType: storeType,
+                scale: 0.3
+            )
         }
     }
 }

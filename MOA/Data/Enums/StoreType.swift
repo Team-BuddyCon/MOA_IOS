@@ -7,6 +7,10 @@
 
 import UIKit
 
+let CafeStyleID = "CAFE_STYPE_ID"
+let FastFoodStyleID = "FAST_FOOD_STYLE_ID"
+let StoreStyleID = "STORE_STYLE_ID"
+
 enum StoreType: String, CaseIterable {
     case ALL = "전체"
     case STARBUCKS = "스타벅스"
@@ -20,6 +24,17 @@ enum StoreType: String, CaseIterable {
     case GS25 = "GS25"
     case CU = "CU"
     case OTHERS = "기타"
+    
+    var markerStyle: String {
+        switch self {
+        case .STARBUCKS, .TWOSOME_PLACE, .ANGELINUS, .MEGA_COFFEE, .COFFEE_BEAN, .GONG_CHA, .BASKIN_ROBBINS:
+            return CafeStyleID
+        case .MACDONALD:
+            return FastFoodStyleID
+        default:
+            return StoreStyleID
+        }
+    }
     
     var image: UIImage? {
         switch self {

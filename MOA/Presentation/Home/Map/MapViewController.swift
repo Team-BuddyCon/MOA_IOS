@@ -30,6 +30,7 @@ final class MapViewController: BaseViewController {
     
     private var kmAuth: Bool = false
     var mapManager: KakaoMapManager?
+    let mapViewModel = MapViewModel(kakaoService: KakaoService.shared)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,6 +38,7 @@ final class MapViewController: BaseViewController {
         setupMap()
         setupLayout()
         setupData()
+        bind()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -51,6 +53,7 @@ final class MapViewController: BaseViewController {
         
         if mapManager?.isEngineActive == false {
             mapManager?.activateEngine()
+            mapViewModel.searchPlaceByKeyword()
         }
     }
     
@@ -67,8 +70,7 @@ private extension MapViewController {
     func setupMap() {
         let width = Int(UIScreen.main.bounds.width)
         let height = Int(UIScreen.main.bounds.height) - (Int(navigationController?.navigationBar.frame.height ?? 0) + 16)
-        let rect = CGRect(x: 0, y: 0, width: width, height: height)
-        mapManager = KakaoMapManager.getInstance(rect: rect)
+        mapManager = KakaoMapManager(rect: CGRect(x: 0, y: 0, width: width, height: height))
         mapManager?.delegate = mapManager
         mapManager?.prepareEngine()
     }
@@ -100,6 +102,12 @@ private extension MapViewController {
         let firstIndexPath = IndexPath(item: 0, section: 0)
         storeTypeCollectionView.selectItem(at: firstIndexPath, animated: false, scrollPosition: .centeredHorizontally)
     }
+    
+    func bind() {
+        mapViewModel.searchPlaceRelay
+            .bind(to: self.rx.bindToSearchPlaces)
+            .disposed(by: disposeBag)
+    }
 }
 
 extension MapViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
@@ -121,5 +129,23 @@ extension MapViewController: UICollectionViewDataSource, UICollectionViewDelegat
         let font = UIFont(name: pretendard_medium, size: 14.0)
         let textSize = storeType.size(withAttributes: [.font: font as Any])
         return CGSize(width: textSize.width + 24.0, height: 32.0)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let storeType = storeTypes[indexPath.row]
+        mapViewModel.selectStoreType = storeType
+        mapViewModel.searchPlaceByKeyword()
+    }
+}
+
+extension Reactive where Base: MapViewController {
+    var bindToSearchPlaces: Binder<[SearchPlace]> {
+        return Binder<[SearchPlace]>(self.base) { viewController, searchPlaces in
+            viewController.mapManager?.createPois(
+                searchPlaces: searchPlaces,
+                storeType: viewController.mapViewModel.selectStoreType,
+                scale: 0.3
+            )
+        }
     }
 }

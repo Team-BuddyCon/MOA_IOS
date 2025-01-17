@@ -87,7 +87,7 @@ final class GifticonDetailViewController: BaseViewController {
         return view
     }()
 
-    let viewModel = GifticonDetailViewModel(
+    let gifticonDetailViewModel: GifticonDetailViewModel = GifticonDetailViewModel(
         gifticonService: GifticonService.shared,
         kakaoService: KakaoService.shared
     )
@@ -137,8 +137,8 @@ final class GifticonDetailViewController: BaseViewController {
         if mapManager?.isEngineActive == false {
             mapManager?.activateEngine()
             
-            if viewModel.detailGifticon.gifticonStore != .ALL || viewModel.detailGifticon.gifticonStore != .OTHERS {
-                viewModel.searchByKeyword(keyword: viewModel.detailGifticon.gifticonStore.rawValue)
+            if gifticonDetailViewModel.detailGifticon.gifticonStore != .ALL || gifticonDetailViewModel.detailGifticon.gifticonStore != .OTHERS {
+                gifticonDetailViewModel.searchByKeyword(keyword: gifticonDetailViewModel.detailGifticon.gifticonStore.rawValue)
             }
         }
     }
@@ -272,8 +272,7 @@ private extension GifticonDetailViewController {
     func setupMap() {
         let width = Int(UIScreen.main.bounds.width) - 40
         let height = Int(Double(width) * 166.0 / 335.0)
-        let rect = CGRect(x: 0, y: 0, width: width, height: height)
-        mapManager = KakaoMapManager.getInstance(rect: rect)
+        mapManager = KakaoMapManager(rect: CGRect(x: 0, y: 0, width: width, height: height))
         mapManager?.delegate = mapManager
         mapManager?.prepareEngine()
         
@@ -283,7 +282,7 @@ private extension GifticonDetailViewController {
     }
     
     func fetchData() {
-        viewModel.fetchDetail(gifticonId: gifticonId)
+        gifticonDetailViewModel.fetchDetail(gifticonId: gifticonId)
     }
     
     func bind() {
@@ -295,11 +294,11 @@ private extension GifticonDetailViewController {
             .bind(to: self.rx.tapZoomInImage)
             .disposed(by: disposeBag)
         
-        viewModel.detailGifticonRelay
+        gifticonDetailViewModel.detailGifticonRelay
             .bind(to: self.rx.bindGifticon)
             .disposed(by: disposeBag)
         
-        viewModel.usedRelay
+        gifticonDetailViewModel.usedRelay
             .bind(to: self.rx.bindUsedState)
             .disposed(by: disposeBag)
         
@@ -307,14 +306,14 @@ private extension GifticonDetailViewController {
             .bind(to: self.rx.tapZoomInMap)
             .disposed(by: disposeBag)
         
-        viewModel.searchPlaceRelay
+        gifticonDetailViewModel.searchPlaceRelay
             .bind(to: self.rx.bindSearchPlaces)
             .disposed(by: disposeBag)
     }
 }
 
 // TODO: tapZoomInImage 와 같은 공통 extension은 ImageView 확장하여 함수로 정의
-private extension Reactive where Base: GifticonDetailViewController {
+extension Reactive where Base: GifticonDetailViewController {
     var tapZoomInImage: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
@@ -326,14 +325,17 @@ private extension Reactive where Base: GifticonDetailViewController {
     var tapUse: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            viewController.viewModel.fetchUpdateUsed(gifticonId: viewController.gifticonId)
+            viewController.gifticonDetailViewModel.fetchUpdateUsed(gifticonId: viewController.gifticonId)
         }
     }
     
     var tapZoomInMap: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            let gifticonMapVC = GifticonDetailMapViewController(searchPlaces: viewController.viewModel.searchPlaceRelay.value)
+            let gifticonMapVC = GifticonDetailMapViewController(
+                searchPlaces: viewController.gifticonDetailViewModel.searchPlaceRelay.value,
+                storeType: viewController.gifticonDetailViewModel.detailGifticon.gifticonStore
+            )
             viewController.navigationController?.pushViewController(gifticonMapVC, animated: true)
         }
     }
@@ -383,11 +385,16 @@ private extension Reactive where Base: GifticonDetailViewController {
     }
     
     var bindSearchPlaces: Binder<[SearchPlace]> {
-        return Binder<[SearchPlace]>(self.base) { viewController, searchPlaces in
+        return Binder<[SearchPlace]>(self.base) { (viewController: GifticonDetailViewController, searchPlaces) in
             if searchPlaces.count > 0 {
-                viewController.mapManager?.createLabelLayer()
-                viewController.mapManager?.createPoiStyle(scale: 0.3)
-                viewController.mapManager?.createPois(searchPlaces: searchPlaces)
+                let storeType = viewController.gifticonDetailViewModel.detailGifticon.gifticonStore
+                viewController.mapManager?.createPois(
+                    searchPlaces: searchPlaces,
+                    storeType: storeType,
+                    scale: 0.3
+                )
+            } else {
+                viewController.mapManager?.removePois()
             }
         }
     }
@@ -397,7 +404,7 @@ extension GifticonDetailViewController {
     @objc func tapEditButton() {
         MOALogger.logd()
         let editVC = GifticonEditViewController(
-            detailGifticon: viewModel.detailGifticon,
+            detailGifticon: gifticonDetailViewModel.detailGifticon,
             gifticonImage: imageView.image
         )
         navigationController?.pushViewController(editVC, animated: false)
