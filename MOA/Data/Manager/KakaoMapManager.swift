@@ -152,6 +152,14 @@ public class KakaoMapManager: NSObject {
             }
         }
     }
+    
+    func removePois() {
+        MOALogger.logd()
+        if let view = controller?.getView(KAKAO_MAP_DEFAULT_VIEW) as? KakaoMap {
+            let manager = view.getLabelManager()
+            manager.removeLabelLayer(layerID: LAYER_ID)
+        }
+    }
 }
 
 extension KakaoMapManager {
