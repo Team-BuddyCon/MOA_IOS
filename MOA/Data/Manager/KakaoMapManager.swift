@@ -99,6 +99,7 @@ public class KakaoMapManager: NSObject {
     
     // Poi 생성을 위한 LabelLayer(Poi, WaveText를 담을 수 있는 Layer) 생성
     public func createLabelLayer() {
+        MOALogger.logd()
         if let view = controller?.getView(KAKAO_MAP_DEFAULT_VIEW) as? KakaoMap {
             let manager = view.getLabelManager()
             let layerOption = LabelLayerOptions(
@@ -161,6 +162,7 @@ public class KakaoMapManager: NSObject {
     
     // Poi 레벨별로 Style 지정
     func createPoiStyle(scale: CGFloat) {
+        MOALogger.logd()
         if let view = controller?.getView(KAKAO_MAP_DEFAULT_VIEW) as? KakaoMap {
             let manager = view.getLabelManager()
             let cafePoiStyle = getCafePoiIconStyle(scale: scale)
@@ -176,9 +178,15 @@ public class KakaoMapManager: NSObject {
     func createPois(
         searchPlaces: [SearchPlace],
         storeType: StoreType,
-        scale: CGFloat
+        scale: CGFloat,
+        refresh: Bool = true
     ) {
         MOALogger.logd()
+        
+        if refresh {
+            removePois()
+        }
+        
         createLabelLayer()
         createPoiStyle(scale: scale)
         

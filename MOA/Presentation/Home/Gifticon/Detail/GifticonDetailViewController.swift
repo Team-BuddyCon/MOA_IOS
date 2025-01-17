@@ -394,6 +394,8 @@ extension Reactive where Base: GifticonDetailViewController {
                     storeType: storeType,
                     scale: 0.3
                 )
+            } else {
+                viewController.mapManager?.removePois()
             }
         }
     }

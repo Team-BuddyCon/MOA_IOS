@@ -142,7 +142,6 @@ extension MapViewController: UICollectionViewDataSource, UICollectionViewDelegat
 extension Reactive where Base: MapViewController {
     var bindToSearchPlaces: Binder<[SearchPlace]> {
         return Binder<[SearchPlace]>(self.base) { viewController, searchPlaces in
-            viewController.mapManager?.removePois()
             viewController.mapManager?.createPois(
                 searchPlaces: searchPlaces,
                 storeType: viewController.mapViewModel.selectStoreType,
