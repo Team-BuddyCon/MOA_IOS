@@ -99,7 +99,6 @@ public class KakaoMapManager: NSObject {
     
     // Poi 생성을 위한 LabelLayer(Poi, WaveText를 담을 수 있는 Layer) 생성
     public func createLabelLayer() {
-        MOALogger.logd()
         if let view = controller?.getView(KAKAO_MAP_DEFAULT_VIEW) as? KakaoMap {
             let manager = view.getLabelManager()
             let layerOption = LabelLayerOptions(
@@ -113,34 +112,80 @@ public class KakaoMapManager: NSObject {
         }
     }
     
+    private func getCafePoiIconStyle(scale: CGFloat) -> PoiStyle {
+        let poiImage = UIImage(named: CAFE_POI_ICON)?.resize(scale: scale)
+        let iconStyle = PoiIconStyle(
+            symbol: poiImage,
+            anchorPoint: CGPoint(x: 0.5, y: 1.0),
+            badges: nil
+        )
+        
+        return PoiStyle(
+            styleID: CafeStyleID,
+            styles: [
+                PerLevelPoiStyle(iconStyle: iconStyle, level: 10)
+            ]
+        )
+    }
+    
+    private func getFastFoodPoiIconStyle(scale: CGFloat) -> PoiStyle {
+        let poiImage = UIImage(named: FAST_FOOD_POI_ICON)?.resize(scale: scale)
+        let iconStyle = PoiIconStyle(
+            symbol: poiImage,
+            anchorPoint: CGPoint(x: 0.5, y: 1.0),
+            badges: nil
+        )
+        return PoiStyle(
+            styleID: FastFoodStyleID,
+            styles: [
+                PerLevelPoiStyle(iconStyle: iconStyle, level: 10)
+            ]
+        )
+    }
+    
+    private func getStoreIconStyle(scale: CGFloat) -> PoiStyle {
+        let poiImage = UIImage(named: STORE_POI_ICON)?.resize(scale: scale)
+        let iconStyle = PoiIconStyle(
+            symbol: poiImage,
+            anchorPoint: CGPoint(x: 0.5, y: 1.0),
+            badges: nil
+        )
+        
+        return PoiStyle(
+            styleID: StoreStyleID,
+            styles: [
+                PerLevelPoiStyle(iconStyle: iconStyle, level: 10)
+            ]
+        )
+    }
+    
     // Poi 레벨별로 Style 지정
     func createPoiStyle(scale: CGFloat) {
-        MOALogger.logd()
         if let view = controller?.getView(KAKAO_MAP_DEFAULT_VIEW) as? KakaoMap {
             let manager = view.getLabelManager()
-            let poiImage = UIImage(named: CAFE_POI_ICON)?.resize(scale: scale)
-            let iconStyle = PoiIconStyle(
-                symbol: poiImage,
-                anchorPoint: CGPoint(x: 0.5, y: 1.0),
-                badges: nil
-            )
-            let poiStyle = PoiStyle(
-                styleID: STYLE_ID,
-                styles: [
-                    PerLevelPoiStyle(iconStyle: iconStyle, level: 10)
-                ]
-            )
-            manager.addPoiStyle(poiStyle)
+            let cafePoiStyle = getCafePoiIconStyle(scale: scale)
+            let fastFoodPoiStyle = getFastFoodPoiIconStyle(scale: scale)
+            let storePoiStyle = getStoreIconStyle(scale: scale)
+            manager.addPoiStyle(cafePoiStyle)
+            manager.addPoiStyle(fastFoodPoiStyle)
+            manager.addPoiStyle(storePoiStyle)
         }
     }
     
     // Poi 생성
-    func createPois(searchPlaces: [SearchPlace]) {
+    func createPois(
+        searchPlaces: [SearchPlace],
+        storeType: StoreType,
+        scale: CGFloat
+    ) {
         MOALogger.logd()
+        createLabelLayer()
+        createPoiStyle(scale: scale)
+        
         if let view = controller?.getView(KAKAO_MAP_DEFAULT_VIEW) as? KakaoMap {
             let manager = view.getLabelManager()
             let layer = manager.getLabelLayer(layerID: LAYER_ID)
-            let poiOption = PoiOptions(styleID: STYLE_ID)
+            let poiOption = PoiOptions(styleID: storeType.markerStyle)
             poiOption.rank = 0
             
             for searchPlace in searchPlaces {

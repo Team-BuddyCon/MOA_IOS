@@ -21,9 +21,14 @@ final class GifticonDetailMapViewController: BaseViewController {
     
     var mapManager: KakaoMapManager?
     let searchPlaces: [SearchPlace]
+    let storeType: StoreType
     
-    init(searchPlaces: [SearchPlace]) {
+    init(
+        searchPlaces: [SearchPlace],
+        storeType: StoreType
+    ) {
         self.searchPlaces = searchPlaces
+        self.storeType = storeType
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -125,9 +130,11 @@ extension GifticonDetailMapViewController: MapControllerDelegate {
     func addViewSucceeded(_ viewName: String, viewInfoName: String) {
         MOALogger.logd()
         if searchPlaces.count > 0 {
-            mapManager?.createLabelLayer()
-            mapManager?.createPoiStyle(scale: 0.3)
-            mapManager?.createPois(searchPlaces: searchPlaces)
+            mapManager?.createPois(
+                searchPlaces: searchPlaces,
+                storeType: storeType,
+                scale: 0.3
+            )
         }
     }
 }

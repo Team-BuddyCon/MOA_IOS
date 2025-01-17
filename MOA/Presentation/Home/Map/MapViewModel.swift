@@ -21,6 +21,7 @@ final class MapViewModel: BaseViewModel {
     }
     
     func searchPlaceByKeyword() {
+        // TODO 전체는 가지고 있는 기프티콘, 기타는 모든 마커 제거
         let keyword = (selectStoreType == StoreType.ALL || selectStoreType == StoreType.OTHERS) ? StoreType.STARBUCKS.rawValue : selectStoreType.rawValue
         
         guard let latitude = LocationManager.shared.latitude else { return }
