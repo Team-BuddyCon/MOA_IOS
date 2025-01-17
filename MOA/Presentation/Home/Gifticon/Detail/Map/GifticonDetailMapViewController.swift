@@ -62,6 +62,7 @@ final class GifticonDetailMapViewController: BaseViewController {
         mapManager?.kmAuth = false
         mapManager?.removeObserver()
         mapManager?.pauseEngine()
+        mapManager?.resetEngine()
         super.viewWillDisappear(animated)
         MOALogger.logd()
     }
@@ -92,7 +93,7 @@ private extension GifticonDetailMapViewController {
     func setupMap() {
         let width = Int(UIScreen.main.bounds.width)
         let height = Int(UIScreen.main.bounds.height)
-        mapManager = KakaoMapManager.getInstance(rect: CGRect(x: 0, y: 0, width: width, height: height))
+        mapManager = KakaoMapManager(rect: CGRect(x: 0, y: 0, width: width, height: height))
         mapManager?.delegate = self
         mapManager?.prepareEngine()
     }

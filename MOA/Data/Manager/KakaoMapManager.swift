@@ -15,15 +15,16 @@ let LAYER_ID = "PoiLayer"
 let STYLE_ID = "PerLevelStyle"
 
 public class KakaoMapManager: NSObject {
-    static weak var instance: KakaoMapManager? = nil
-    private static var rect: CGRect = CGRect(x: 0, y: 0, width: 0, height: 0)
     
     var kmAuth: Bool = false
     var controller: KMController?
     var container: KMViewContainer?
     var kakaoMap: KakaoMap?
     
-    var isEngineActive: Bool { controller?.isEngineActive ?? false }
+    var isEngineActive: Bool {
+        controller?.isEngineActive ?? false
+    }
+    
     var delegate: MapControllerDelegate? {
         didSet {
             controller?.delegate = delegate
@@ -32,10 +33,9 @@ public class KakaoMapManager: NSObject {
     
     public init(rect: CGRect) {
         MOALogger.logd()
-        KakaoMapManager.rect = rect
+        super.init()
         self.container = KMViewContainer(frame: rect)
         self.controller = KMController(viewContainer: container!)
-        super.init()
         LocationManager.shared.startUpdatingLocation()
     }
     
@@ -43,16 +43,6 @@ public class KakaoMapManager: NSObject {
         MOALogger.logd()
         controller?.pauseEngine()
         controller?.resetEngine()
-    }
-    
-    public static func getInstance(rect: CGRect) -> KakaoMapManager {
-        if let instance = instance, KakaoMapManager.rect == rect {
-            return instance
-        } else {
-            let ref = KakaoMapManager(rect: rect)
-            instance = ref
-            return ref;
-        }
     }
     
     public func prepareEngine() {
@@ -75,29 +65,7 @@ public class KakaoMapManager: NSObject {
         controller?.addView(mapViewInfo)
     }
     
-    public func addObserver() {
-        MOALogger.logd()
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(didBecomeActive),
-            name: UIApplication.didBecomeActiveNotification,
-            object: nil
-        )
-        
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(willResignActive),
-            name: UIApplication.willResignActiveNotification,
-            object: nil
-        )
-    }
-    
-    public func removeObserver() {
-        MOALogger.logd()
-        NotificationCenter.default.removeObserver(self)
-    }
-    
-    // Poi 생성을 위한 LabelLayer(Poi, WaveText를 담을 수 있는 Layer) 생성
+    // Poi 생성을 위한 LabelLayer (Poi, WaveText를 담을 수 있는 Layer) 생성
     public func createLabelLayer() {
         MOALogger.logd()
         if let view = controller?.getView(KAKAO_MAP_DEFAULT_VIEW) as? KakaoMap {
@@ -113,6 +81,7 @@ public class KakaoMapManager: NSObject {
         }
     }
     
+    // 카페 Poi Style
     private func getCafePoiIconStyle(scale: CGFloat) -> PoiStyle {
         let poiImage = UIImage(named: CAFE_POI_ICON)?.resize(scale: scale)
         let iconStyle = PoiIconStyle(
@@ -129,6 +98,7 @@ public class KakaoMapManager: NSObject {
         )
     }
     
+    // 햄버거 Poi Style
     private func getFastFoodPoiIconStyle(scale: CGFloat) -> PoiStyle {
         let poiImage = UIImage(named: FAST_FOOD_POI_ICON)?.resize(scale: scale)
         let iconStyle = PoiIconStyle(
@@ -144,6 +114,7 @@ public class KakaoMapManager: NSObject {
         )
     }
     
+    // 편의점 Poi Style
     private func getStoreIconStyle(scale: CGFloat) -> PoiStyle {
         let poiImage = UIImage(named: STORE_POI_ICON)?.resize(scale: scale)
         let iconStyle = PoiIconStyle(
@@ -182,11 +153,7 @@ public class KakaoMapManager: NSObject {
         refresh: Bool = true
     ) {
         MOALogger.logd()
-        
-        if refresh {
-            removePois()
-        }
-        
+        if refresh { removePois() }
         createLabelLayer()
         createPoiStyle(scale: scale)
         
@@ -216,6 +183,28 @@ public class KakaoMapManager: NSObject {
 }
 
 extension KakaoMapManager {
+    public func addObserver() {
+        MOALogger.logd()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(didBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(willResignActive),
+            name: UIApplication.willResignActiveNotification,
+            object: nil
+        )
+    }
+    
+    public func removeObserver() {
+        MOALogger.logd()
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     @objc func didBecomeActive() {
         MOALogger.logd()
         controller?.activateEngine()

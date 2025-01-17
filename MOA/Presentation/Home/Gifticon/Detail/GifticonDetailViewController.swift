@@ -272,8 +272,7 @@ private extension GifticonDetailViewController {
     func setupMap() {
         let width = Int(UIScreen.main.bounds.width) - 40
         let height = Int(Double(width) * 166.0 / 335.0)
-        let rect = CGRect(x: 0, y: 0, width: width, height: height)
-        mapManager = KakaoMapManager.getInstance(rect: rect)
+        mapManager = KakaoMapManager(rect: CGRect(x: 0, y: 0, width: width, height: height))
         mapManager?.delegate = mapManager
         mapManager?.prepareEngine()
         

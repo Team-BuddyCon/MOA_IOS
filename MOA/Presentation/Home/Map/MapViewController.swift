@@ -70,8 +70,7 @@ private extension MapViewController {
     func setupMap() {
         let width = Int(UIScreen.main.bounds.width)
         let height = Int(UIScreen.main.bounds.height) - (Int(navigationController?.navigationBar.frame.height ?? 0) + 16)
-        let rect = CGRect(x: 0, y: 0, width: width, height: height)
-        mapManager = KakaoMapManager.getInstance(rect: rect)
+        mapManager = KakaoMapManager(rect: CGRect(x: 0, y: 0, width: width, height: height))
         mapManager?.delegate = mapManager
         mapManager?.prepareEngine()
     }
