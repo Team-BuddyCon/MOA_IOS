@@ -28,6 +28,11 @@ final class MapViewController: BaseViewController {
         return collectionView
     }()
     
+    let mapBottomSheet: MapBottomSheet = {
+        let bottomSheet = MapBottomSheet()
+        return bottomSheet
+    }()
+    
     private var kmAuth: Bool = false
     var mapManager: KakaoMapManager?
     let mapViewModel = MapViewModel(kakaoService: KakaoService.shared)
@@ -79,7 +84,8 @@ private extension MapViewController {
         guard let kmContrainer = mapManager?.container else { return }
         [
             storeTypeCollectionView,
-            kmContrainer
+            kmContrainer,
+            mapBottomSheet
         ].forEach {
             view.addSubview($0)
         }
@@ -96,6 +102,12 @@ private extension MapViewController {
             $0.horizontalEdges.equalToSuperview()
             $0.bottom.equalToSuperview()
         }
+        
+        mapBottomSheet.snp.makeConstraints {
+            $0.bottom.equalToSuperview()
+            $0.horizontalEdges.equalToSuperview()
+            $0.height.equalTo(mapBottomSheet.state.height)
+        }
     }
     
     func setupData() {
@@ -106,6 +118,27 @@ private extension MapViewController {
     func bind() {
         mapViewModel.searchPlaceRelay
             .bind(to: self.rx.bindToSearchPlaces)
+            .disposed(by: disposeBag)
+        
+        mapBottomSheet.panGesture.rx.event
+            .withUnretained(self)
+            .subscribe(onNext: { this, gesture in
+                gesture.translation(in: this.view)
+                
+                let velocity = gesture.velocity(in: self.view)
+                let offset = velocity.y / 50
+                switch gesture.state {
+                case .began, .changed:
+                    this.mapBottomSheet.setSheetHeight(offset: offset)
+                case .ended:
+                    this.mapBottomSheet.endSheetGesture(offset: offset)
+                default:
+                    break
+                }
+            }).disposed(by: disposeBag)
+        
+        mapBottomSheet.sheetHeight
+            .bind(to: self.rx.bindToBottomSheetHeight)
             .disposed(by: disposeBag)
     }
 }
@@ -146,6 +179,16 @@ extension Reactive where Base: MapViewController {
                 storeType: viewController.mapViewModel.selectStoreType,
                 scale: 0.3
             )
+        }
+    }
+    
+    var bindToBottomSheetHeight: Binder<Double> {
+        return Binder<Double>(self.base) { viewController, height in
+            viewController.mapBottomSheet.snp.remakeConstraints {
+                $0.bottom.equalToSuperview()
+                $0.horizontalEdges.equalToSuperview()
+                $0.height.equalTo(height)
+            }
         }
     }
 }

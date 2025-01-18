@@ -128,6 +128,9 @@ let PREPARATION_FEATURE_ALERT_SUBTITLE = "알림과 탈퇴 기능은 곧 출시 
 let MOA_VERSION_TITLE = "모아 버전 정보"
 let MOA_TERMS_POLICY_TITLE = "모아 약관 및 정책"
 
+// MARK: Map
+let MAP_BOTTOM_SHEET_TITLE = "사용 가능한 기프티콘"
+
 // MARK: ImageSet
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"
 let CHECK_BUTTON_IMAGE_ASSET = "CheckButton"
@@ -164,6 +167,7 @@ let FAST_FOOD_POI_ICON = "FastFoodPoiIcon"
 let STORE_POI_ICON = "StorePoiIcon"
 let UNAVAILABLE_GIFTICON = "UnavailableGifticon"
 let NOTIFICATION_ICON = "NotificationIcon"
+let ALL_STORE = "AllStore"
 
 // MARK: Font
 let pretendard_black = "Pretendard-Black"
