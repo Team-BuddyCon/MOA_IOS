@@ -19,11 +19,11 @@ enum BottomSheetState {
     var height: Double {
         switch self {
         case .Collapsed:
-            return 116.0
+            return Double(UIScreen.main.bounds.height) / 852.0 * 116.0
         case .PartiallyExpanded:
-            return 201.0
+            return Double(UIScreen.main.bounds.height) / 852.0 * 201.0
         case .Expanded:
-            return Double(UIScreen.main.bounds.height) - 188.0
+            return Double(UIScreen.main.bounds.height) - UIApplication.shared.topBarHeight - UIApplication.shared.safeAreaTopHeight - 64.0
         }
     }
 }

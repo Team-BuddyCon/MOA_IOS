@@ -39,6 +39,7 @@ final class MapViewController: BaseViewController {
         label.textColor = .grey70
         label.setRangeFontColor(text: MAP_GUIDE_TOAST_VIEW_TITLE, startIndex: 9, endIndex: 18, color: .pink100)
         label.textAlignment = .center
+        label.sizeToFit()
         return label
     }()
     
@@ -47,6 +48,7 @@ final class MapViewController: BaseViewController {
         view.addSubview(guideToastLabel)
         view.layer.cornerRadius = 21
         view.backgroundColor = .white
+        view.clipsToBounds = true
         view.applyShadow(
             color: UIColor.black.withAlphaComponent(0.1).cgColor,
             opacity: 1,
@@ -56,8 +58,7 @@ final class MapViewController: BaseViewController {
         )
         
         guideToastLabel.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-            $0.centerX.equalToSuperview()
+            $0.center.equalToSuperview()
         }
         
         return view
@@ -119,14 +120,14 @@ private extension MapViewController {
         [
             storeTypeCollectionView,
             kmContrainer,
-            mapBottomSheet,
-            guideToastView
+            guideToastView,
+            mapBottomSheet
         ].forEach {
             view.addSubview($0)
         }
         
         storeTypeCollectionView.snp.makeConstraints {
-            $0.top.equalTo(view.safeAreaLayoutGuide).inset(12)
+            $0.top.equalTo(view.safeAreaLayoutGuide).inset(8)
             $0.left.equalToSuperview().inset(20)
             $0.trailing.equalToSuperview()
             $0.height.equalTo(32)
@@ -138,17 +139,17 @@ private extension MapViewController {
             $0.bottom.equalToSuperview()
         }
         
-        mapBottomSheet.snp.makeConstraints {
-            $0.bottom.equalToSuperview()
-            $0.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(mapBottomSheet.sheetHeight.value)
-        }
-        
         guideToastView.snp.makeConstraints {
             $0.top.equalTo(kmContrainer.snp.top).inset(16)
             $0.centerX.equalTo(kmContrainer.snp.centerX)
             $0.height.equalTo(42)
             $0.width.equalTo(262)
+        }
+        
+        mapBottomSheet.snp.makeConstraints {
+            $0.bottom.equalToSuperview()
+            $0.horizontalEdges.equalToSuperview()
+            $0.height.equalTo(mapBottomSheet.sheetHeight.value)
         }
     }
     
