@@ -29,7 +29,13 @@ final class MapViewController: BaseViewController {
     }()
     
     lazy var mapBottomSheet: MapBottomSheet = {
-        let bottomSheet = MapBottomSheet(mapViewModel: mapViewModel)
+        let bottomSheet = MapBottomSheet(
+            mapViewModel: mapViewModel,
+            onTapGifticon: { gifticonId in
+                let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
+                self.navigationController?.pushViewController(detailVC, animated: true)
+            }
+        )
         return bottomSheet
     }()
     
@@ -64,6 +70,7 @@ final class MapViewController: BaseViewController {
         return view
     }()
     
+    private var isFirstEntry = true
     private var kmAuth: Bool = false
     var mapManager: KakaoMapManager?
     let mapViewModel = MapViewModel(
@@ -84,7 +91,13 @@ final class MapViewController: BaseViewController {
         super.viewWillAppear(animated)
         MOALogger.logd()
         mapManager?.addObserver()
-        mapViewModel.getGifticonCount()
+       
+        
+        if !isFirstEntry {
+            mapViewModel.getGifticonCount()
+            mapViewModel.refresh()
+        }
+        isFirstEntry = false
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -157,6 +170,7 @@ private extension MapViewController {
         let firstIndexPath = IndexPath(item: 0, section: 0)
         storeTypeCollectionView.selectItem(at: firstIndexPath, animated: false, scrollPosition: .centeredHorizontally)
         mapViewModel.fetch()
+        mapViewModel.getGifticonCount()
     }
     
     func bind() {
