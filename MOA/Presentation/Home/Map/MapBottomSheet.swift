@@ -32,6 +32,18 @@ final class MapBottomSheet: UIView {
     var state: BottomSheetState = BottomSheetState.Collapsed
     var sheetHeight: BehaviorRelay<Double> = BehaviorRelay(value: BottomSheetState.Collapsed.height)
     
+    var gifticonCount: Int = 0 {
+        didSet {
+            countLabel.text = String(format: MAP_BOTTOM_SHEET_GIFTICON_COUNT_FORMAT, gifticonCount)
+        }
+    }
+    
+    var imminentCount: Int = 0 {
+        didSet {
+            imminentCountLabel.text = String(format: MAP_BOTTOM_SHEET_IMMINENT_GIFTICON_COUNT_FORMAT, imminentCount)
+        }
+    }
+    
     private let lineView: UIView = {
         let view = UIView()
         view.backgroundColor = .grey40
@@ -54,7 +66,14 @@ final class MapBottomSheet: UIView {
         return label
     }()
     
-    private let iconImageView: UIImageView = {
+    private let imminentCountLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: pretendard_bold, size: 12.0)
+        label.textColor = .pink100
+        return label
+    }()
+    
+    let iconImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: ALL_STORE))
         return imageView
     }()
@@ -82,6 +101,7 @@ final class MapBottomSheet: UIView {
             lineView,
             titleLabel,
             countLabel,
+            imminentCountLabel,
             iconImageView
         ].forEach {
             addSubview($0)
@@ -103,11 +123,18 @@ final class MapBottomSheet: UIView {
         titleLabel.snp.makeConstraints {
             $0.top.equalTo(iconImageView.snp.top).inset(4)
             $0.leading.equalToSuperview().inset(15)
+            $0.bottom.equalTo(countLabel.snp.top)
         }
         
         countLabel.snp.makeConstraints {
-            $0.bottom.equalTo(iconImageView.snp.bottom)
+            $0.top.equalTo(titleLabel.snp.bottom)
             $0.leading.equalToSuperview().inset(15)
+            $0.bottom.equalTo(iconImageView.snp.bottom).inset(4)
+        }
+        
+        imminentCountLabel.snp.makeConstraints {
+            $0.bottom.equalTo(countLabel.snp.bottom).inset(4)
+            $0.leading.equalTo(countLabel.snp.trailing).offset(8)
         }
     }
     
@@ -154,5 +181,17 @@ final class MapBottomSheet: UIView {
         
         state = currentState
         sheetHeight.accept(state.height)
+    }
+}
+
+extension Reactive where Base: MapBottomSheet {
+    var bindToStoreType: Binder<StoreType> {
+        return Binder<StoreType>(self.base) { sheet, storeType in
+            if storeType == .ALL || storeType == .OTHERS {
+                sheet.iconImageView.image = UIImage(named: ALL_STORE)
+            } else {
+                sheet.iconImageView.image = storeType.image
+            }
+        }
     }
 }

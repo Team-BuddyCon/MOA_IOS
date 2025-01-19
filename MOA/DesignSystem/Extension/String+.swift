@@ -130,6 +130,8 @@ let MOA_TERMS_POLICY_TITLE = "모아 약관 및 정책"
 
 // MARK: Map
 let MAP_BOTTOM_SHEET_TITLE = "사용 가능한 기프티콘"
+let MAP_BOTTOM_SHEET_GIFTICON_COUNT_FORMAT = "%d개"
+let MAP_BOTTOM_SHEET_IMMINENT_GIFTICON_COUNT_FORMAT = "유효기간 임박 %d개"
 
 // MARK: ImageSet
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"

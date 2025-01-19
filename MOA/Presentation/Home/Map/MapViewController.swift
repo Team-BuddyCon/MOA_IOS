@@ -35,7 +35,10 @@ final class MapViewController: BaseViewController {
     
     private var kmAuth: Bool = false
     var mapManager: KakaoMapManager?
-    let mapViewModel = MapViewModel(kakaoService: KakaoService.shared)
+    let mapViewModel = MapViewModel(
+        gifticonService: GifticonService.shared,
+        kakaoService: KakaoService.shared
+    )
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -50,6 +53,7 @@ final class MapViewController: BaseViewController {
         super.viewWillAppear(animated)
         MOALogger.logd()
         mapManager?.addObserver()
+        mapViewModel.getGifticonCount()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -140,6 +144,20 @@ private extension MapViewController {
         mapBottomSheet.sheetHeight
             .bind(to: self.rx.bindToBottomSheetHeight)
             .disposed(by: disposeBag)
+        
+        mapViewModel.gifticonCountRelay
+            .bind(to: self.rx.bindToGifticonCount)
+            .disposed(by: disposeBag)
+        
+        mapViewModel.imminentCountRelay
+            .bind(to: self.rx.bindToImminentCount)
+            .disposed(by: disposeBag)
+        
+        
+        mapViewModel.selectStoreTypeRelay
+            .bind(to: self.mapBottomSheet.rx.bindToStoreType)
+            .disposed(by: disposeBag)
+    
     }
 }
 
@@ -166,17 +184,19 @@ extension MapViewController: UICollectionViewDataSource, UICollectionViewDelegat
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let storeType = storeTypes[indexPath.row]
-        mapViewModel.selectStoreType = storeType
+        mapViewModel.selectStoreTypeRelay.accept(storeType)
         mapViewModel.searchPlaceByKeyword()
+        mapViewModel.getGifticonCount()
     }
 }
 
 extension Reactive where Base: MapViewController {
     var bindToSearchPlaces: Binder<[SearchPlace]> {
         return Binder<[SearchPlace]>(self.base) { viewController, searchPlaces in
+            let storeType = viewController.mapViewModel.selectStoreTypeRelay.value
             viewController.mapManager?.createPois(
                 searchPlaces: searchPlaces,
-                storeType: viewController.mapViewModel.selectStoreType,
+                storeType: storeType,
                 scale: 0.3
             )
         }
@@ -189,6 +209,18 @@ extension Reactive where Base: MapViewController {
                 $0.horizontalEdges.equalToSuperview()
                 $0.height.equalTo(height)
             }
+        }
+    }
+    
+    var bindToGifticonCount: Binder<Int> {
+        return Binder<Int>(self.base) { viewController, count in
+            viewController.mapBottomSheet.gifticonCount = count
+        }
+    }
+    
+    var bindToImminentCount: Binder<Int> {
+        return Binder<Int>(self.base) { viewController, count in
+            viewController.mapBottomSheet.imminentCount = count
         }
     }
 }
