@@ -87,14 +87,17 @@ final class MapBottomSheet: UIView {
     
     let panGesture: UIPanGestureRecognizer
     let mapViewModel: MapViewModel
+    let onTapGifticon: (Int) -> Void
     
     init(
         mapViewModel: MapViewModel,
-        state: BottomSheetState = .Collapsed
+        state: BottomSheetState = .Collapsed,
+        onTapGifticon: @escaping (Int) -> Void
     ) {
         self.panGesture = UIPanGestureRecognizer()
         self.mapViewModel = mapViewModel
         self.state.accept(state)
+        self.onTapGifticon = onTapGifticon
         super.init(frame: .zero)
         setupLayout()
         bind()
@@ -213,6 +216,12 @@ final class MapBottomSheet: UIView {
             .map { _ in self.gifticonCollectionView }
             .bind(to: self.rx.scrollOffset)
             .disposed(by: disposeBag)
+        
+        gifticonCollectionView.rx.modelSelected(AvailableGifticon.self)
+            .withUnretained(self)
+            .subscribe(onNext: { owner, gifticon in
+                owner.onTapGifticon(gifticon.gifticonId)
+            }).disposed(by: disposeBag)
     }
     
     func setSheetHeight(offset: Double) {
