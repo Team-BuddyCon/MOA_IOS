@@ -33,6 +33,36 @@ final class MapViewController: BaseViewController {
         return bottomSheet
     }()
     
+    private let guideToastLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: pretendard_medium, size: 13.0)
+        label.textColor = .grey70
+        label.setRangeFontColor(text: MAP_GUIDE_TOAST_VIEW_TITLE, startIndex: 9, endIndex: 18, color: .pink100)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    private lazy var guideToastView: UIView = {
+        let view = UIView()
+        view.addSubview(guideToastLabel)
+        view.layer.cornerRadius = 21
+        view.backgroundColor = .white
+        view.applyShadow(
+            color: UIColor.black.withAlphaComponent(0.1).cgColor,
+            opacity: 1,
+            blur: 10,
+            x: 0.0,
+            y: 2.0
+        )
+        
+        guideToastLabel.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+            $0.centerX.equalToSuperview()
+        }
+        
+        return view
+    }()
+    
     private var kmAuth: Bool = false
     var mapManager: KakaoMapManager?
     let mapViewModel = MapViewModel(
@@ -89,7 +119,8 @@ private extension MapViewController {
         [
             storeTypeCollectionView,
             kmContrainer,
-            mapBottomSheet
+            mapBottomSheet,
+            guideToastView
         ].forEach {
             view.addSubview($0)
         }
@@ -111,6 +142,13 @@ private extension MapViewController {
             $0.bottom.equalToSuperview()
             $0.horizontalEdges.equalToSuperview()
             $0.height.equalTo(mapBottomSheet.sheetHeight.value)
+        }
+        
+        guideToastView.snp.makeConstraints {
+            $0.top.equalTo(kmContrainer.snp.top).inset(16)
+            $0.centerX.equalTo(kmContrainer.snp.centerX)
+            $0.height.equalTo(42)
+            $0.width.equalTo(262)
         }
     }
     
