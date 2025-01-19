@@ -28,14 +28,48 @@ final class MapViewController: BaseViewController {
         return collectionView
     }()
     
-    let mapBottomSheet: MapBottomSheet = {
-        let bottomSheet = MapBottomSheet()
+    lazy var mapBottomSheet: MapBottomSheet = {
+        let bottomSheet = MapBottomSheet(mapViewModel: mapViewModel)
         return bottomSheet
+    }()
+    
+    private let guideToastLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: pretendard_medium, size: 13.0)
+        label.textColor = .grey70
+        label.setRangeFontColor(text: MAP_GUIDE_TOAST_VIEW_TITLE, startIndex: 9, endIndex: 18, color: .pink100)
+        label.textAlignment = .center
+        label.sizeToFit()
+        return label
+    }()
+    
+    private lazy var guideToastView: UIView = {
+        let view = UIView()
+        view.addSubview(guideToastLabel)
+        view.layer.cornerRadius = 21
+        view.backgroundColor = .white
+        view.clipsToBounds = true
+        view.applyShadow(
+            color: UIColor.black.withAlphaComponent(0.1).cgColor,
+            opacity: 1,
+            blur: 10,
+            x: 0.0,
+            y: 2.0
+        )
+        
+        guideToastLabel.snp.makeConstraints {
+            $0.center.equalToSuperview()
+        }
+        
+        return view
     }()
     
     private var kmAuth: Bool = false
     var mapManager: KakaoMapManager?
-    let mapViewModel = MapViewModel(kakaoService: KakaoService.shared)
+    let mapViewModel = MapViewModel(
+        gifticonService: GifticonService.shared,
+        kakaoService: KakaoService.shared
+    )
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -50,6 +84,7 @@ final class MapViewController: BaseViewController {
         super.viewWillAppear(animated)
         MOALogger.logd()
         mapManager?.addObserver()
+        mapViewModel.getGifticonCount()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -85,13 +120,14 @@ private extension MapViewController {
         [
             storeTypeCollectionView,
             kmContrainer,
+            guideToastView,
             mapBottomSheet
         ].forEach {
             view.addSubview($0)
         }
         
         storeTypeCollectionView.snp.makeConstraints {
-            $0.top.equalTo(view.safeAreaLayoutGuide).inset(12)
+            $0.top.equalTo(view.safeAreaLayoutGuide).inset(8)
             $0.left.equalToSuperview().inset(20)
             $0.trailing.equalToSuperview()
             $0.height.equalTo(32)
@@ -103,16 +139,24 @@ private extension MapViewController {
             $0.bottom.equalToSuperview()
         }
         
+        guideToastView.snp.makeConstraints {
+            $0.top.equalTo(kmContrainer.snp.top).inset(16)
+            $0.centerX.equalTo(kmContrainer.snp.centerX)
+            $0.height.equalTo(42)
+            $0.width.equalTo(262)
+        }
+        
         mapBottomSheet.snp.makeConstraints {
             $0.bottom.equalToSuperview()
             $0.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(mapBottomSheet.state.height)
+            $0.height.equalTo(mapBottomSheet.sheetHeight.value)
         }
     }
     
     func setupData() {
         let firstIndexPath = IndexPath(item: 0, section: 0)
         storeTypeCollectionView.selectItem(at: firstIndexPath, animated: false, scrollPosition: .centeredHorizontally)
+        mapViewModel.fetch()
     }
     
     func bind() {
@@ -136,6 +180,10 @@ private extension MapViewController {
                     break
                 }
             }).disposed(by: disposeBag)
+        
+        mapBottomSheet.state
+            .bind(to: self.rx.bindToBottomSheetState)
+            .disposed(by: disposeBag)
         
         mapBottomSheet.sheetHeight
             .bind(to: self.rx.bindToBottomSheetHeight)
@@ -166,24 +214,44 @@ extension MapViewController: UICollectionViewDataSource, UICollectionViewDelegat
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let storeType = storeTypes[indexPath.row]
-        mapViewModel.selectStoreType = storeType
+        mapViewModel.changeStoreType(storeType: storeType)
         mapViewModel.searchPlaceByKeyword()
+        mapViewModel.getGifticonCount()
     }
 }
 
 extension Reactive where Base: MapViewController {
     var bindToSearchPlaces: Binder<[SearchPlace]> {
         return Binder<[SearchPlace]>(self.base) { viewController, searchPlaces in
+            let storeType = viewController.mapViewModel.selectStoreTypeRelay.value
             viewController.mapManager?.createPois(
                 searchPlaces: searchPlaces,
-                storeType: viewController.mapViewModel.selectStoreType,
+                storeType: storeType,
                 scale: 0.3
             )
         }
     }
     
+    var bindToBottomSheetState: Binder<BottomSheetState> {
+        return Binder<BottomSheetState>(self.base) { viewController, state in
+            UIView.animate(withDuration: 0.5, delay: 0.0,options: .curveEaseInOut) {
+                viewController.mapBottomSheet.snp.remakeConstraints {
+                    $0.bottom.equalToSuperview()
+                    $0.horizontalEdges.equalToSuperview()
+                    $0.height.equalTo(state.height)
+                }
+                viewController.view.layoutIfNeeded()
+            }
+        }
+    }
+    
     var bindToBottomSheetHeight: Binder<Double> {
         return Binder<Double>(self.base) { viewController, height in
+            if !viewController.mapBottomSheet.isDrag {
+                viewController.mapBottomSheet.isDrag = false
+                return
+            }
+            
             viewController.mapBottomSheet.snp.remakeConstraints {
                 $0.bottom.equalToSuperview()
                 $0.horizontalEdges.equalToSuperview()

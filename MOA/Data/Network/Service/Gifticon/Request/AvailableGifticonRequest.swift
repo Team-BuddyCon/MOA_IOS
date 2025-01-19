@@ -35,7 +35,7 @@ struct AvailableGifticonRequest: BaseRequest {
             query.updateValue(String(describing: storeCategory), forKey: HttpKeys.Gifticon.gifticonStoreCategory)
         }
         
-        if let storeType = storeType {
+        if let storeType = storeType, storeType != .ALL {
             query.updateValue(String(describing: storeType), forKey: HttpKeys.Gifticon.gifticonStore)
         }
         

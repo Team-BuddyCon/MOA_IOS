@@ -19,18 +19,21 @@ enum BottomSheetState {
     var height: Double {
         switch self {
         case .Collapsed:
-            return 116.0
+            return Double(UIScreen.main.bounds.height) / 852.0 * 116.0
         case .PartiallyExpanded:
-            return 201.0
+            return Double(UIScreen.main.bounds.height) / 852.0 * 201.0
         case .Expanded:
-            return Double(UIScreen.main.bounds.height) - 188.0
+            return Double(UIScreen.main.bounds.height) - UIApplication.shared.topBarHeight - UIApplication.shared.safeAreaTopHeight - 64.0
         }
     }
 }
 
 final class MapBottomSheet: UIView {
-    var state: BottomSheetState = BottomSheetState.Collapsed
+    let disposeBag = DisposeBag()
+    
+    var state: BehaviorRelay<BottomSheetState> = BehaviorRelay(value: BottomSheetState.Collapsed)
     var sheetHeight: BehaviorRelay<Double> = BehaviorRelay(value: BottomSheetState.Collapsed.height)
+    var isDrag: Bool = false
     
     private let lineView: UIView = {
         let view = UIView()
@@ -47,23 +50,51 @@ final class MapBottomSheet: UIView {
         return label
     }()
     
-    private let countLabel: UILabel = {
+    let countLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont(name: pretendard_bold, size: 24.0)
         label.textColor = .grey90
         return label
     }()
     
-    private let iconImageView: UIImageView = {
+    let imminentCountLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: pretendard_bold, size: 12.0)
+        label.textColor = .pink100
+        return label
+    }()
+    
+    let iconImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: ALL_STORE))
         return imageView
     }()
     
-    let panGesture: UIPanGestureRecognizer
+    lazy var gifticonCollectionView: UICollectionView = {
+        let width = UIScreen.getWidthByDivision(division: 2, exclude: 20 + 16 + 20) // left + middle + right
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .vertical
+        layout.itemSize = CGSize(width: Double(width), height: Double(width) * 234 / 159.5)
+        layout.minimumInteritemSpacing = 16
+        layout.minimumLineSpacing = 24
+        layout.sectionInset = UIEdgeInsets(top: 0.0, left: 20.0, bottom: 0.0, right: 20.0)
+        
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.register(GifticonCell.self, forCellWithReuseIdentifier: GifticonCell.identifier)
+        collectionView.register(GifticonSkeletonCell.self, forCellWithReuseIdentifier: GifticonSkeletonCell.identifier)
+        collectionView.showsVerticalScrollIndicator = false
+        return collectionView
+    }()
     
-    init(state: BottomSheetState = .Collapsed) {
+    let panGesture: UIPanGestureRecognizer
+    let mapViewModel: MapViewModel
+    
+    init(
+        mapViewModel: MapViewModel,
+        state: BottomSheetState = .Collapsed
+    ) {
         self.panGesture = UIPanGestureRecognizer()
-        self.state = state
+        self.mapViewModel = mapViewModel
+        self.state.accept(state)
         super.init(frame: .zero)
         setupLayout()
         bind()
@@ -82,7 +113,9 @@ final class MapBottomSheet: UIView {
             lineView,
             titleLabel,
             countLabel,
-            iconImageView
+            imminentCountLabel,
+            iconImageView,
+            gifticonCollectionView
         ].forEach {
             addSubview($0)
         }
@@ -103,19 +136,87 @@ final class MapBottomSheet: UIView {
         titleLabel.snp.makeConstraints {
             $0.top.equalTo(iconImageView.snp.top).inset(4)
             $0.leading.equalToSuperview().inset(15)
+            $0.bottom.equalTo(countLabel.snp.top)
         }
         
         countLabel.snp.makeConstraints {
-            $0.bottom.equalTo(iconImageView.snp.bottom)
+            $0.top.equalTo(titleLabel.snp.bottom)
             $0.leading.equalToSuperview().inset(15)
+            $0.bottom.equalTo(iconImageView.snp.bottom).inset(4)
+        }
+        
+        imminentCountLabel.snp.makeConstraints {
+            $0.bottom.equalTo(countLabel.snp.bottom).inset(4)
+            $0.leading.equalTo(countLabel.snp.trailing).offset(8)
+        }
+        
+        gifticonCollectionView.snp.makeConstraints {
+            $0.top.equalTo(iconImageView.snp.bottom).offset(20)
+            $0.horizontalEdges.equalToSuperview()
+            $0.bottom.equalToSuperview()
         }
     }
     
     private func bind() {
         addGestureRecognizer(panGesture)
+        
+        mapViewModel.selectStoreTypeRelay
+            .bind(to: self.rx.bindToStoreType)
+            .disposed(by: disposeBag)
+        
+        mapViewModel.gifticonCountRelay
+            .bind(to: self.rx.bindToGifticonCount)
+            .disposed(by: disposeBag)
+        
+        mapViewModel.imminentCountRelay
+            .bind(to: self.rx.bindToImminentCount)
+            .disposed(by: disposeBag)
+        
+        mapViewModel.gifticons
+            .bind(to: gifticonCollectionView.rx.items) { collectionView, row, gifticon in
+                if gifticon.gifticonId == Int.min {
+                    guard let cell = collectionView.dequeueReusableCell(
+                        withReuseIdentifier: GifticonSkeletonCell.identifier,
+                        for: IndexPath(row: row, section: 0)
+                    ) as? GifticonSkeletonCell else {
+                        return UICollectionViewCell()
+                    }
+                    return cell
+                }
+
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: GifticonCell.identifier,
+                    for: IndexPath(row: row, section: 0)
+                ) as? GifticonCell else {
+                    return UICollectionViewCell()
+                }
+                
+                cell.setData(
+                    dday: gifticon.expireDate.toDday(),
+                    imageURL: gifticon.imageUrl,
+                    storeType: gifticon.gifticonStore,
+                    title: gifticon.name,
+                    date: gifticon.expireDate
+                )
+                return cell
+            }.disposed(by: disposeBag)
+        
+        mapViewModel.gifticons
+            .observe(on: MainScheduler())
+            .subscribe(onNext: { [weak self] _ in
+                guard let self = self else { return }
+                gifticonCollectionView.reloadData()
+                gifticonCollectionView.layoutIfNeeded()
+            }).disposed(by: disposeBag)
+        
+        gifticonCollectionView.rx.contentOffset
+            .map { _ in self.gifticonCollectionView }
+            .bind(to: self.rx.scrollOffset)
+            .disposed(by: disposeBag)
     }
     
     func setSheetHeight(offset: Double) {
+        isDrag = true
         let height = sheetHeight.value
         if height < BottomSheetState.Expanded.height + 16.0 && height > 0 {
             sheetHeight.accept(height - offset)
@@ -152,7 +253,53 @@ final class MapBottomSheet: UIView {
             break
         }
         
-        state = currentState
-        sheetHeight.accept(state.height)
+        sheetHeight.accept(currentState.height)
+        state.accept(currentState)
+    }
+}
+
+extension Reactive where Base: MapBottomSheet {
+    var bindToStoreType: Binder<StoreType> {
+        return Binder<StoreType>(self.base) { sheet, storeType in
+            if storeType == .ALL || storeType == .OTHERS {
+                sheet.iconImageView.image = UIImage(named: ALL_STORE)
+            } else {
+                sheet.iconImageView.image = storeType.image
+            }
+        }
+    }
+    
+    var bindToGifticonCount: Binder<Int> {
+        return Binder<Int>(self.base) { sheetView, count in
+            sheetView.countLabel.text = String(format: MAP_BOTTOM_SHEET_GIFTICON_COUNT_FORMAT, count)
+        }
+    }
+    
+    var bindToImminentCount: Binder<Int> {
+        return Binder<Int>(self.base) { sheetView, count in
+            sheetView.imminentCountLabel.text = String(format: MAP_BOTTOM_SHEET_IMMINENT_GIFTICON_COUNT_FORMAT, count)
+        }
+    }
+    
+    var scrollOffset: Binder<UICollectionView> {
+        return Binder<UICollectionView>(self.base) { sheetView, collectionView in
+            let contentOffsetY = collectionView.contentOffset.y
+            let scrollViewHeight = collectionView.bounds.size.height
+            let contentHeight = collectionView.contentSize.height
+            let height = CGFloat(UIScreen.getWidthByDivision(division: 2, exclude: 20 + 16 + 20))
+            
+            // 스크롤 할 필요 없는 데이터의 양일 때는 페이징 처리하지 않음
+            if contentHeight <= scrollViewHeight {
+                return
+            }
+            
+            if contentOffsetY + scrollViewHeight + height >= contentHeight,
+               !sheetView.mapViewModel.isScrollEnded,
+               !sheetView.mapViewModel.isLoading {
+                MOALogger.logd()
+                sheetView.mapViewModel.isLoading = true
+                sheetView.mapViewModel.fetchMore()
+            }
+        }
     }
 }
