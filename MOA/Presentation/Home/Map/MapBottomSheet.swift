@@ -29,8 +29,9 @@ enum BottomSheetState {
 }
 
 final class MapBottomSheet: UIView {
-    var state: BottomSheetState = BottomSheetState.Collapsed
+    var state: BehaviorRelay<BottomSheetState> = BehaviorRelay(value: BottomSheetState.Collapsed)
     var sheetHeight: BehaviorRelay<Double> = BehaviorRelay(value: BottomSheetState.Collapsed.height)
+    var isDrag: Bool = false
     
     var gifticonCount: Int = 0 {
         didSet {
@@ -82,7 +83,7 @@ final class MapBottomSheet: UIView {
     
     init(state: BottomSheetState = .Collapsed) {
         self.panGesture = UIPanGestureRecognizer()
-        self.state = state
+        self.state.accept(state)
         super.init(frame: .zero)
         setupLayout()
         bind()
@@ -143,6 +144,7 @@ final class MapBottomSheet: UIView {
     }
     
     func setSheetHeight(offset: Double) {
+        isDrag = true
         let height = sheetHeight.value
         if height < BottomSheetState.Expanded.height + 16.0 && height > 0 {
             sheetHeight.accept(height - offset)
@@ -179,8 +181,8 @@ final class MapBottomSheet: UIView {
             break
         }
         
-        state = currentState
-        sheetHeight.accept(state.height)
+        sheetHeight.accept(currentState.height)
+        state.accept(currentState)
     }
 }
 

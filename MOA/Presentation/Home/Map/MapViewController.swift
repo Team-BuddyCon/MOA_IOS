@@ -110,7 +110,7 @@ private extension MapViewController {
         mapBottomSheet.snp.makeConstraints {
             $0.bottom.equalToSuperview()
             $0.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(mapBottomSheet.state.height)
+            $0.height.equalTo(mapBottomSheet.sheetHeight.value)
         }
     }
     
@@ -141,6 +141,10 @@ private extension MapViewController {
                 }
             }).disposed(by: disposeBag)
         
+        mapBottomSheet.state
+            .bind(to: self.rx.bindToBottomSheetState)
+            .disposed(by: disposeBag)
+        
         mapBottomSheet.sheetHeight
             .bind(to: self.rx.bindToBottomSheetHeight)
             .disposed(by: disposeBag)
@@ -153,11 +157,9 @@ private extension MapViewController {
             .bind(to: self.rx.bindToImminentCount)
             .disposed(by: disposeBag)
         
-        
         mapViewModel.selectStoreTypeRelay
             .bind(to: self.mapBottomSheet.rx.bindToStoreType)
             .disposed(by: disposeBag)
-    
     }
 }
 
@@ -202,8 +204,26 @@ extension Reactive where Base: MapViewController {
         }
     }
     
+    var bindToBottomSheetState: Binder<BottomSheetState> {
+        return Binder<BottomSheetState>(self.base) { viewController, state in
+            UIView.animate(withDuration: 0.5, delay: 0.0,options: .curveEaseInOut) {
+                viewController.mapBottomSheet.snp.remakeConstraints {
+                    $0.bottom.equalToSuperview()
+                    $0.horizontalEdges.equalToSuperview()
+                    $0.height.equalTo(state.height)
+                }
+                viewController.view.layoutIfNeeded()
+            }
+        }
+    }
+    
     var bindToBottomSheetHeight: Binder<Double> {
         return Binder<Double>(self.base) { viewController, height in
+            if !viewController.mapBottomSheet.isDrag {
+                viewController.mapBottomSheet.isDrag = false
+                return
+            }
+            
             viewController.mapBottomSheet.snp.remakeConstraints {
                 $0.bottom.equalToSuperview()
                 $0.horizontalEdges.equalToSuperview()
