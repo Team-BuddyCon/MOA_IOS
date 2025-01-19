@@ -28,8 +28,8 @@ final class MapViewController: BaseViewController {
         return collectionView
     }()
     
-    let mapBottomSheet: MapBottomSheet = {
-        let bottomSheet = MapBottomSheet()
+    lazy var mapBottomSheet: MapBottomSheet = {
+        let bottomSheet = MapBottomSheet(mapViewModel: mapViewModel)
         return bottomSheet
     }()
     
@@ -156,6 +156,7 @@ private extension MapViewController {
     func setupData() {
         let firstIndexPath = IndexPath(item: 0, section: 0)
         storeTypeCollectionView.selectItem(at: firstIndexPath, animated: false, scrollPosition: .centeredHorizontally)
+        mapViewModel.fetch()
     }
     
     func bind() {
@@ -187,18 +188,6 @@ private extension MapViewController {
         mapBottomSheet.sheetHeight
             .bind(to: self.rx.bindToBottomSheetHeight)
             .disposed(by: disposeBag)
-        
-        mapViewModel.gifticonCountRelay
-            .bind(to: self.rx.bindToGifticonCount)
-            .disposed(by: disposeBag)
-        
-        mapViewModel.imminentCountRelay
-            .bind(to: self.rx.bindToImminentCount)
-            .disposed(by: disposeBag)
-        
-        mapViewModel.selectStoreTypeRelay
-            .bind(to: self.mapBottomSheet.rx.bindToStoreType)
-            .disposed(by: disposeBag)
     }
 }
 
@@ -225,7 +214,7 @@ extension MapViewController: UICollectionViewDataSource, UICollectionViewDelegat
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let storeType = storeTypes[indexPath.row]
-        mapViewModel.selectStoreTypeRelay.accept(storeType)
+        mapViewModel.changeStoreType(storeType: storeType)
         mapViewModel.searchPlaceByKeyword()
         mapViewModel.getGifticonCount()
     }
@@ -268,18 +257,6 @@ extension Reactive where Base: MapViewController {
                 $0.horizontalEdges.equalToSuperview()
                 $0.height.equalTo(height)
             }
-        }
-    }
-    
-    var bindToGifticonCount: Binder<Int> {
-        return Binder<Int>(self.base) { viewController, count in
-            viewController.mapBottomSheet.gifticonCount = count
-        }
-    }
-    
-    var bindToImminentCount: Binder<Int> {
-        return Binder<Int>(self.base) { viewController, count in
-            viewController.mapBottomSheet.imminentCount = count
         }
     }
 }
