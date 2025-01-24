@@ -125,6 +125,7 @@ private extension MapViewController {
         let height = Int(UIScreen.main.bounds.height) - (Int(navigationController?.navigationBar.frame.height ?? 0) + 16)
         mapManager = KakaoMapManager(rect: CGRect(x: 0, y: 0, width: width, height: height))
         mapManager?.delegate = mapManager
+        mapManager?.eventDelegate = self
         mapManager?.prepareEngine()
     }
     
@@ -205,6 +206,34 @@ private extension MapViewController {
     }
 }
 
+extension MapViewController: KakaoMapEventDelegate {
+    func poiDidTapped(kakaoMap: KakaoMap, layerID: String, poiID: String, position: MapPoint) {
+        MOALogger.logd("\(poiID) \(layerID) \(position.wgsCoord.longitude) \(position.wgsCoord.latitude)")
+        if layerID != LayerID.Cafe.rawValue &&
+            layerID != LayerID.FastFood.rawValue &&
+            layerID != LayerID.Store.rawValue {
+            return 
+        }
+        
+        let manager = kakaoMap.getLabelManager()
+        let layer = manager.getLabelLayer(layerID: layerID)
+        let poi = layer?.getPoi(poiID: poiID)
+        let otherPois = layer?.getAllPois()?.filter { $0.itemID != poiID }
+        let styleID = StyleID.styleID(rank: poi?.rank)
+        
+        poi?.changeStyle(styleID: styleID.selectStyleID.rawValue, enableTransition: true)
+        poi?.rank = styleID.selectStyleID.rank
+        
+        if styleID.selectStyleID.isUp() {
+            otherPois?.forEach {
+                $0.changeStyle(styleID: styleID.rawValue)
+                $0.show()
+            }
+        }
+        poi?.show()
+    }
+}
+
 extension MapViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return storeTypes.count
@@ -241,7 +270,8 @@ extension Reactive where Base: MapViewController {
             viewController.mapManager?.createPois(
                 searchPlaces: searchPlaces,
                 storeType: storeType,
-                scale: 0.3
+                scale: 0.3,
+                upScale: 0.5
             )
         }
     }

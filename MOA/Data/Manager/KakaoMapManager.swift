@@ -11,8 +11,62 @@ import KakaoMapsSDK
 let KAKAO_MAP_DEFAULT_VIEW = "mapview"
 let KAKAO_MAP_LEVEL_15 = 15
 let KAKAO_MAP_LEVEL_17 = 17
-let LAYER_ID = "PoiLayer"
-let STYLE_ID = "PerLevelStyle"
+
+enum LayerID: String {
+    case Cafe = "Cafe_LayerID"
+    case FastFood = "FastFood_LayerID"
+    case Store = "Store_LayerID"
+}
+
+enum StyleID: String {
+    case Cafe = "Cafe_StyleID"
+    case FastFood = "FastFood_StyleID"
+    case Store = "Store_StyleID"
+    case CafeUp = "CafeUp_StyleID"
+    case FastFoodUp = "FastFoodUp_StyleID"
+    case StoreUp = "StoreUp_StyleID"
+    
+    var rank: Int {
+        switch self {
+        case .Cafe: return 0
+        case .FastFood: return 1
+        case .Store: return 2
+        case .CafeUp: return 3
+        case .FastFoodUp: return 4
+        case .StoreUp: return 5
+        }
+    }
+    
+    var selectStyleID: StyleID {
+        switch self {
+        case .Cafe: return .CafeUp
+        case .FastFood: return .FastFoodUp
+        case .Store: return .StoreUp
+        case .CafeUp: return .Cafe
+        case .FastFoodUp: return .FastFood
+        case .StoreUp: return .Store
+        }
+    }
+    
+    static func styleID(rank: Int?) -> StyleID {
+        switch rank {
+        case StyleID.Cafe.rank: return .Cafe
+        case StyleID.FastFood.rank: return .FastFood
+        case StyleID.Store.rank: return .Store
+        case StyleID.CafeUp.rank: return .CafeUp
+        case StyleID.FastFoodUp.rank: return .FastFoodUp
+        case StyleID.StoreUp.rank: return .StoreUp
+        default: return .Store
+        }
+    }
+    
+    func isUp() -> Bool {
+        switch self {
+        case .CafeUp, .FastFoodUp, .StoreUp: return true
+        default: return false
+        }
+    }
+}
 
 public class KakaoMapManager: NSObject {
     
@@ -30,6 +84,8 @@ public class KakaoMapManager: NSObject {
             controller?.delegate = delegate
         }
     }
+    
+    var eventDelegate: KakaoMapEventDelegate?
     
     public init(rect: CGRect) {
         MOALogger.logd()
@@ -70,19 +126,41 @@ public class KakaoMapManager: NSObject {
         MOALogger.logd()
         if let view = controller?.getView(KAKAO_MAP_DEFAULT_VIEW) as? KakaoMap {
             let manager = view.getLabelManager()
-            let layerOption = LabelLayerOptions(
-                layerID: LAYER_ID,
+            let cafeLayerOption = LabelLayerOptions(
+                layerID: LayerID.Cafe.rawValue,
                 competitionType: .none,
                 competitionUnit: .symbolFirst,
                 orderType: .rank,
                 zOrder: 0
             )
-            let _ = manager.addLabelLayer(option: layerOption)
+            
+            let fastFoodLayerOption = LabelLayerOptions(
+                layerID: LayerID.FastFood.rawValue,
+                competitionType: .none,
+                competitionUnit: .symbolFirst,
+                orderType: .rank,
+                zOrder: 0
+            )
+            
+            let storeLayerOption = LabelLayerOptions(
+                layerID: LayerID.Store.rawValue,
+                competitionType: .none,
+                competitionUnit: .symbolFirst,
+                orderType: .rank,
+                zOrder: 0
+            )
+            
+            let _ = manager.addLabelLayer(option: cafeLayerOption)
+            let _ = manager.addLabelLayer(option: fastFoodLayerOption)
+            let _ = manager.addLabelLayer(option: storeLayerOption)
         }
     }
     
     // 카페 Poi Style
-    private func getCafePoiIconStyle(scale: CGFloat) -> PoiStyle {
+    private func getCafePoiIconStyle(
+        scale: CGFloat,
+        styleID: String
+    ) -> PoiStyle {
         let poiImage = UIImage(named: CAFE_POI_ICON)?.resize(scale: scale)
         let iconStyle = PoiIconStyle(
             symbol: poiImage,
@@ -91,7 +169,7 @@ public class KakaoMapManager: NSObject {
         )
         
         return PoiStyle(
-            styleID: CafeStyleID,
+            styleID: styleID,
             styles: [
                 PerLevelPoiStyle(iconStyle: iconStyle, level: 10)
             ]
@@ -99,7 +177,10 @@ public class KakaoMapManager: NSObject {
     }
     
     // 햄버거 Poi Style
-    private func getFastFoodPoiIconStyle(scale: CGFloat) -> PoiStyle {
+    private func getFastFoodPoiIconStyle(
+        scale: CGFloat,
+        styleID: String
+    ) -> PoiStyle {
         let poiImage = UIImage(named: FAST_FOOD_POI_ICON)?.resize(scale: scale)
         let iconStyle = PoiIconStyle(
             symbol: poiImage,
@@ -107,7 +188,7 @@ public class KakaoMapManager: NSObject {
             badges: nil
         )
         return PoiStyle(
-            styleID: FastFoodStyleID,
+            styleID: styleID,
             styles: [
                 PerLevelPoiStyle(iconStyle: iconStyle, level: 10)
             ]
@@ -115,7 +196,10 @@ public class KakaoMapManager: NSObject {
     }
     
     // 편의점 Poi Style
-    private func getStoreIconStyle(scale: CGFloat) -> PoiStyle {
+    private func getStoreIconStyle(
+        scale: CGFloat,
+        styleID: String
+    ) -> PoiStyle {
         let poiImage = UIImage(named: STORE_POI_ICON)?.resize(scale: scale)
         let iconStyle = PoiIconStyle(
             symbol: poiImage,
@@ -124,7 +208,7 @@ public class KakaoMapManager: NSObject {
         )
         
         return PoiStyle(
-            styleID: StoreStyleID,
+            styleID: styleID,
             styles: [
                 PerLevelPoiStyle(iconStyle: iconStyle, level: 10)
             ]
@@ -132,16 +216,26 @@ public class KakaoMapManager: NSObject {
     }
     
     // Poi 레벨별로 Style 지정
-    func createPoiStyle(scale: CGFloat) {
+    func createPoiStyle(
+        scale: CGFloat,
+        upScale: CGFloat
+    ) {
         MOALogger.logd()
         if let view = controller?.getView(KAKAO_MAP_DEFAULT_VIEW) as? KakaoMap {
             let manager = view.getLabelManager()
-            let cafePoiStyle = getCafePoiIconStyle(scale: scale)
-            let fastFoodPoiStyle = getFastFoodPoiIconStyle(scale: scale)
-            let storePoiStyle = getStoreIconStyle(scale: scale)
+            let cafePoiStyle = getCafePoiIconStyle(scale: scale, styleID: StyleID.Cafe.rawValue)
+            let cafeUpPoiStyle = getCafePoiIconStyle(scale: upScale, styleID: StyleID.CafeUp.rawValue)
+            let fastFoodPoiStyle = getFastFoodPoiIconStyle(scale: scale, styleID: StyleID.FastFood.rawValue)
+            let fastFoodUpPoiStyle = getFastFoodPoiIconStyle(scale: upScale, styleID: StyleID.FastFoodUp.rawValue)
+            let storePoiStyle = getStoreIconStyle(scale: scale, styleID: StyleID.Store.rawValue)
+            let storeUpPoiStyle = getStoreIconStyle(scale: upScale, styleID: StyleID.StoreUp.rawValue)
+            
             manager.addPoiStyle(cafePoiStyle)
+            manager.addPoiStyle(cafeUpPoiStyle)
             manager.addPoiStyle(fastFoodPoiStyle)
+            manager.addPoiStyle(fastFoodUpPoiStyle)
             manager.addPoiStyle(storePoiStyle)
+            manager.addPoiStyle(storeUpPoiStyle)
         }
     }
     
@@ -150,18 +244,21 @@ public class KakaoMapManager: NSObject {
         searchPlaces: [SearchPlace],
         storeType: StoreType,
         scale: CGFloat,
+        upScale: CGFloat,
         refresh: Bool = true
     ) {
         MOALogger.logd()
         if refresh { removePois() }
         createLabelLayer()
-        createPoiStyle(scale: scale)
+        createPoiStyle(scale: scale, upScale: upScale)
         
         if let view = controller?.getView(KAKAO_MAP_DEFAULT_VIEW) as? KakaoMap {
+            view.eventDelegate = eventDelegate
             let manager = view.getLabelManager()
-            let layer = manager.getLabelLayer(layerID: LAYER_ID)
-            let poiOption = PoiOptions(styleID: storeType.markerStyle)
-            poiOption.rank = 0
+            let layer = manager.getLabelLayer(layerID: storeType.layerID.rawValue)
+            let poiOption = PoiOptions(styleID: storeType.styleID.rawValue)
+            poiOption.rank = storeType.styleID.rank
+            poiOption.clickable = true
             
             for searchPlace in searchPlaces {
                 guard let longitude = Double(searchPlace.x) else { return }
@@ -177,7 +274,9 @@ public class KakaoMapManager: NSObject {
         MOALogger.logd()
         if let view = controller?.getView(KAKAO_MAP_DEFAULT_VIEW) as? KakaoMap {
             let manager = view.getLabelManager()
-            manager.removeLabelLayer(layerID: LAYER_ID)
+            manager.removeLabelLayer(layerID: LayerID.Cafe.rawValue)
+            manager.removeLabelLayer(layerID: LayerID.FastFood.rawValue)
+            manager.removeLabelLayer(layerID: LayerID.Store.rawValue)
         }
     }
 }
