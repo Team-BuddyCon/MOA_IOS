@@ -133,6 +133,10 @@ let MAP_BOTTOM_SHEET_TITLE = "사용 가능한 기프티콘"
 let MAP_BOTTOM_SHEET_GIFTICON_COUNT_FORMAT = "%d개"
 let MAP_BOTTOM_SHEET_IMMINENT_GIFTICON_COUNT_FORMAT = "유효기간 임박 %d개"
 let MAP_GUIDE_TOAST_VIEW_TITLE = "상단 탭을 눌러 주변에 있는 매장을 확인하세요."
+let MAP_DISTANCE = "거리"
+let MAP_DISTANCE_FORMAT = "%.1fkm"
+let MAP_FIND_PATH = "길 찾기"
+let MAP_ADDRESS_COPY = "주소 복사"
 
 // MARK: ImageSet
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"

@@ -131,7 +131,7 @@ public class KakaoMapManager: NSObject {
                 competitionType: .none,
                 competitionUnit: .symbolFirst,
                 orderType: .rank,
-                zOrder: 0
+                zOrder: 5000
             )
             
             let fastFoodLayerOption = LabelLayerOptions(
@@ -139,7 +139,7 @@ public class KakaoMapManager: NSObject {
                 competitionType: .none,
                 competitionUnit: .symbolFirst,
                 orderType: .rank,
-                zOrder: 0
+                zOrder: 5000
             )
             
             let storeLayerOption = LabelLayerOptions(
@@ -147,7 +147,7 @@ public class KakaoMapManager: NSObject {
                 competitionType: .none,
                 competitionUnit: .symbolFirst,
                 orderType: .rank,
-                zOrder: 0
+                zOrder: 5000
             )
             
             let _ = manager.addLabelLayer(option: cafeLayerOption)
@@ -253,6 +253,7 @@ public class KakaoMapManager: NSObject {
         createPoiStyle(scale: scale, upScale: upScale)
         
         if let view = controller?.getView(KAKAO_MAP_DEFAULT_VIEW) as? KakaoMap {
+            kakaoMap = view
             view.eventDelegate = eventDelegate
             let manager = view.getLabelManager()
             let layer = manager.getLabelLayer(layerID: storeType.layerID.rawValue)
