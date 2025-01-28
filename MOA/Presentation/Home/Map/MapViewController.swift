@@ -70,12 +70,6 @@ final class MapViewController: BaseViewController {
         return view
     }()
     
-    lazy var storeBottomSheet: StoreBottomSheet = {
-        let sheet = StoreBottomSheet()
-        sheet.isHidden = true
-        return sheet
-    }()
-    
     private var isFirstEntry = true
     private var kmAuth: Bool = false
     var mapManager: KakaoMapManager?
@@ -141,8 +135,7 @@ private extension MapViewController {
             storeTypeCollectionView,
             kmContrainer,
             guideToastView,
-            mapBottomSheet,
-            storeBottomSheet
+            mapBottomSheet
         ].forEach {
             view.addSubview($0)
         }
@@ -171,11 +164,6 @@ private extension MapViewController {
             $0.bottom.equalToSuperview()
             $0.horizontalEdges.equalToSuperview()
             $0.height.equalTo(mapBottomSheet.sheetHeight.value)
-        }
-        
-        storeBottomSheet.snp.makeConstraints {
-            $0.bottom.equalToSuperview()
-            $0.horizontalEdges.equalToSuperview()
         }
     }
     
@@ -229,13 +217,13 @@ extension MapViewController: KakaoMapEventDelegate {
         
         let x = String(String(position.wgsCoord.longitude).prefix(10))
         let y = String(String(position.wgsCoord.latitude).prefix(10))
-        let store = mapViewModel.searchPlaceRelay.value.first {
+        let searchPlace = mapViewModel.searchPlaceRelay.value.first {
             String($0.x.prefix(10)) == x && String($0.y.prefix(10)) == y
         }
         
-        if let store = store {
+        if let searchPlace = searchPlace {
             let storeBottomSheetVC = MapStoreBottomSheetViewController()
-            storeBottomSheetVC.setUp(store: store.place_name, distance: String(format: MAP_DISTANCE_FORMAT, (Double(store.distance) ?? 0.0) / 1000.0))
+            storeBottomSheetVC.searchPlace = searchPlace
             storeBottomSheetVC.delegate = self
             self.present(storeBottomSheetVC, animated: true)
         }

@@ -137,6 +137,7 @@ let MAP_DISTANCE = "거리"
 let MAP_DISTANCE_FORMAT = "%.1fkm"
 let MAP_FIND_PATH = "길 찾기"
 let MAP_ADDRESS_COPY = "주소 복사"
+let MAP_ADDRESS_COPY_TOAST_MESSAGE = "클립보드에 주소가 복사되었어요."
 
 // MARK: ImageSet
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"
@@ -175,6 +176,9 @@ let STORE_POI_ICON = "StorePoiIcon"
 let UNAVAILABLE_GIFTICON = "UnavailableGifticon"
 let NOTIFICATION_ICON = "NotificationIcon"
 let ALL_STORE = "AllStore"
+let NAVER_MAP_ICON = "NaverMapIcon"
+let KAKAO_MAP_ICON = "KakaoMapIcon"
+let GOOGLE_MAP_ICON = "GoogleMapIcon"
 
 // MARK: Font
 let pretendard_black = "Pretendard-Black"
