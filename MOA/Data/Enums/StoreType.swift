@@ -7,10 +7,6 @@
 
 import UIKit
 
-let CafeStyleID = "CAFE_STYPE_ID"
-let FastFoodStyleID = "FAST_FOOD_STYLE_ID"
-let StoreStyleID = "STORE_STYLE_ID"
-
 enum StoreType: String, CaseIterable {
     case ALL = "전체"
     case STARBUCKS = "스타벅스"
@@ -25,14 +21,36 @@ enum StoreType: String, CaseIterable {
     case CU = "CU"
     case OTHERS = "기타"
     
-    var markerStyle: String {
+    var styleID: StyleID {
         switch self {
         case .STARBUCKS, .TWOSOME_PLACE, .ANGELINUS, .MEGA_COFFEE, .COFFEE_BEAN, .GONG_CHA, .BASKIN_ROBBINS:
-            return CafeStyleID
+            return StyleID.Cafe
         case .MACDONALD:
-            return FastFoodStyleID
+            return StyleID.FastFood
         default:
-            return StoreStyleID
+            return StyleID.Store
+        }
+    }
+    
+    var upStyleID: StyleID {
+        switch self {
+        case .STARBUCKS, .TWOSOME_PLACE, .ANGELINUS, .MEGA_COFFEE, .COFFEE_BEAN, .GONG_CHA, .BASKIN_ROBBINS:
+            return StyleID.CafeUp
+        case .MACDONALD:
+            return StyleID.FastFoodUp
+        default:
+            return StyleID.StoreUp
+        }
+    }
+    
+    var layerID: LayerID {
+        switch self {
+        case .STARBUCKS, .TWOSOME_PLACE, .ANGELINUS, .MEGA_COFFEE, .COFFEE_BEAN, .GONG_CHA, .BASKIN_ROBBINS:
+            return LayerID.Cafe
+        case .MACDONALD:
+            return LayerID.FastFood
+        default:
+            return LayerID.Store
         }
     }
     

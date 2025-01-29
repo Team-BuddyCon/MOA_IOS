@@ -9,6 +9,7 @@ import Foundation
 import RxSwift
 import RxCocoa
 import RxRelay
+import KakaoMapsSDK
 
 final class MapViewModel: BaseViewModel {
     let gifticonService: GifticonServiceProtocol
@@ -29,6 +30,9 @@ final class MapViewModel: BaseViewModel {
     var isLoading = false
     
     let gifticons = BehaviorRelay<[AvailableGifticon]>(value: [])
+    
+    var selectedLayerID: String? = nil
+    var selectedPoiID: String? = nil
     
     init(
         gifticonService: GifticonServiceProtocol,

@@ -134,7 +134,8 @@ extension GifticonDetailMapViewController: MapControllerDelegate {
             mapManager?.createPois(
                 searchPlaces: searchPlaces,
                 storeType: storeType,
-                scale: 0.3
+                scale: 0.3,
+                upScale: 0.3
             )
         }
     }

@@ -15,8 +15,10 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     
     var isGranted: Bool = false
+    private var location: CLLocation? = nil
     var latitude: Double? = nil
     var longitude: Double? = nil
+    var address: String? = nil
     
     private override init() {
         super.init()
@@ -38,11 +40,24 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         }
     }
     
+    func getAddress() {
+        if let location = self.location {
+            let geocoder = CLGeocoder.init()
+            geocoder.reverseGeocodeLocation(location) { placemarks, error in
+                if let placemark = placemarks?.first {
+                    self.address = "\(placemark.administrativeArea ?? "") \(placemark.locality ?? "") \(placemark.thoroughfare ?? "") \(placemark.subThoroughfare ?? "")"
+                }
+            }
+        }
+    }
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.first {
             MOALogger.logd("\(location.coordinate)")
+            self.location = location
             self.latitude = location.coordinate.latitude
             self.longitude = location.coordinate.longitude
+            getAddress()
             manager.stopUpdatingLocation()
         }
     }

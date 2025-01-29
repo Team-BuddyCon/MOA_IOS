@@ -24,17 +24,27 @@ final class Toast {
         window?.windowLevel = .alert
         window?.addSubview(toastView)
         window?.isUserInteractionEnabled = false
-        
-        toastView.snp.makeConstraints {
-            $0.centerX.equalToSuperview()
-            $0.bottom.equalToSuperview().offset(-96)
-            $0.height.equalTo(42)
-            $0.width.equalTo(216)
-        }
     }
     
-    func show(message: String) {
+    func show(message: String, down: Bool = true) {
         MOALogger.logd("\(message)")
+        
+        if down {
+            toastView.snp.remakeConstraints {
+                $0.centerX.equalToSuperview()
+                $0.bottom.equalToSuperview().offset(-96)
+                $0.height.equalTo(42)
+                $0.width.equalTo(216)
+            }
+        } else {
+            toastView.snp.remakeConstraints {
+                $0.centerX.equalToSuperview()
+                $0.top.equalToSuperview().inset(178)
+                $0.height.equalTo(42)
+                $0.width.equalTo(216)
+            }
+        }
+        
         toastView.message = message
         window?.makeKeyAndVisible()
         
