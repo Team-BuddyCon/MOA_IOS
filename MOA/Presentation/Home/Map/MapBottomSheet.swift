@@ -19,7 +19,7 @@ enum BottomSheetState {
     var height: Double {
         switch self {
         case .Collapsed:
-            return Double(UIScreen.main.bounds.height) / 852.0 * 116.0
+            return Double(UIScreen.main.bounds.height) / 852.0 * 120.0
         case .PartiallyExpanded:
             return Double(UIScreen.main.bounds.height) / 852.0 * 201.0
         case .Expanded:
@@ -31,8 +31,8 @@ enum BottomSheetState {
 final class MapBottomSheet: UIView {
     let disposeBag = DisposeBag()
     
-    var state: BehaviorRelay<BottomSheetState> = BehaviorRelay(value: BottomSheetState.Collapsed)
-    var sheetHeight: BehaviorRelay<Double> = BehaviorRelay(value: BottomSheetState.Collapsed.height)
+    var state: BehaviorRelay<BottomSheetState> = BehaviorRelay(value: BottomSheetState.PartiallyExpanded)
+    var sheetHeight: BehaviorRelay<Double> = BehaviorRelay(value: BottomSheetState.PartiallyExpanded.height)
     var isDrag: Bool = false
     
     private let lineView: UIView = {
@@ -86,18 +86,19 @@ final class MapBottomSheet: UIView {
     }()
     
     let panGesture: UIPanGestureRecognizer
-    let mapViewModel: MapViewModel
-    let onTapGifticon: (Int) -> Void
+    var onTapGifticon: ((Int) -> Void)? = nil
     
-    init(
-        mapViewModel: MapViewModel,
-        state: BottomSheetState = .Collapsed,
-        onTapGifticon: @escaping (Int) -> Void
-    ) {
+    // 생성자를 사용하지 않고 프로퍼티로 초기화 -> SnapKit Warning으로 인해 변경
+    var mapViewModel: MapViewModel? = nil {
+        didSet {
+            bind()
+        }
+    }
+
+    init(state: BottomSheetState = .PartiallyExpanded) {
         self.panGesture = UIPanGestureRecognizer()
-        self.mapViewModel = mapViewModel
         self.state.accept(state)
-        self.onTapGifticon = onTapGifticon
+        self.sheetHeight.accept(state.height)
         super.init(frame: .zero)
         setupLayout()
         bind()
@@ -163,6 +164,7 @@ final class MapBottomSheet: UIView {
     private func bind() {
         addGestureRecognizer(panGesture)
         
+        guard let mapViewModel = mapViewModel else { return }
         mapViewModel.selectStoreTypeRelay
             .bind(to: self.rx.bindToStoreType)
             .disposed(by: disposeBag)
@@ -220,7 +222,8 @@ final class MapBottomSheet: UIView {
         gifticonCollectionView.rx.modelSelected(AvailableGifticon.self)
             .withUnretained(self)
             .subscribe(onNext: { owner, gifticon in
-                owner.onTapGifticon(gifticon.gifticonId)
+                guard let onTapGifticon = owner.onTapGifticon else { return }
+                onTapGifticon(gifticon.gifticonId)
             }).disposed(by: disposeBag)
     }
     
@@ -302,12 +305,13 @@ extension Reactive where Base: MapBottomSheet {
                 return
             }
             
+            guard let mapViewModel = sheetView.mapViewModel else { return }
             if contentOffsetY + scrollViewHeight + height >= contentHeight,
-               !sheetView.mapViewModel.isScrollEnded,
-               !sheetView.mapViewModel.isLoading {
+               !mapViewModel.isScrollEnded,
+               !mapViewModel.isLoading {
                 MOALogger.logd()
-                sheetView.mapViewModel.isLoading = true
-                sheetView.mapViewModel.fetchMore()
+                mapViewModel.isLoading = true
+                mapViewModel.fetchMore()
             }
         }
     }

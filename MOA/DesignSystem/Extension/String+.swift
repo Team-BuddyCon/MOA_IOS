@@ -60,6 +60,7 @@ let SIGNUP_COMPLETE_SUBTITLE_FORMAT = "MOA의 소중한 회원이 되신 %@님,\
 let GIFTICON_MENU_TITLE = "기프티콘"
 let MAP_MENU_TITLE = "지도"
 let MYPAGE_MENU_TITLE = "마이페이지"
+let LOGIN_SUCCESS_TOAST_TITLE = "로그인을 완료했어요!"
 
 // MARK: Gifticon
 let GIFTICON_EMPTY_TITLE = "아래 플러스 버튼을 눌러\n가지고 있는 기프티콘을 등록해 주세요"

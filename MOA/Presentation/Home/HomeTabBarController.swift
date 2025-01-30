@@ -10,11 +10,22 @@ import SnapKit
 
 final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate {
     
+    private var isInit: Bool = true
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
         setupAppearance()
         setupViewControllers()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if isInit {
+            Toast.shared.show(message: LOGIN_SUCCESS_TOAST_TITLE)
+            isInit = false
+        }
     }
     
     private func setupAppearance() {
