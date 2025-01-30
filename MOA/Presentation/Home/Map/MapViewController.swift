@@ -28,16 +28,7 @@ final class MapViewController: BaseViewController {
         return collectionView
     }()
     
-    lazy var mapBottomSheet: MapBottomSheet = {
-        let bottomSheet = MapBottomSheet(
-            mapViewModel: mapViewModel,
-            onTapGifticon: { gifticonId in
-                let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
-                self.navigationController?.pushViewController(detailVC, animated: true)
-            }
-        )
-        return bottomSheet
-    }()
+    let mapBottomSheet: MapBottomSheet =  MapBottomSheet()
     
     private let guideToastLabel: UILabel = {
         let label = UILabel()
@@ -168,8 +159,18 @@ private extension MapViewController {
     }
     
     func setupData() {
+        // mapBottomSheet 초기화
+        mapBottomSheet.mapViewModel = mapViewModel
+        mapBottomSheet.onTapGifticon = { gifticonId in
+            let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
+            self.navigationController?.pushViewController(detailVC, animated: true)
+        }
+        
+        // storeTypeCollectionView 초기화
         let firstIndexPath = IndexPath(item: 0, section: 0)
         storeTypeCollectionView.selectItem(at: firstIndexPath, animated: false, scrollPosition: .centeredHorizontally)
+        
+        // 초기 데이터 호출
         mapViewModel.fetch()
         mapViewModel.getGifticonCount()
     }

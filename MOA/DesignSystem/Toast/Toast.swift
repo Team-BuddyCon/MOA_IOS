@@ -34,14 +34,12 @@ final class Toast {
                 $0.centerX.equalToSuperview()
                 $0.bottom.equalToSuperview().offset(-96)
                 $0.height.equalTo(42)
-                $0.width.equalTo(216)
             }
         } else {
             toastView.snp.remakeConstraints {
                 $0.centerX.equalToSuperview()
                 $0.top.equalToSuperview().inset(178)
                 $0.height.equalTo(42)
-                $0.width.equalTo(216)
             }
         }
         

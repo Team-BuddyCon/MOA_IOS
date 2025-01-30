@@ -10,7 +10,7 @@ import RxSwift
 import RxRelay
 import RxCocoa
 
-let TEST_ACCESS_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJpZCI6MjQsImlhdCI6MTczMTQyMTU5MywiZXhwIjoxNzM3NDY5NTkzfQ.k6v6ahkjxbml76DZPdorAXdupobd305n8PLd5Cvbw8uOuBUIzAs06_thVadJNrTWqkzrqc4bAC8lRNiZxfHSEw"
+let TEST_ACCESS_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJpZCI6MzQsImlhdCI6MTczODE0MDY2MCwiZXhwIjoxNzQ0MTg4NjYwfQ.VoQvP1TPIaEtGUnMe5biquWoPFaZO1tGfP-pTyAwkLLhvjLFc0zi1bxpBdK1dQiPSiCMyJDs35f1d1fj6Kk2nw"
 
 final class SignUpViewModel: BaseViewModel {
     private let authService: AuthServiceProtocol

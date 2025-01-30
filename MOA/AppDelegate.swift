@@ -8,6 +8,7 @@
 import UIKit
 import RxKakaoSDKCommon
 import KakaoMapsSDK
+import FirebaseCore
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -29,6 +30,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         RxKakaoSDK.initSDK(appKey: appKey)
         SDKInitializer.InitSDK(appKey: appKey)
+        FirebaseApp.configure()
         return true
     }
 

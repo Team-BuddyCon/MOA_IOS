@@ -40,7 +40,7 @@ final class ToastView: UIView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        backgroundColor = .black.withAlphaComponent(0.5)
+        backgroundColor = .black.withAlphaComponent(0.4)
         layer.cornerRadius = frame.height / 2
     }
     
