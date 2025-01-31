@@ -139,6 +139,8 @@ let MAP_DISTANCE_FORMAT = "%.1fkm"
 let MAP_FIND_PATH = "길 찾기"
 let MAP_ADDRESS_COPY = "주소 복사"
 let MAP_ADDRESS_COPY_TOAST_MESSAGE = "클립보드에 주소가 복사되었어요."
+let MAP_PERMISSION_GUIDE_MESSAGE = "위치 정보 이용에 동의해야 사용할 수 있어요."
+let MAP_NAVIGATE_SETTING_MESSAGE = "설정으로 이동"
 
 // MARK: ImageSet
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"

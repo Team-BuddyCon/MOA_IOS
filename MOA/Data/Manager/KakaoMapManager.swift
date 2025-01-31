@@ -74,18 +74,14 @@ public class KakaoMapManager: NSObject {
     var controller: KMController?
     var container: KMViewContainer?
     var kakaoMap: KakaoMap?
-    
-    var isEngineActive: Bool {
-        controller?.isEngineActive ?? false
-    }
-    
+
+    var isEngineActive: Bool { controller?.isEngineActive ?? false }
+    var eventDelegate: KakaoMapEventDelegate?
     var delegate: MapControllerDelegate? {
         didSet {
             controller?.delegate = delegate
         }
     }
-    
-    var eventDelegate: KakaoMapEventDelegate?
     
     public init(rect: CGRect) {
         MOALogger.logd()
@@ -102,25 +98,51 @@ public class KakaoMapManager: NSObject {
     }
     
     public func prepareEngine() {
+        MOALogger.logd()
         controller?.prepareEngine()
     }
     
     public func activateEngine() {
+        MOALogger.logd()
         controller?.activateEngine()
     }
     
     public func pauseEngine() {
+        MOALogger.logd()
         controller?.pauseEngine()
     }
     
     public func resetEngine() {
+        MOALogger.logd()
         controller?.resetEngine()
     }
     
+    // KakaoMapManager에서 정의한 mapViewInfo가 아닌 커스텀 mapViewInfo 추가 시 사용
     public func addView(_ mapViewInfo: MapviewInfo) {
+        MOALogger.logd()
         controller?.addView(mapViewInfo)
     }
     
+    public func updateLocation() {
+        let longitude = LocationManager.shared.longitude ?? LocationManager.defaultLongitude
+        let latitude = LocationManager.shared.latitude ?? LocationManager.defaultLatitude
+        
+        MOALogger.logd("\(longitude), \(latitude)")
+        if let view = controller?.getView(KAKAO_MAP_DEFAULT_VIEW) as? KakaoMap {
+            view.moveCamera(
+                CameraUpdate.make(
+                    target: MapPoint(longitude: longitude, latitude: latitude),
+                    zoomLevel: KAKAO_MAP_LEVEL_15,
+                    rotation: 0,
+                    tilt: 0.0,
+                    mapView: view
+                )
+            )
+        }
+    }
+}
+
+extension KakaoMapManager {
     // Poi 생성을 위한 LabelLayer (Poi, WaveText를 담을 수 있는 Layer) 생성
     public func createLabelLayer() {
         MOALogger.logd()
@@ -307,7 +329,10 @@ extension KakaoMapManager {
     
     @objc func didBecomeActive() {
         MOALogger.logd()
-        controller?.activateEngine()
+        
+        if isEngineActive == false {
+            controller?.activateEngine()
+        }
     }
     
     @objc func willResignActive() {

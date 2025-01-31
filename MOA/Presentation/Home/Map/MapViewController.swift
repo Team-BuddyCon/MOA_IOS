@@ -61,7 +61,62 @@ final class MapViewController: BaseViewController {
         return view
     }()
     
+    lazy var dimView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .black.withAlphaComponent(0.4)
+        return view
+    }()
+    
+    private lazy var permissionGuideLabel: UILabel = {
+        let label = UILabel()
+        label.text = MAP_PERMISSION_GUIDE_MESSAGE
+        label.font = UIFont(name: pretendard_medium, size: 13.0)
+        label.textColor = .grey70
+        return label
+    }()
+    
+    private lazy var navigateSettingLabel: UILabel = {
+        let label = UILabel()
+        label.text = MAP_NAVIGATE_SETTING_MESSAGE
+        label.font = UIFont(name: pretendard_medium, size: 13.0)
+        label.textColor = .pink100
+        label.isUserInteractionEnabled = true
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(openSetting))
+        label.addGestureRecognizer(tapGesture)
+        return label
+    }()
+    
+    lazy var permissionGuideToastView: UIView = {
+        let view = UIView()
+        view.addSubview(permissionGuideLabel)
+        view.addSubview(navigateSettingLabel)
+        view.layer.cornerRadius = 21
+        view.backgroundColor = .white
+        view.clipsToBounds = true
+        view.applyShadow(
+            color: UIColor.black.withAlphaComponent(0.1).cgColor,
+            opacity: 1,
+            blur: 10,
+            x: 0.0,
+            y: 2.0
+        )
+        
+        permissionGuideLabel.snp.makeConstraints {
+            $0.leading.equalToSuperview().inset(16)
+            $0.centerY.equalToSuperview()
+        }
+        
+        navigateSettingLabel.snp.makeConstraints {
+            $0.trailing.equalToSuperview().inset(16)
+            $0.centerY.equalToSuperview()
+        }
+        
+        return view
+    }()
+    
     private var isFirstEntry = true
+    var isActive = true
     private var kmAuth: Bool = false
     var mapManager: KakaoMapManager?
     let mapViewModel = MapViewModel(
@@ -82,7 +137,6 @@ final class MapViewController: BaseViewController {
         super.viewWillAppear(animated)
         MOALogger.logd()
         mapManager?.addObserver()
-       
         
         if !isFirstEntry {
             mapViewModel.getGifticonCount()
@@ -95,8 +149,10 @@ final class MapViewController: BaseViewController {
         super.viewDidAppear(animated)
         MOALogger.logd()
         
-        if mapManager?.isEngineActive == false {
-            mapManager?.activateEngine()
+        if isActive {
+            if mapManager?.isEngineActive == false {
+                mapManager?.activateEngine()
+            }
             mapViewModel.searchPlaceByKeyword()
         }
     }
@@ -126,7 +182,9 @@ private extension MapViewController {
             storeTypeCollectionView,
             kmContrainer,
             guideToastView,
-            mapBottomSheet
+            mapBottomSheet,
+            dimView,
+            permissionGuideToastView
         ].forEach {
             view.addSubview($0)
         }
@@ -156,6 +214,19 @@ private extension MapViewController {
             $0.horizontalEdges.equalToSuperview()
             $0.height.equalTo(mapBottomSheet.sheetHeight.value)
         }
+        
+        dimView.snp.makeConstraints {
+            $0.top.equalTo(storeTypeCollectionView.snp.bottom).offset(8)
+            $0.horizontalEdges.equalToSuperview()
+            $0.bottom.equalToSuperview()
+        }
+        
+        permissionGuideToastView.snp.makeConstraints {
+            $0.top.equalTo(dimView.snp.top).inset(16)
+            $0.centerX.equalTo(dimView.snp.centerX)
+            $0.width.equalTo(337)
+            $0.height.equalTo(42)
+        }
     }
     
     func setupData() {
@@ -176,6 +247,20 @@ private extension MapViewController {
     }
     
     func bind() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(willResignActive),
+            name: UIApplication.willResignActiveNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(didBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+        
         mapViewModel.searchPlaceRelay
             .bind(to: self.rx.bindToSearchPlaces)
             .disposed(by: disposeBag)
@@ -203,6 +288,10 @@ private extension MapViewController {
         
         mapBottomSheet.sheetHeight
             .bind(to: self.rx.bindToBottomSheetHeight)
+            .disposed(by: disposeBag)
+        
+        LocationManager.shared.isGranted
+            .bind(to: self.rx.bindToLocationPermission)
             .disposed(by: disposeBag)
     }
 }
@@ -294,6 +383,7 @@ extension MapViewController: UICollectionViewDataSource, UICollectionViewDelegat
 extension Reactive where Base: MapViewController {
     var bindToSearchPlaces: Binder<[SearchPlace]> {
         return Binder<[SearchPlace]>(self.base) { viewController, searchPlaces in
+            guard viewController.mapManager?.isEngineActive == true else { return }
             let storeType = viewController.mapViewModel.selectStoreTypeRelay.value
             viewController.mapManager?.createPois(
                 searchPlaces: searchPlaces,
@@ -330,5 +420,42 @@ extension Reactive where Base: MapViewController {
                 $0.height.equalTo(height)
             }
         }
+    }
+    
+    var bindToLocationPermission: Binder<Bool> {
+        return Binder<Bool>(self.base) { viewController, isGranted in
+            MOALogger.logd()
+            viewController.dimView.isHidden = isGranted
+            viewController.permissionGuideToastView.isHidden = isGranted
+            
+            if isGranted && viewController.mapManager?.isEngineActive == true {
+                viewController.mapManager?.updateLocation()
+                viewController.mapViewModel.searchPlaceByKeyword()
+            }
+        }
+    }
+}
+
+extension MapViewController {
+    @objc func openSetting() {
+        MOALogger.logd()
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
+    }
+        
+    @objc func didBecomeActive() {
+        MOALogger.logd()
+        isActive = true
+        
+        if mapManager?.isEngineActive == false {
+            mapManager?.activateEngine()
+            mapViewModel.searchPlaceByKeyword()
+        }
+    }
+    
+    @objc func willResignActive() {
+        MOALogger.logd()
+        isActive = false
     }
 }
