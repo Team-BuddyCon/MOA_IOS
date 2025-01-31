@@ -7,6 +7,9 @@
 
 import UIKit
 import CoreLocation
+import RxSwift
+import RxCocoa
+import RxRelay
 
 final class LocationManager: NSObject, CLLocationManagerDelegate {
     static let defaultLatitude: Double = 37.402001
@@ -14,8 +17,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     static let shared = LocationManager()
     private let manager = CLLocationManager()
     
-    var isGranted: Bool = false
-    private var location: CLLocation? = nil
+    var isGranted = BehaviorRelay(value: false)
     var latitude: Double? = nil
     var longitude: Double? = nil
     var address: String? = nil
@@ -26,44 +28,37 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         manager.desiredAccuracy = kCLLocationAccuracyBest
     }
     
-    func requestLocationAuthorization() {
-        MOALogger.logd()
-        manager.requestWhenInUseAuthorization()
-    }
-    
     func startUpdatingLocation() {
         MOALogger.logd()
-        if isGranted {
+        if isGranted.value {
             manager.startUpdatingLocation()
         } else {
             manager.requestWhenInUseAuthorization()
         }
     }
     
-    func getAddress() {
-        if let location = self.location {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if let location = locations.first {
+            MOALogger.logd("\(location.coordinate)")
+            latitude = location.coordinate.latitude
+            longitude = location.coordinate.longitude
+            manager.stopUpdatingLocation()
+            
+            
+            // didUpdatLocation이 연속 호출됨에 따라 isGranted 이벤트 방출되어서 방지
+            if isGranted.value == false {
+                isGranted.accept(true)
+            }
+            
             let geocoder = CLGeocoder.init()
             geocoder.reverseGeocodeLocation(location) { placemarks, error in
                 if let placemark = placemarks?.first {
                     self.address = "\(placemark.administrativeArea ?? "") \(placemark.locality ?? "") \(placemark.thoroughfare ?? "") \(placemark.subThoroughfare ?? "")"
                 }
             }
+        } else {
+            isGranted.accept(false)
         }
-    }
-    
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        if let location = locations.first {
-            MOALogger.logd("\(location.coordinate)")
-            self.location = location
-            self.latitude = location.coordinate.latitude
-            self.longitude = location.coordinate.longitude
-            getAddress()
-            manager.stopUpdatingLocation()
-        }
-    }
-    
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
-        MOALogger.loge("\(error.localizedDescription)")
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -71,10 +66,16 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         
         switch manager.authorizationStatus {
         case .authorizedAlways, .authorizedWhenInUse:
-            isGranted = true
             manager.startUpdatingLocation()
         default:
-            isGranted = false
+            isGranted.accept(false)
         }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
+        MOALogger.loge("\(error.localizedDescription)")
+        latitude = nil
+        longitude = nil
+        address = nil
     }
 }
