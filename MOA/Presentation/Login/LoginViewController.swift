@@ -9,6 +9,9 @@ import UIKit
 import SnapKit
 import RxSwift
 import RxRelay
+import FirebaseCore
+import FirebaseAuth
+import GoogleSignIn
 
 final class LoginViewController: BaseViewController {
     
@@ -33,6 +36,18 @@ final class LoginViewController: BaseViewController {
         UserPreferences.setShouldEntryLogin()
         setupAppearance()
         subscribeViewModel()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        let handler = Auth.auth().addStateDidChangeListener { [weak self] _, user in
+            if let user = user {
+                MOALogger.logd("user not nil")
+            } else {
+                MOALogger.logd("user nil")
+            }
+        }
     }
 }
 
@@ -74,9 +89,39 @@ private extension LoginViewController {
 private extension LoginViewController {
     @objc func tapKakaoLogin() {
         MOALogger.logd()
-        UserPreferences.setAccessToken(accessToken: TEST_ACCESS_TOKEN)
-        UIApplication.shared.navigationHome()
-        
+        //UserPreferences.setAccessToken(accessToken: TEST_ACCESS_TOKEN)
+        //UIApplication.shared.navigationHome()
         //loginViewModel.loginBykakao()
+        
+        guard let clientID = FirebaseApp.app()?.options.clientID else { return }
+        let config = GIDConfiguration(clientID: clientID)
+        GIDSignIn.sharedInstance.configuration = config
+        
+        GIDSignIn.sharedInstance.signIn(withPresenting: self) { result, error in
+            MOALogger.logd()
+            guard error == nil else {
+                MOALogger.loge(error?.localizedDescription)
+                return
+            }
+            
+            guard let user = result?.user,
+                  let idToken = user.idToken?.tokenString else {
+                MOALogger.loge()
+                return
+            }
+            
+            let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: user.accessToken.tokenString)
+            Auth.auth().signIn(with: credential) { result, error in
+                guard error == nil else {
+                    MOALogger.loge(error?.localizedDescription)
+                    return
+                }
+                
+                if let result = result {
+                    MOALogger.logd("\(result.user)")
+                    UIApplication.shared.navigationHome()
+                }
+            }
+        }
     }
 }

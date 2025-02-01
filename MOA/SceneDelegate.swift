@@ -12,6 +12,8 @@ import KakaoSDKAuth
 import RxKakaoSDKAuth
 import RxKakaoSDKUser
 import RxKakaoSDKCommon
+import FirebaseAuth
+import FirebaseCore
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
@@ -25,6 +27,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.makeKeyAndVisible()
         
         let isShouldEntryLogin = UserPreferences.isShouldEntryLogin()
+        let currentUser = Auth.auth().currentUser
+        var rootViewController = UIViewController()
+        
+        if isShouldEntryLogin {
+            rootViewController = currentUser == nil ? UINavigationController(rootViewController: LoginViewController()) : UINavigationController(rootViewController: HomeTabBarController())
+        } else {
+            rootViewController = WalkThroughViewController()
+        }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
             guard let self = self else { return }
@@ -34,7 +44,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 duration: 0.5,
                 options: [.transitionCrossDissolve],
                 animations: {
-                    window.rootViewController = isShouldEntryLogin ? UINavigationController(rootViewController: LoginViewController()) : WalkThroughViewController()
+                    window.rootViewController = rootViewController
                 }
             )
         }
