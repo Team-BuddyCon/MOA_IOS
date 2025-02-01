@@ -9,8 +9,13 @@ import UIKit
 import SnapKit
 import RxSwift
 import RxRelay
+import FirebaseCore
+import FirebaseAuth
+import GoogleSignIn
 
 final class LoginViewController: BaseViewController {
+    
+    private var isLogout: Bool = false
     
     private lazy var loginIconImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: LOGIN_ICON))
@@ -27,12 +32,32 @@ final class LoginViewController: BaseViewController {
     
     private  let loginViewModel = LoginViewModel(authService: AuthService.shared)
     
+    init(isLogout: Bool = false) {
+        self.isLogout = isLogout
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    @MainActor required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
         UserPreferences.setShouldEntryLogin()
         setupAppearance()
         subscribeViewModel()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        if isLogout {
+            showAlertModal(
+                title: LOGOUT_POPUP_MESSAGE,
+                confirmText: CONFIRM
+            )
+        }
     }
 }
 
@@ -73,10 +98,67 @@ private extension LoginViewController {
 
 private extension LoginViewController {
     @objc func tapKakaoLogin() {
-        MOALogger.logd()
-        UserPreferences.setAccessToken(accessToken: TEST_ACCESS_TOKEN)
-        UIApplication.shared.navigationHome()
+        guard let clientID = FirebaseApp.app()?.options.clientID else { return }
+        let config = GIDConfiguration(clientID: clientID)
+        GIDSignIn.sharedInstance.configuration = config
         
-        //loginViewModel.loginBykakao()
+        // 구글 로그인 세션은 존재, FirebaseAuth 세션은 초기화
+        if let user = GIDSignIn.sharedInstance.currentUser {
+            GIDSignIn.sharedInstance.restorePreviousSignIn(completion: { user, error in
+                MOALogger.logd("restorePreviousSignIn")
+                guard error == nil else {
+                    MOALogger.loge(error?.localizedDescription)
+                    return
+                }
+                
+                guard let user = user,
+                      let idToken = user.idToken?.tokenString else {
+                    MOALogger.loge()
+                    return
+                }
+                
+                
+                let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: user.accessToken.tokenString)
+                Auth.auth().signIn(with: credential) { result, error in
+                    guard error == nil else {
+                        MOALogger.loge(error?.localizedDescription)
+                        return
+                    }
+                    
+                    if let result = result {
+                        MOALogger.logd("\(result.user)")
+                        UIApplication.shared.navigationHome()
+                    }
+                }
+            })
+        } else {
+            GIDSignIn.sharedInstance.signIn(withPresenting: self) { result, error in
+                MOALogger.logd("signIn")
+                guard error == nil else {
+                    MOALogger.loge(error?.localizedDescription)
+                    return
+                }
+                
+                guard let user = result?.user,
+                      let idToken = user.idToken?.tokenString else {
+                    MOALogger.loge()
+                    return
+                }
+                
+                
+                let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: user.accessToken.tokenString)
+                Auth.auth().signIn(with: credential) { result, error in
+                    guard error == nil else {
+                        MOALogger.loge(error?.localizedDescription)
+                        return
+                    }
+                    
+                    if let result = result {
+                        MOALogger.logd("\(result.user)")
+                        UIApplication.shared.navigationHome()
+                    }
+                }
+            }
+        }
     }
 }

@@ -41,8 +41,7 @@ let WALKTHROUGH_BANNER2_TITLE = "사용처를 한눈에 확인해요"
 let WALKTHROUGH_BANNER2_DESCRIPTION = "지도를 통해 근처에서 기프티콘\n사용 가능한 매장을 확인해요"
 
 // MARK: Login
-let LOGIN_ICON = "LoginIcon"
-let KAKAO_LOGIN_BUTTON_IMAGES = "KakaoLoginButton"
+let LOGOUT_POPUP_MESSAGE = "로그아웃 되었어요"
 
 // MARK: SignUp
 let SIGNUP_TITLE = "회원가입"
@@ -143,6 +142,8 @@ let MAP_PERMISSION_GUIDE_MESSAGE = "위치 정보 이용에 동의해야 사용�
 let MAP_NAVIGATE_SETTING_MESSAGE = "설정으로 이동"
 
 // MARK: ImageSet
+let LOGIN_ICON = "LoginIcon"
+let KAKAO_LOGIN_BUTTON_IMAGES = "KakaoLoginButton"
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"
 let CHECK_BUTTON_IMAGE_ASSET = "CheckButton"
 let FORWARD_BUTTON_IMAGE_ASSET = "ForwardButton"

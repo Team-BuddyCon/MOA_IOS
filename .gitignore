@@ -3,6 +3,7 @@
 
 *.xcconfig
 MOA/*.xcconfig
+MOA/*.plist
 
 ### CocoaPods ###
 ## CocoaPods GitIgnore Template

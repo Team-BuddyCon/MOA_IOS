@@ -22,6 +22,7 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        // TODO 앱 로그인 시에만 노출 (로그인 화면에서 UserDefault true, 여기서 false)
         if isInit {
             Toast.shared.show(message: LOGIN_SUCCESS_TOAST_TITLE)
             isInit = false
