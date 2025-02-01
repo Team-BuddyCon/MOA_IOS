@@ -10,6 +10,8 @@ import SnapKit
 import RxSwift
 import RxCocoa
 import RxRelay
+import FirebaseAuth
+import FirebaseCore
 
 final class MypageViewController: BaseViewController {
     
@@ -147,7 +149,15 @@ extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
                     subTitle: LOGOUT_ALERT_SUBTITLE,
                     confirmText: LOGOUT_CONFIRM_BUTTON_TITLE,
                     cancelText: LOGOUT_CANCEL_BUTTON_TITLE
-                )
+                ) {
+                    let auth = Auth.auth()
+                    do {
+                        try auth.signOut()
+                        UIApplication.shared.setRootViewController(viewController: LoginViewController(isLogout: true))
+                    } catch let error as NSError {
+                        MOALogger.loge("\(error.localizedDescription)")
+                    }
+                }
             case .SignOut:
                 showAlertModal(
                     title: PREPARATION_FEATURE_ALERT_TITLE,
