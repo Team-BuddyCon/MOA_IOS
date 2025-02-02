@@ -41,31 +41,31 @@ final class NotificationViewController: BaseViewController {
         return label
     }()
     
-    private let notiDday14: NotificationSelectView = {
-        let view = NotificationSelectView(title: NOTIFICATION_D_DAY_14, isOn: true)
+    private let notiDday14: SelectCheckButton = {
+        let view = SelectCheckButton(title: NOTIFICATION_D_DAY_14, isOn: true)
         return view
     }()
     
-    private let notiDday7: NotificationSelectView = {
-        let view = NotificationSelectView(title: NOTIFICATION_D_DAY_7)
+    private let notiDday7: SelectCheckButton = {
+        let view = SelectCheckButton(title: NOTIFICATION_D_DAY_7)
         return view
     }()
     
-    private let notiDday3: NotificationSelectView = {
-        let view = NotificationSelectView(title: NOTIFICATION_D_DAY_3)
-        view.isOn = false
+    private let notiDday3: SelectCheckButton = {
+        let view = SelectCheckButton(title: NOTIFICATION_D_DAY_3)
+        view.isSelect = false
         return view
     }()
     
-    private let notiDday1: NotificationSelectView = {
-        let view = NotificationSelectView(title: NOTIFICATION_D_DAY_1)
-        view.isOn = false
+    private let notiDday1: SelectCheckButton = {
+        let view = SelectCheckButton(title: NOTIFICATION_D_DAY_1)
+        view.isSelect = false
         return view
     }()
     
-    private let notiDday: NotificationSelectView = {
-        let view = NotificationSelectView(title: NOTIFICATION_D_DAY)
-        view.isOn = false
+    private let notiDday: SelectCheckButton = {
+        let view = SelectCheckButton(title: NOTIFICATION_D_DAY)
+        view.isSelect = false
         return view
     }()
     
@@ -149,47 +149,47 @@ private extension NotificationViewController {
     func bind() {
         notiDday14.tapGesture.rx.event
             .subscribe(onNext: { [weak self] _ in
-                self?.notiDday14.isOn = true
-                self?.notiDday7.isOn = false
-                self?.notiDday3.isOn = false
-                self?.notiDday1.isOn = false
-                self?.notiDday.isOn = false
+                self?.notiDday14.isSelect = true
+                self?.notiDday7.isSelect = false
+                self?.notiDday3.isSelect = false
+                self?.notiDday1.isSelect = false
+                self?.notiDday.isSelect = false
             }).disposed(by: disposeBag)
         
         notiDday7.tapGesture.rx.event
             .subscribe(onNext: { [weak self] _ in
-                self?.notiDday14.isOn = false
-                self?.notiDday7.isOn = true
-                self?.notiDday3.isOn = false
-                self?.notiDday1.isOn = false
-                self?.notiDday.isOn = false
+                self?.notiDday14.isSelect = false
+                self?.notiDday7.isSelect = true
+                self?.notiDday3.isSelect = false
+                self?.notiDday1.isSelect = false
+                self?.notiDday.isSelect = false
             }).disposed(by: disposeBag)
         
         notiDday3.tapGesture.rx.event
             .subscribe(onNext: { [weak self] _ in
-                self?.notiDday14.isOn = false
-                self?.notiDday7.isOn = false
-                self?.notiDday3.isOn = true
-                self?.notiDday1.isOn = false
-                self?.notiDday.isOn = false
+                self?.notiDday14.isSelect = false
+                self?.notiDday7.isSelect = false
+                self?.notiDday3.isSelect = true
+                self?.notiDday1.isSelect = false
+                self?.notiDday.isSelect = false
             }).disposed(by: disposeBag)
         
         notiDday1.tapGesture.rx.event
             .subscribe(onNext: { [weak self] _ in
-                self?.notiDday14.isOn = false
-                self?.notiDday7.isOn = false
-                self?.notiDday3.isOn = false
-                self?.notiDday1.isOn = true
-                self?.notiDday.isOn = false
+                self?.notiDday14.isSelect = false
+                self?.notiDday7.isSelect = false
+                self?.notiDday3.isSelect = false
+                self?.notiDday1.isSelect = true
+                self?.notiDday.isSelect = false
             }).disposed(by: disposeBag)
         
         notiDday.tapGesture.rx.event
             .subscribe(onNext: { [weak self] _ in
-                self?.notiDday14.isOn = false
-                self?.notiDday7.isOn = false
-                self?.notiDday3.isOn = false
-                self?.notiDday1.isOn = false
-                self?.notiDday.isOn = true
+                self?.notiDday14.isSelect = false
+                self?.notiDday7.isSelect = false
+                self?.notiDday3.isSelect = false
+                self?.notiDday1.isSelect = false
+                self?.notiDday.isSelect = true
             }).disposed(by: disposeBag)
     }
 }

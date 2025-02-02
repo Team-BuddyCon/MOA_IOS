@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class NotificationSelectView: UIView {
+final class SelectCheckButton: UIView {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont(name: pretendard_regular, size: 15.0)
@@ -22,9 +22,9 @@ final class NotificationSelectView: UIView {
         return imageView
     }()
     
-    var isOn: Bool = false {
+    var isSelect: Bool = false {
         didSet {
-            setIsOnState()
+            updateBySelect()
         }
     }
     
@@ -36,10 +36,10 @@ final class NotificationSelectView: UIView {
     ) {
         tapGesture = UITapGestureRecognizer()
         super.init(frame: .zero)
-        self.isOn = isOn
+        self.isSelect = isOn
         titleLabel.text = title
         setupLayout()
-        setIsOnState()
+        updateBySelect()
         
         addGestureRecognizer(tapGesture)
     }
@@ -63,8 +63,8 @@ final class NotificationSelectView: UIView {
         }
     }
     
-    private func setIsOnState() {
-        if isOn {
+    private func updateBySelect() {
+        if isSelect {
             titleLabel.font = UIFont(name: pretendard_bold, size: 15.0)
             titleLabel.textColor = .pink100
             checkImageView.isHidden = false
