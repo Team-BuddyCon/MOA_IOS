@@ -27,8 +27,6 @@ final class ModalViewController: BaseViewController {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont(name: pretendard_bold, size: 16.0)
-        label.textAlignment = .center
         label.textColor = .grey90
         return label
     }()
@@ -84,7 +82,12 @@ final class ModalViewController: BaseViewController {
         modalPresentationStyle = .overFullScreen
         modalTransitionStyle = .crossDissolve
         
-        titleLabel.text = title
+        titleLabel.setTextWithLineHeight(
+            text: title,
+            font: pretendard_bold,
+            size: 16.0,
+            lineSpacing: 22.4
+        )
         
         if let subTitle = subTitle {
             subTitleLabel.setTextWithLineHeight(

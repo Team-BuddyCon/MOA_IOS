@@ -10,6 +10,9 @@ import SnapKit
 import RxSwift
 import RxCocoa
 import RxRelay
+import FirebaseCore
+import FirebaseAuth
+import GoogleSignIn
 
 enum WithDrawPhrase {
     case Reason
@@ -284,7 +287,53 @@ extension Reactive where Base: WithDrawViewController {
             case .ReasonDetail:
                 viewController.withDrawViewModel.phrase.accept(.Notice)
             case .Notice:
-                break
+                viewController.showSelectModal(
+                    title: MOA_WITH_DRAW_POPUP_TITLE,
+                    subTitle: MOA_WITH_DRAW_POPUP_SUBTITLE,
+                    confirmText: WITHDRAW,
+                    cancelText: MOA_WITH_DRAW_POPUP_CANCEL
+                ) {
+                    guard let clientID = FirebaseApp.app()?.options.clientID else { return }
+                    let config = GIDConfiguration(clientID: clientID)
+                    GIDSignIn.sharedInstance.configuration = config
+                    GIDSignIn.sharedInstance.restorePreviousSignIn(completion: { user, error in
+                        guard error == nil else {
+                            MOALogger.loge("restorePreviousSignIn error: \(String(describing: error))")
+                            return
+                        }
+                        
+                        guard let user = user,
+                              let idToken = user.idToken?.tokenString else {
+                            MOALogger.loge()
+                            return
+                        }
+                        
+                        let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: user.accessToken.tokenString)
+                        let currentUser = Auth.auth().currentUser
+                        let auth = Auth.auth()
+                        currentUser?.reauthenticate(with: credential) { result, error in
+                            guard error == nil else {
+                                MOALogger.loge("user reauthenticate \(String(describing: error))")
+                                return
+                            }
+                            
+                            currentUser?.delete { error in
+                                guard error == nil else {
+                                    MOALogger.loge("user delete \(String(describing: error))")
+                                    return
+                                }
+                                
+                                do {
+                                    try auth.signOut()
+                                    GIDSignIn.sharedInstance.signOut()
+                                    UIApplication.shared.setRootViewController(viewController: LoginViewController(isWithDraw: true))
+                                } catch let error as NSError {
+                                    MOALogger.loge("signOut error \(error.localizedDescription)")
+                                }
+                            }
+                        }
+                    })
+                }
             }
         }
     }

@@ -25,6 +25,7 @@ let NOTIFICATION = "알림"
 let SERVICE_TERMS_URL = "https://scarce-cartoon-27d.notion.site/e09da35361e142b7936c12e38396475e"
 let PRIVACY_INFORMATION_URL = "https://scarce-cartoon-27d.notion.site/c4e5ff54f9bd434e971a2631d122252c"
 let NEXT = "다음"
+let WITHDRAW = "탈퇴"
 
 // MARK: Design System
 let dday_end = "만료"
@@ -43,6 +44,7 @@ let WALKTHROUGH_BANNER2_DESCRIPTION = "지도를 통해 근처에서 기프티�
 
 // MARK: Login
 let LOGOUT_POPUP_MESSAGE = "로그아웃 되었어요"
+let WITHDRAW_POPUP_MESSAGE = "탈퇴가 완료되었어요"
 
 // MARK: SignUp
 let SIGNUP_TITLE = "회원가입"
@@ -135,6 +137,10 @@ let MOA_WITH_DRAW_NOTICE_TITLE_FORMAT = "%@님,\n탈퇴하기 전에 확인해�
 let MOA_WITH_DRAW_REASON_PLACEHOLDER_TEXT = "내용을 입력해 주세요"
 let MOA_WITH_DRAW_NOTICE_MESSAGE1_FORMAT = "모아에서 관리했던 %@님의 기프티콘을 다시 볼 수 없어요"
 let MOA_WITH_DRAW_NOTICE_MESSAGE2 = "다시 가입하더라도 이전의 기프티콘 정보를  불러올 수 없어요."
+let MOA_WITH_DRAW_POPUP_TITLE = "정말 모아를 떠나시겠어요?"
+let MOA_WITH_DRAW_POPUP_SUBTITLE = "탈퇴하면 등록한\n기프티콘이 모두 사라져요"
+let MOA_WITH_DRAW_POPUP_CANCEL = "다음에"
+
 
 // MARK: Map
 let MAP_BOTTOM_SHEET_TITLE = "사용 가능한 기프티콘"
