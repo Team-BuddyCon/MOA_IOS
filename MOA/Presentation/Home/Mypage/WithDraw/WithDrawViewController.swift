@@ -13,6 +13,7 @@ import RxRelay
 import FirebaseCore
 import FirebaseAuth
 import GoogleSignIn
+import FirebaseAnalytics
 
 enum WithDrawPhrase {
     case Reason
@@ -325,6 +326,14 @@ extension Reactive where Base: WithDrawViewController {
                                 
                                 do {
                                     try auth.signOut()
+                                    let reason = viewController.withDrawViewModel.reason.value.rawValue + (viewController.withDrawViewModel.reason.value == .Etc ? "(\(String(describing: viewController.reasonTextField.text)))" : "")
+                                    Analytics.logEvent(
+                                        FirebaseLogEvent.withDraw.rawValue,
+                                        parameters: [
+                                            FirebaseLogParameter.withDrawReason.rawValue : reason
+                                        ]
+                                    )
+                                    
                                     GIDSignIn.sharedInstance.signOut()
                                     UIApplication.shared.setRootViewController(viewController: LoginViewController(isWithDraw: true))
                                 } catch let error as NSError {
