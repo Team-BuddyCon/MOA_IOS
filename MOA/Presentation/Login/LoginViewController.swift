@@ -16,6 +16,7 @@ import GoogleSignIn
 final class LoginViewController: BaseViewController {
     
     private var isLogout: Bool = false
+    private var isWithDraw: Bool = false
     
     private lazy var loginIconImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: LOGIN_ICON))
@@ -32,8 +33,12 @@ final class LoginViewController: BaseViewController {
     
     private  let loginViewModel = LoginViewModel(authService: AuthService.shared)
     
-    init(isLogout: Bool = false) {
+    init(
+        isLogout: Bool = false,
+        isWithDraw: Bool = false
+    ) {
         self.isLogout = isLogout
+        self.isWithDraw = isWithDraw
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -55,6 +60,13 @@ final class LoginViewController: BaseViewController {
         if isLogout {
             showAlertModal(
                 title: LOGOUT_POPUP_MESSAGE,
+                confirmText: CONFIRM
+            )
+        }
+        
+        if isWithDraw {
+            showAlertModal(
+                title: WITHDRAW_POPUP_MESSAGE,
                 confirmText: CONFIRM
             )
         }
@@ -102,49 +114,42 @@ private extension LoginViewController {
         let config = GIDConfiguration(clientID: clientID)
         GIDSignIn.sharedInstance.configuration = config
         
-        // 구글 로그인 세션은 존재, FirebaseAuth 세션은 초기화
-        if let user = GIDSignIn.sharedInstance.currentUser {
-            GIDSignIn.sharedInstance.restorePreviousSignIn(completion: { user, error in
-                MOALogger.logd("restorePreviousSignIn")
-                guard error == nil else {
-                    MOALogger.loge(error?.localizedDescription)
-                    return
-                }
+        GIDSignIn.sharedInstance.restorePreviousSignIn(completion: { user, error in
+            // 로그인 세션 없는 경우, 로그인 시도
+            if let error = error {
+                MOALogger.loge("restorePreviousSignIn error: \(String(describing: error))")
                 
+                GIDSignIn.sharedInstance.signIn(withPresenting: self) { result, error in
+                    guard error == nil else {
+                        MOALogger.loge("signIn error: \(String(describing: error))")
+                        return
+                    }
+                    
+                    guard let user = result?.user,
+                          let idToken = user.idToken?.tokenString else {
+                        MOALogger.loge()
+                        return
+                    }
+                    
+                    let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: user.accessToken.tokenString)
+                    Auth.auth().signIn(with: credential) { result, error in
+                        guard error == nil else {
+                            MOALogger.loge(error?.localizedDescription)
+                            return
+                        }
+                        
+                        if let result = result {
+                            MOALogger.logd("\(result.user)")
+                            UIApplication.shared.navigationHome()
+                        }
+                    }
+                }
+            } else {
                 guard let user = user,
                       let idToken = user.idToken?.tokenString else {
                     MOALogger.loge()
                     return
                 }
-                
-                
-                let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: user.accessToken.tokenString)
-                Auth.auth().signIn(with: credential) { result, error in
-                    guard error == nil else {
-                        MOALogger.loge(error?.localizedDescription)
-                        return
-                    }
-                    
-                    if let result = result {
-                        MOALogger.logd("\(result.user)")
-                        UIApplication.shared.navigationHome()
-                    }
-                }
-            })
-        } else {
-            GIDSignIn.sharedInstance.signIn(withPresenting: self) { result, error in
-                MOALogger.logd("signIn")
-                guard error == nil else {
-                    MOALogger.loge(error?.localizedDescription)
-                    return
-                }
-                
-                guard let user = result?.user,
-                      let idToken = user.idToken?.tokenString else {
-                    MOALogger.loge()
-                    return
-                }
-                
                 
                 let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: user.accessToken.tokenString)
                 Auth.auth().signIn(with: credential) { result, error in
@@ -159,6 +164,6 @@ private extension LoginViewController {
                     }
                 }
             }
-        }
+        })
     }
 }

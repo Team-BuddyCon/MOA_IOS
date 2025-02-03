@@ -159,11 +159,8 @@ extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
                     }
                 }
             case .SignOut:
-                showAlertModal(
-                    title: PREPARATION_FEATURE_ALERT_TITLE,
-                    subTitle: PREPARATION_FEATURE_ALERT_SUBTITLE,
-                    confirmText: CONFIRM
-                )
+                let withDrawVC = WithDrawViewController()
+                navigationController?.pushViewController(withDrawVC, animated: true)
             default:
                 break
             }
