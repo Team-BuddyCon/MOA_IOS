@@ -57,11 +57,7 @@ final class SignUpViewController: BaseViewController {
         return button
     }()
     
-    private let kakaoAuth: KakaoAuth
-    private let signUpViewModel = SignUpViewModel(authService: AuthService.shared)
-    
-    init(kakaoAuth: KakaoAuth) {
-        self.kakaoAuth = kakaoAuth
+    init() {
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -180,23 +176,14 @@ private extension SignUpViewController {
                 guard let self = self else { return }
                 completeButton.status.accept(check ? .active : .disabled)
             }.disposed(by: disposeBag)
-        
-        signUpViewModel.tokenInfoDriver
-            .drive { [weak self] token in
-                let userName = UserPreferences.getLoginUserName()
-                let viewController = SignUpCompleteViewController(name: userName)
-                viewController.modalPresentationStyle = .fullScreen
-                viewController.modalTransitionStyle = .crossDissolve
-                self?.present(viewController, animated: true)
-            }.disposed(by: disposeBag)
     }
 }
 
 private extension SignUpViewController {
     @objc func tapCompletButton() {
-        signUpViewModel.signUp(
-            acecssToken: kakaoAuth.accessToken,
-            name: kakaoAuth.profileName
-        )
+        let viewController = SignUpCompleteViewController()
+        viewController.modalPresentationStyle = .fullScreen
+        viewController.modalTransitionStyle = .crossDissolve
+        present(viewController, animated: true)
     }
 }

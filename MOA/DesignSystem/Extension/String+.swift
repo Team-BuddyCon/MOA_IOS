@@ -26,6 +26,7 @@ let SERVICE_TERMS_URL = "https://scarce-cartoon-27d.notion.site/e09da35361e142b7
 let PRIVACY_INFORMATION_URL = "https://scarce-cartoon-27d.notion.site/c4e5ff54f9bd434e971a2631d122252c"
 let NEXT = "다음"
 let WITHDRAW = "탈퇴"
+let USER_NAME = "사용자"
 
 // MARK: Design System
 let dday_end = "만료"
@@ -158,6 +159,8 @@ let MAP_NAVIGATE_SETTING_MESSAGE = "설정으로 이동"
 // MARK: ImageSet
 let LOGIN_ICON = "LoginIcon"
 let KAKAO_LOGIN_BUTTON_IMAGES = "KakaoLoginButton"
+let GOOGLE_LOGIN_BUTTON = "GoogleLoginButton"
+let APPLE_LOGIN_BUTTON = "AppleLoginButton"
 let BACK_BUTTON_IMAGE_ASSET = "BackButton"
 let CHECK_BUTTON_IMAGE_ASSET = "CheckButton"
 let FORWARD_BUTTON_IMAGE_ASSET = "ForwardButton"
