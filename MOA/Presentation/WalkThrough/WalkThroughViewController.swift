@@ -94,8 +94,9 @@ private extension WalkThroughViewController {
         
         pagerCollectionView.snp.makeConstraints {
             $0.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(pagerCollectionView.snp.width).multipliedBy(431.0/375.0)
-            $0.centerY.equalToSuperview().offset(-(19.5))
+            $0.height.equalTo(pagerCollectionView.snp.width).multipliedBy(689.0/375.0)
+            $0.top.equalToSuperview()
+            $0.bottom.equalTo(pageIndicator.snp.top)
         }
         
         pageIndicator.snp.makeConstraints {
@@ -125,7 +126,7 @@ private extension WalkThroughViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             pageIndicator.index = currentPage
-            pagerCollectionView.scrollToItem(at: IndexPath(row: self.currentPage, section: 0), at: .centeredHorizontally, animated: false)
+            pagerCollectionView.scrollToItem(at: IndexPath(row: self.currentPage, section: 0), at: .centeredHorizontally, animated: true)
         }
         
         skipButton.isHidden = currentPage == pageItems.endIndex-1
@@ -163,7 +164,7 @@ extension WalkThroughViewController: UICollectionViewDataSource {
 extension WalkThroughViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = UIScreen.main.bounds.width
-        return CGSize(width: width, height: width * 431 / 375.0)
+        return CGSize(width: width, height: width * 689 / 375.0)
     }
 
     /**
@@ -179,12 +180,12 @@ extension WalkThroughViewController: UICollectionViewDelegateFlowLayout {
         let diff = contentOffset - currentOffset
         
         if diff < 0 {
-            if abs(diff) > width / 4 {
+            if abs(diff) > width / 30 {
                 currentPage = currentPage - 1 < 0 ? 0 : currentPage - 1
             }
         } else {
-            if diff > width / 4 {
-                currentPage += 1
+            if diff > width / 30 {
+                currentPage = currentPage + 1 > pageItems.endIndex - 1 ? pageItems.endIndex - 1 : currentPage + 1
             }
         }
         
@@ -201,6 +202,7 @@ private extension WalkThroughViewController {
     @objc func tapNextButton() {
         MOALogger.logd()
         currentPage += 1
+        updateWalkThrough()
     }
     
     @objc func tapStartButton() {

@@ -52,9 +52,9 @@ private extension WalkThroughPageViewCell {
         }
         
         imageView.snp.makeConstraints {
-            $0.top.equalToSuperview()
             $0.horizontalEdges.equalToSuperview().inset(42.5)
             $0.height.equalTo(imageView.snp.width).multipliedBy(300.0/290.0)
+            $0.centerY.equalToSuperview().offset(-18.5)
         }
         
         titleLabel.snp.makeConstraints {
