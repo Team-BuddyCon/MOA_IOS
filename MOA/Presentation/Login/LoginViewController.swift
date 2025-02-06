@@ -24,14 +24,19 @@ final class LoginViewController: BaseViewController {
         return imageView
     }()
     
-    private lazy var kakaoLoginButton: UIButton = {
+    private lazy var googleLoginButton: UIButton = {
         let button = UIButton()
-        button.setBackgroundImage(UIImage(named: KAKAO_LOGIN_BUTTON_IMAGES), for: .normal)
-        button.addTarget(self, action: #selector(tapKakaoLogin), for: .touchUpInside)
+        button.setBackgroundImage(UIImage(named: GOOGLE_LOGIN_BUTTON), for: .normal)
+        button.addTarget(self, action: #selector(tapGoogleLogin), for: .touchUpInside)
         return button
     }()
     
-    private  let loginViewModel = LoginViewModel(authService: AuthService.shared)
+    private lazy var appleLoginButton: UIButton = {
+        let button = UIButton()
+        button.setBackgroundImage(UIImage(named: APPLE_LOGIN_BUTTON), for: .normal)
+        button.addTarget(self, action: #selector(tapAppleLogin), for: .touchUpInside)
+        return button
+    }()
     
     init(
         isLogout: Bool = false,
@@ -51,7 +56,6 @@ final class LoginViewController: BaseViewController {
         MOALogger.logd()
         UserPreferences.setShouldEntryLogin()
         setupAppearance()
-        subscribeViewModel()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -76,7 +80,7 @@ final class LoginViewController: BaseViewController {
 private extension LoginViewController {
     func setupAppearance() {
         view.backgroundColor = .white
-        [loginIconImageView, kakaoLoginButton].forEach {
+        [loginIconImageView, googleLoginButton, appleLoginButton].forEach {
             view.addSubview($0)
         }
         
@@ -86,30 +90,22 @@ private extension LoginViewController {
             $0.horizontalEdges.equalToSuperview().inset(20)
         }
         
-        kakaoLoginButton.snp.makeConstraints {
+        googleLoginButton.snp.makeConstraints {
+            $0.height.equalTo(54)
+            $0.horizontalEdges.equalToSuperview().inset(20)
+            $0.bottom.equalTo(appleLoginButton.snp.top).offset(-16)
+        }
+        
+        appleLoginButton.snp.makeConstraints {
             $0.height.equalTo(54)
             $0.horizontalEdges.equalToSuperview().inset(20)
             $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(11.5)
         }
     }
-    
-    func subscribeViewModel() {
-        loginViewModel.tokenInfoDriver
-            .drive { token in
-                MOALogger.logi("\(token)")
-                UIApplication.shared.navigationHome()
-            }.disposed(by: disposeBag)
-        
-        loginViewModel.kakaoAuthDriver
-            .drive { kakaoAuth in
-                MOALogger.logi("\(kakaoAuth)")
-                self.navigationController?.pushViewController(SignUpViewController(kakaoAuth: kakaoAuth), animated: true)
-            }.disposed(by: disposeBag)
-    }
 }
 
 private extension LoginViewController {
-    @objc func tapKakaoLogin() {
+    @objc func tapGoogleLogin() {
         guard let clientID = FirebaseApp.app()?.options.clientID else { return }
         let config = GIDConfiguration(clientID: clientID)
         GIDSignIn.sharedInstance.configuration = config
@@ -139,8 +135,12 @@ private extension LoginViewController {
                         }
                         
                         if let result = result {
-                            MOALogger.logd("\(result.user)")
-                            UIApplication.shared.navigationHome()
+                            if UserPreferences.isSignUp() {
+                                UIApplication.shared.navigationHome()
+                            } else {
+                                UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
+                                self.navigationController?.pushViewController(SignUpViewController(), animated: true)
+                            }
                         }
                     }
                 }
@@ -159,11 +159,15 @@ private extension LoginViewController {
                     }
                     
                     if let result = result {
-                        MOALogger.logd("\(result.user)")
-                        UIApplication.shared.navigationHome()
+                        UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
+                        self.navigationController?.pushViewController(SignUpViewController(), animated: true)
                     }
                 }
             }
         })
+    }
+    
+    @objc func tapAppleLogin() {
+        
     }
 }

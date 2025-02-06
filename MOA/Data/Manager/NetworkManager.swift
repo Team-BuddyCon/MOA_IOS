@@ -38,12 +38,7 @@ final class NetworkManager {
         urlReqeuset.httpMethod = request.method.rawValue
         
         // JWT
-        if request.domain == .MOA {
-            urlReqeuset.addValue(
-                String(format: HttpValues.bearer, UserPreferences.getAccessToken()),
-                forHTTPHeaderField: HttpKeys.authorization
-            )
-        } else {
+        if request.domain != .MOA {
             if let apiKey = Bundle.main.infoDictionary?["RestApiKey"] as? String {
                 urlReqeuset.addValue(
                     String(format: HttpValues.kakaoAK, apiKey),

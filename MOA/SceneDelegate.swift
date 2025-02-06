@@ -26,12 +26,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.rootViewController = SplashViewController()
         window?.makeKeyAndVisible()
         
-        let isShouldEntryLogin = UserPreferences.isShouldEntryLogin()
-        let currentUser = Auth.auth().currentUser
         var rootViewController = UIViewController()
-        
-        if isShouldEntryLogin {
-            rootViewController = currentUser == nil ? UINavigationController(rootViewController: LoginViewController()) : UINavigationController(rootViewController: HomeTabBarController())
+        if UserPreferences.isShouldEntryLogin() {
+            if UserPreferences.isSignUp() {
+                let currentUser = Auth.auth().currentUser
+                rootViewController = currentUser == nil ? UINavigationController(rootViewController: LoginViewController()) : UINavigationController(rootViewController: HomeTabBarController())
+            } else {
+                rootViewController = UINavigationController(rootViewController: LoginViewController())
+            }
         } else {
             rootViewController = WalkThroughViewController()
         }

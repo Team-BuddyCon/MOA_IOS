@@ -25,7 +25,7 @@ final class SignUpCompleteViewController: BaseViewController {
     private lazy var subTitleLabel: UILabel = {
         let label = UILabel()
         label.setTextWithLineHeight(
-            text: String(format: SIGNUP_COMPLETE_SUBTITLE_FORMAT, name),
+            text: String(format: SIGNUP_COMPLETE_SUBTITLE_FORMAT, UserPreferences.getLoginUserName()),
             font: pretendard_medium,
             size: 16.0,
             lineSpacing: 22.4,
@@ -46,17 +46,6 @@ final class SignUpCompleteViewController: BaseViewController {
         let view = UIView()
         return view
     }()
-    
-    private var name: String
-    
-    init(name: String) {
-        self.name = name
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -97,5 +86,7 @@ final class SignUpCompleteViewController: BaseViewController {
     
     @objc func tapStartButton() {
         MOALogger.logd()
+        UserPreferences.setSignUp()
+        UIApplication.shared.navigationHome()
     }
 }

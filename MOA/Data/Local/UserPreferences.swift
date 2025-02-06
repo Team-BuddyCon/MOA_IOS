@@ -9,7 +9,7 @@ import UIKit
 
 private let SHOULD_ENTRY_LOGIN = "SHOULD_ENTRY_LOGIN"
 private let LOGIN_USER_NAME = "LOGIN_USER_NAME"
-private let MOA_ACCESS_TOKEN = "MOA_ACCESS_TOKEN"
+private let SIGN_UP = "SIGN_UP"
 
 final class UserPreferences {
     
@@ -37,13 +37,14 @@ final class UserPreferences {
         UserDefaults.standard.set(name, forKey: LOGIN_USER_NAME)
     }
     
-    static func getAccessToken() -> String {
-        let accessToken = UserDefaults.standard.string(forKey: MOA_ACCESS_TOKEN) ?? ""
-        return accessToken
+    static func isSignUp() -> Bool {
+        let isSignUp = UserDefaults.standard.bool(forKey: SIGN_UP)
+        MOALogger.logd("\(isSignUp)")
+        return isSignUp
     }
     
-    static func setAccessToken(accessToken: String) {
-        MOALogger.logd(accessToken)
-        UserDefaults.standard.set(accessToken, forKey: MOA_ACCESS_TOKEN)
+    static func setSignUp() {
+        MOALogger.logd()
+        UserDefaults.standard.set(true, forKey: SIGN_UP)
     }
 }
