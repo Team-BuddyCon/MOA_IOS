@@ -9,6 +9,7 @@ import UIKit
 
 private let SHOULD_ENTRY_LOGIN = "SHOULD_ENTRY_LOGIN"
 private let LOGIN_USER_NAME = "LOGIN_USER_NAME"
+private let USER_ID = "USER_ID"
 private let SIGN_UP = "SIGN_UP"
 
 final class UserPreferences {
@@ -46,5 +47,15 @@ final class UserPreferences {
     static func setSignUp() {
         MOALogger.logd()
         UserDefaults.standard.set(true, forKey: SIGN_UP)
+    }
+    
+    static func getUserID() -> String {
+        let userID = UserDefaults.standard.string(forKey: USER_ID) ?? ""
+        return userID
+    }
+    
+    static func setUserID(userID: String) {
+        MOALogger.logd()
+        UserDefaults.standard.set(userID, forKey: USER_ID)
     }
 }

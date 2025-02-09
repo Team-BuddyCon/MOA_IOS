@@ -66,6 +66,7 @@ final class LoginViewController: BaseViewController {
                 title: LOGOUT_POPUP_MESSAGE,
                 confirmText: CONFIRM
             )
+            isLogout = false
         }
         
         if isWithDraw {
@@ -73,6 +74,7 @@ final class LoginViewController: BaseViewController {
                 title: WITHDRAW_POPUP_MESSAGE,
                 confirmText: CONFIRM
             )
+            isWithDraw = false
         }
     }
 }
@@ -139,6 +141,7 @@ private extension LoginViewController {
                                 UIApplication.shared.navigationHome()
                             } else {
                                 UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
+                                UserPreferences.setUserID(userID: result.user.uid)
                                 self.navigationController?.pushViewController(SignUpViewController(), animated: true)
                             }
                         }
@@ -160,7 +163,8 @@ private extension LoginViewController {
                     
                     if let result = result {
                         UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
-                        self.navigationController?.pushViewController(SignUpViewController(), animated: true)
+                        UserPreferences.setUserID(userID: result.user.uid)
+                        UIApplication.shared.navigationHome()
                     }
                 }
             }

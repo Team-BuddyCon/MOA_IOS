@@ -10,6 +10,7 @@ import SnapKit
 import RxSwift
 import RxCocoa
 import RxRelay
+import FirebaseStorage
 
 final class GifticonRegisterViewController: BaseViewController {
     
@@ -70,7 +71,6 @@ final class GifticonRegisterViewController: BaseViewController {
     }()
     
     let viewModel: GifticonRegisterViewModel = GifticonRegisterViewModel(gifticonService: GifticonService.shared)
-    
     var image: UIImage?
     
     init(image: UIImage) {
@@ -271,14 +271,31 @@ private extension Reactive where Base: GifticonRegisterViewController {
                 )
                 return
             }
-        
-            viewController.viewModel.createGifticon(
-                image: image,
-                name: name,
-                expireDate: expireDate,
-                store: store,
-                memo: memo
-            )
+            
+            let storage = Storage.storage()
+            let userID = UserPreferences.getUserID()
+            let currentTime = Int(Date().timeIntervalSince1970)
+            let storagePath = "\(userID)/\(currentTime).jpeg"
+            let storageRef = storage.reference().child(storagePath)
+            let metaData = StorageMetadata()
+            metaData.contentType = "image/jpeg"
+            
+            if let data = viewController.image?.jpegData(compressionQuality: 0.8) {
+                let _ = storageRef.putData(data, metadata: metaData) { (metadata, error) in
+                    guard error != nil else{
+                        MOALogger.loge("uploadTask error : \(String(describing: error))")
+                        return
+                    }
+                    
+                    guard let metadata = metadata else {
+                        MOALogger.loge("uploadTask metadata is nil")
+                        return
+                    }
+                    
+                    let size = metadata.size
+                    MOALogger.logd("Uploading image successd: \(size)")
+                }
+            }
         }
     }
 }
