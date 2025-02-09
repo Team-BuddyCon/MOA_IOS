@@ -11,6 +11,7 @@ import RxSwift
 import RxCocoa
 import RxRelay
 import FirebaseStorage
+import FirebaseFirestore
 
 final class GifticonRegisterViewController: BaseViewController {
     
@@ -72,6 +73,9 @@ final class GifticonRegisterViewController: BaseViewController {
     
     let viewModel: GifticonRegisterViewModel = GifticonRegisterViewModel(gifticonService: GifticonService.shared)
     var image: UIImage?
+    
+    let storage = Storage.storage()
+    let store = Firestore.firestore()
     
     init(image: UIImage) {
         self.image = image
@@ -272,29 +276,24 @@ private extension Reactive where Base: GifticonRegisterViewController {
                 return
             }
             
-            let storage = Storage.storage()
-            let userID = UserPreferences.getUserID()
-            let currentTime = Int(Date().timeIntervalSince1970)
-            let storagePath = "\(userID)/\(currentTime).jpeg"
-            let storageRef = storage.reference().child(storagePath)
-            let metaData = StorageMetadata()
-            metaData.contentType = "image/jpeg"
-            
-            if let data = viewController.image?.jpegData(compressionQuality: 0.8) {
-                let _ = storageRef.putData(data, metadata: metaData) { (metadata, error) in
-                    guard error != nil else{
-                        MOALogger.loge("uploadTask error : \(String(describing: error))")
-                        return
+            if let data = image.jpegData(compressionQuality: 0.8) {
+                FirebaseManager.shared.createGifticon(
+                    jpegData: data,
+                    name: name,
+                    expireDate: expireDate,
+                    gifticonStore: store,
+                    memo: memo,
+                    onSucess: {
+                        
+                    },
+                    onError: {
+                        viewController.showAlertModal(
+                            title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+                            subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+                            confirmText: CONFIRM
+                        )
                     }
-                    
-                    guard let metadata = metadata else {
-                        MOALogger.loge("uploadTask metadata is nil")
-                        return
-                    }
-                    
-                    let size = metadata.size
-                    MOALogger.logd("Uploading image successd: \(size)")
-                }
+                )
             }
         }
     }
