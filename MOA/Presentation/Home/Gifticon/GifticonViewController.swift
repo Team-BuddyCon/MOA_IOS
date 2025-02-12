@@ -186,6 +186,7 @@ private extension GifticonViewController {
             .disposed(by: disposeBag)
         
         gifticonViewModel.gifticons
+            .debounce(.milliseconds(50), scheduler: MainScheduler.asyncInstance)
             .bind(to: gifticonCollectionView.rx.items) { collectionView, row, gifticon in
                 if gifticon.gifticonId == "" {
                     guard let cell = collectionView.dequeueReusableCell(
@@ -223,14 +224,10 @@ private extension GifticonViewController {
             }).disposed(by: disposeBag)
         
         gifticonViewModel.gifticons
+            .debounce(.milliseconds(50), scheduler: MainScheduler.asyncInstance)
             .map { $0.isEmpty }
             .bind(to: self.rx.isEmptyUI)
             .disposed(by: disposeBag)
-        
-//        gifticonCollectionView.rx.contentOffset
-//            .map { _ in self.gifticonCollectionView }
-//            .bind(to: self.rx.scrollOffset)
-//            .disposed(by: disposeBag)
         
         gifticonCollectionView.rx.modelSelected(AvailableGifticon.self)
             .subscribe(onNext: { [weak self] gifticon in

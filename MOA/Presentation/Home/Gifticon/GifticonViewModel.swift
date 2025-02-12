@@ -35,8 +35,10 @@ final class GifticonViewModel: BaseViewModel {
         Observable.combineLatest(
             categoryRelay,
             sortTypeRelay
-        ).flatMap { category, sortType in
-            FirebaseManager.shared.getAllGifticon(
+        ).flatMap { [unowned self] category, sortType in
+            let count = self.gifticons.value.count
+            self.gifticons.accept([AvailableGifticon](repeating: AvailableGifticon(), count: count))
+            return FirebaseManager.shared.getAllGifticon(
                 categoryType: category,
                 sortType: sortType
             )
@@ -51,13 +53,11 @@ final class GifticonViewModel: BaseViewModel {
     
     func changeCategory(category: StoreCategory) {
         MOALogger.logd()
-        clearPagingData()
         categoryRelay.accept(category)
     }
     
     func changeSort(type: SortType) {
         MOALogger.logd()
-        clearPagingData()
         sortTypeRelay.accept(type)
     }
     
