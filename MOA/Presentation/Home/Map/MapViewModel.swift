@@ -72,7 +72,7 @@ final class MapViewModel: BaseViewModel {
                 return []
             }
         }.subscribe(onNext: { [unowned self] data in
-            let current = gifticons.value.filter { $0.gifticonId != Int.min }
+            let current = gifticons.value
             isLoading = false
             gifticons.accept(current + data)
         }).disposed(by: disposeBag)

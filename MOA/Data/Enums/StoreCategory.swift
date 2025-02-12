@@ -13,6 +13,19 @@ enum StoreCategory: String, CaseIterable {
     case CONVENIENCE_STORE = "편의점"
     case OTHERS = "기타"
     
+    static func from(string: String) -> StoreCategory? {
+        switch string {
+        case StoreCategory.CAFE.code:
+            return .CAFE
+        case StoreCategory.CONVENIENCE_STORE.code:
+            return .CONVENIENCE_STORE
+        case StoreCategory.OTHERS.code:
+            return .OTHERS
+        default:
+            return nil
+        }
+    }
+    
     static func from(typeCode: String) -> StoreCategory? {
         switch typeCode {
         case StoreType.STARBUCKS.code:

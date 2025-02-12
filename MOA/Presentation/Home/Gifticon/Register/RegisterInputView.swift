@@ -210,7 +210,7 @@ final class RegisterInputView: UIView {
         if let expireDate = expireDate {
             selectDate = expireDate
             requestInput = expireDate.toString(format: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
-            inputLabel.text = expireDate.toString(format: AVAILABLE_GIFTICON_UI_TIME_FORMAT)
+            inputLabel.text = expireDate.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT)
             return
         }
         
@@ -271,7 +271,7 @@ extension RegisterInputView: BottomSheetDelegate {
         selectDate = date
         
         let formatter = DateFormatter()
-        formatter.dateFormat = AVAILABLE_GIFTICON_UI_TIME_FORMAT
+        formatter.dateFormat = AVAILABLE_GIFTICON_TIME_FORMAT
         inputLabel.text = formatter.string(from: date)
         requestInput = formatter.string(from: date)
         

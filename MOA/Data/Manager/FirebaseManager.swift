@@ -6,9 +6,14 @@
 //
 
 import UIKit
+import RxSwift
+import RxCocoa
+import RxRelay
 import FirebaseStorage
 import FirebaseFirestore
 
+private let USER_DB_ID = "users"
+private let GIFTICON_DB_ID = "gifticons"
 private let MIME_TYPE = "image/jpeg"
 
 final class FirebaseManager {
@@ -17,6 +22,57 @@ final class FirebaseManager {
     
     private let storage = Storage.storage()
     private let store = Firestore.firestore()
+    
+    func getAllGifticon(
+        categoryType: StoreCategory,
+        sortType: SortType
+    ) -> Observable<[AvailableGifticon]> {
+        return Observable.create { observer in
+            let userID = UserPreferences.getUserID()
+            
+            var orderBy: String = ""
+            switch sortType {
+            case .EXPIRE_DATE:
+                orderBy = HttpKeys.Gifticon.expireDate
+            case .CREATED_AT:
+                orderBy = HttpKeys.Gifticon.uplodeDate
+            case .NAME:
+                orderBy = HttpKeys.Gifticon.name
+            }
+            
+            var category: [String] = []
+            switch categoryType {
+            case .All:
+                category = StoreCategory.allCases.compactMap { $0.code }
+            default:
+                if let code = categoryType.code {
+                    category.append(code)
+                }
+            }
+            
+            self.store
+                .collection(USER_DB_ID)
+                .document("\(userID)")
+                .collection(GIFTICON_DB_ID)
+                .order(by: orderBy, descending: false)
+                .whereField(HttpKeys.Gifticon.gifticonStoreCategory, in: category)
+                .getDocuments(completion: { snapshot, error in
+                    if let error = error {
+                        observer.onError(error)
+                    } else if let snapshot = snapshot {
+                        let gifticons = snapshot.documents.compactMap { document in
+                            AvailableGifticon(dic: document.data())
+                        }
+                        observer.onNext(gifticons)
+                        observer.onCompleted()
+                    } else {
+                        observer.onError(NSError())
+                    }
+                })
+            
+            return Disposables.create()
+        }
+    }
     
     func createGifticon(
         jpegData: Data,
@@ -33,6 +89,7 @@ final class FirebaseManager {
         
         let uuid = UUID().uuidString
         let userID = UserPreferences.getUserID()
+        let uploadDate = Date().toString(format: AVAILABLE_GIFTICON_TIME_FORMAT)
         let currentTime = Int(Date().timeIntervalSince1970)
         let storagePath = "\(userID)/\(currentTime).jpeg"
         let storageRef = storage.reference().child(storagePath)
@@ -61,17 +118,21 @@ final class FirebaseManager {
                 }
                 
                 if let imageUrl = url?.absoluteString {
-                    self.store.collection(userID).document(uuid).setData(
-                        [
-                            HttpKeys.Gifticon.gifticonId: uuid,
-                            HttpKeys.Gifticon.imageUrl: imageUrl,
-                            HttpKeys.Gifticon.name: name,
-                            HttpKeys.Gifticon.expireDate: expireDate,
-                            HttpKeys.Gifticon.gifticonStore: gifticonStore,
-                            HttpKeys.Gifticon.gifticonStoreCategory: storeCategory,
-                            HttpKeys.Gifticon.memo: memo ?? "",
-                            HttpKeys.Gifticon.used: false
-                        ]
+                    self.store.collection(USER_DB_ID)
+                        .document(userID)
+                        .collection(GIFTICON_DB_ID)
+                        .document(uuid).setData(
+                            [
+                                HttpKeys.Gifticon.gifticonId: uuid,
+                                HttpKeys.Gifticon.imageUrl: imageUrl,
+                                HttpKeys.Gifticon.name: name,
+                                HttpKeys.Gifticon.uplodeDate: uploadDate,
+                                HttpKeys.Gifticon.expireDate: expireDate,
+                                HttpKeys.Gifticon.gifticonStore: gifticonStore,
+                                HttpKeys.Gifticon.gifticonStoreCategory: storeCategory,
+                                HttpKeys.Gifticon.memo: memo ?? "",
+                                HttpKeys.Gifticon.used: false
+                            ]
                     ) { error in
                         guard error == nil else {
                             MOALogger.loge("createGifticon setData error: \(String(describing: error))")

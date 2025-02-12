@@ -179,7 +179,7 @@ final class MapBottomSheet: UIView {
         
         mapViewModel.gifticons
             .bind(to: gifticonCollectionView.rx.items) { collectionView, row, gifticon in
-                if gifticon.gifticonId == Int.min {
+                if gifticon.gifticonId == "" {
                     guard let cell = collectionView.dequeueReusableCell(
                         withReuseIdentifier: GifticonSkeletonCell.identifier,
                         for: IndexPath(row: row, section: 0)
@@ -223,7 +223,7 @@ final class MapBottomSheet: UIView {
             .withUnretained(self)
             .subscribe(onNext: { owner, gifticon in
                 guard let onTapGifticon = owner.onTapGifticon else { return }
-                onTapGifticon(gifticon.gifticonId)
+                onTapGifticon(Int(gifticon.gifticonId) ?? 0)
             }).disposed(by: disposeBag)
     }
     

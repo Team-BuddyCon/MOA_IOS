@@ -101,11 +101,7 @@ final class GifticonViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         MOALogger.logd()
-        
-        if !isFirstEntry {
-            gifticonViewModel.refresh()
-        }
-        isFirstEntry = false
+        gifticonViewModel.fetchAllGifticons()
     }
 }
 
@@ -172,7 +168,7 @@ private extension GifticonViewController {
             button.isClicked.accept(true)
         }
         
-        gifticonViewModel.fetch()
+        gifticonViewModel.fetchAllGifticons()
     }
     
     func bind() {
@@ -191,7 +187,7 @@ private extension GifticonViewController {
         
         gifticonViewModel.gifticons
             .bind(to: gifticonCollectionView.rx.items) { collectionView, row, gifticon in
-                if gifticon.gifticonId == Int.min {
+                if gifticon.gifticonId == "" {
                     guard let cell = collectionView.dequeueReusableCell(
                         withReuseIdentifier: GifticonSkeletonCell.identifier,
                         for: IndexPath(row: row, section: 0)
@@ -231,16 +227,16 @@ private extension GifticonViewController {
             .bind(to: self.rx.isEmptyUI)
             .disposed(by: disposeBag)
         
-        gifticonCollectionView.rx.contentOffset
-            .map { _ in self.gifticonCollectionView }
-            .bind(to: self.rx.scrollOffset)
-            .disposed(by: disposeBag)
+//        gifticonCollectionView.rx.contentOffset
+//            .map { _ in self.gifticonCollectionView }
+//            .bind(to: self.rx.scrollOffset)
+//            .disposed(by: disposeBag)
         
         gifticonCollectionView.rx.modelSelected(AvailableGifticon.self)
             .subscribe(onNext: { [weak self] gifticon in
                 guard let self = self else { return }
                 MOALogger.logd("\(gifticon.gifticonId)")
-                let detailVC = GifticonDetailViewController(gifticonId: gifticon.gifticonId)
+                let detailVC = GifticonDetailViewController(gifticonId: Int(gifticon.gifticonId) ?? 0)
                 navigationController?.pushViewController(detailVC, animated: true)
             }).disposed(by: disposeBag)
         
@@ -266,34 +262,6 @@ extension GifticonViewController: BottomSheetDelegate {
 
 // MARK: extension
 extension Reactive where Base: GifticonViewController {
-    var scrollOffset: Binder<UICollectionView> {
-        return Binder<UICollectionView>(self.base) { viewController, collectionView in
-            let contentOffsetY = collectionView.contentOffset.y
-            let scrollViewHeight = collectionView.bounds.size.height
-            let contentHeight = collectionView.contentSize.height
-            let height = CGFloat(UIScreen.getWidthByDivision(division: 2, exclude: 20 + 16 + 20))
-            
-            // 스크롤 할 필요 없는 데이터의 양일 때는 페이징 처리하지 않음
-            if contentHeight <= scrollViewHeight {
-                return
-            }
-            
-            // 카테고리 및 정렬만 바꾸는 경우 호출되지 않도록 처리
-            if viewController.gifticonViewModel.isChangedOptions {
-                viewController.gifticonViewModel.isChangedOptions = false
-                return
-            }
-            
-            if contentOffsetY + scrollViewHeight + height >= contentHeight,
-               !viewController.gifticonViewModel.isScrollEnded,
-               !viewController.gifticonViewModel.isLoading {
-                MOALogger.logd()
-                viewController.gifticonViewModel.isLoading = true
-                viewController.gifticonViewModel.fetchMore()
-            }
-        }
-    }
-    
     var tapSort: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()

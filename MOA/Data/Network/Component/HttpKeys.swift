@@ -36,6 +36,7 @@ struct HttpKeys {
         static let used = "used"
         static let remainingDays = "remainingDays"
         static let imageUrl = "imageUrl"
+        static let uplodeDate = "uploadDate"
     }
     
     struct Kakao {

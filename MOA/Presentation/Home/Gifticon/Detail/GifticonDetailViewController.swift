@@ -362,14 +362,14 @@ extension Reactive where Base: GifticonDetailViewController {
                 }).disposed(by: viewController.disposeBag)
             
             let dday = detailGifticon.expireDate
-                .toString(format: AVAILABLE_GIFTICON_UI_TIME_FORMAT)
+                .toString(format: AVAILABLE_GIFTICON_TIME_FORMAT)
                 .toDday()
             viewController.ddayButton.dday = dday
             
             viewController.titleLabel.text = detailGifticon.name
             viewController.expireDateInfoView.info = detailGifticon.expireDate
                 .toString(format: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
-                .transformTimeformat(origin: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT, dest: AVAILABLE_GIFTICON_UI_TIME_FORMAT)
+                .transformTimeformat(origin: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT, dest: AVAILABLE_GIFTICON_TIME_FORMAT)
             
             viewController.storeInfoView.info = detailGifticon.gifticonStore.rawValue
             viewController.memoInfoView.info = detailGifticon.memo
