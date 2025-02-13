@@ -56,7 +56,7 @@ final class GifticonEditViewController: BaseViewController {
         let inputView = RegisterInputView(
             inputType: .name,
             hasInput: true,
-            name: detailGifticon.name
+            name: gifticon.name
         )
         return inputView
     }()
@@ -65,7 +65,7 @@ final class GifticonEditViewController: BaseViewController {
         let inputView = RegisterInputView(
             inputType: .expireDate,
             hasInput: true,
-            expireDate: detailGifticon.expireDate
+            expireDate: gifticon.expireDate.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT)
         )
         return inputView
     }()
@@ -74,7 +74,7 @@ final class GifticonEditViewController: BaseViewController {
         let inputView = RegisterInputView(
             inputType: .store,
             hasInput: true,
-            gifticonStore: detailGifticon.gifticonStore
+            gifticonStore: gifticon.gifticonStore
         )
         return inputView
     }()
@@ -83,7 +83,7 @@ final class GifticonEditViewController: BaseViewController {
         let inputView = RegisterInputView(
             inputType: .memo,
             hasInput: true,
-            memo: detailGifticon.memo
+            memo: gifticon.memo
         )
         return inputView
     }()
@@ -100,15 +100,15 @@ final class GifticonEditViewController: BaseViewController {
         return button
     }()
     
-    let detailGifticon: DetailGifticon
+    let gifticon: AvailableGifticon
     let gifticonImage: UIImage?
-    let gifticonEditViewModel = GifticonEditViewModel(gifticonService: GifticonService.shared)
+    let gifticonEditViewModel = GifticonEditViewModel()
     
     init(
-        detailGifticon: DetailGifticon,
+        gifticon: AvailableGifticon,
         gifticonImage: UIImage?
     ) {
-        self.detailGifticon = detailGifticon
+        self.gifticon = gifticon
         self.gifticonImage = gifticonImage
         super.init(nibName: nil, bundle: nil)
     }
@@ -247,7 +247,7 @@ private extension Reactive where Base: GifticonEditViewController {
     }
     
     var tapDelete: Binder<Void> {
-        return Binder<Void>(self.base) { viewController, _ in
+        return Binder(self.base) { viewController , _ in
             MOALogger.logd()
             let modalVC = ModalViewController(
                 modalType: .select,
@@ -256,7 +256,7 @@ private extension Reactive where Base: GifticonEditViewController {
                 cancelText: CLOSE
             ) {
                 viewController.gifticonEditViewModel.deleteGifticon(
-                    gifticonId: viewController.detailGifticon.gifticonId
+                    gifticonId: viewController.gifticon.gifticonId
                 )
             }
             
@@ -269,7 +269,7 @@ private extension Reactive where Base: GifticonEditViewController {
             MOALogger.logd()
             guard let name = viewController.nameInputView.requestInput else { return }
             guard let expireDate = viewController.expireDateInputView.requestInput else { return }
-            guard let store = viewController.storeInputView.requestInput else { return }
+            guard let gifticonStore = viewController.storeInputView.requestInput else { return }
             let memo = viewController.memoInputView.requestInput
             
             let modalVC = ModalViewController(
@@ -279,10 +279,10 @@ private extension Reactive where Base: GifticonEditViewController {
                 cancelText: CLOSE
             ) {
                 viewController.gifticonEditViewModel.updateGifticon(
-                    gifticonId: viewController.detailGifticon.gifticonId,
+                    gifticonId: viewController.gifticon.gifticonId,
                     name: name,
                     expireDate: expireDate,
-                    store: store,
+                    gifticonStore: gifticonStore,
                     memo: memo
                 )
             }

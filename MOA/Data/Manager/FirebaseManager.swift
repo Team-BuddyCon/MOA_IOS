@@ -23,29 +23,6 @@ final class FirebaseManager {
     private let storage = Storage.storage()
     private let store = Firestore.firestore()
     
-    func updateGifticon(
-        gifticonId: String,
-        used: Bool
-    ) -> Observable<Bool> {
-        return Observable.create { observer in
-            let userID = UserPreferences.getUserID()
-            self.store
-                .collection(USER_DB_ID)
-                .document("\(userID)")
-                .collection(GIFTICON_DB_ID)
-                .document("\(gifticonId)")
-                .updateData([HttpKeys.Gifticon.used: used]) { error in
-                    if error == nil {
-                        observer.onNext(true)
-                        observer.onCompleted()
-                    } else {
-                        observer.onError(NSError())
-                    }
-                }
-            return Disposables.create()
-        }
-    }
-    
     func getGifticon(
         gifticonId: String
     ) -> Observable<AvailableGifticon> {
@@ -197,6 +174,76 @@ final class FirebaseManager {
                     }
                 }
             })
+        }
+    }
+    
+    func updateGifticon(
+        gifticonId: String,
+        name: String? = nil,
+        expireDate: String? = nil,
+        gifticonStore: String? = nil,
+        memo: String? = nil,
+        used: Bool? = nil
+    ) -> Observable<Bool> {
+        return Observable.create { observer in
+            var fields: [String: Any] = [:]
+            if let name = name {
+                fields.updateValue(name, forKey: HttpKeys.Gifticon.name)
+            }
+            
+            if let expireDate = expireDate {
+                fields.updateValue(expireDate, forKey: HttpKeys.Gifticon.expireDate)
+            }
+            
+            if let gifticonStore = gifticonStore {
+                fields.updateValue(gifticonStore, forKey: HttpKeys.Gifticon.gifticonStore)
+            }
+            
+            if let memo = memo {
+                fields.updateValue(memo, forKey: HttpKeys.Gifticon.memo)
+            }
+            
+            if let used = used {
+                fields.updateValue(used, forKey: HttpKeys.Gifticon.used)
+            }
+            
+            let userID = UserPreferences.getUserID()
+            self.store
+                .collection(USER_DB_ID)
+                .document("\(userID)")
+                .collection(GIFTICON_DB_ID)
+                .document("\(gifticonId)")
+                .updateData(fields) { error in
+                    if error == nil {
+                        observer.onNext(true)
+                        observer.onCompleted()
+                    } else {
+                        observer.onError(NSError())
+                    }
+                }
+            return Disposables.create()
+        }
+    }
+    
+    func deleteGifticon(
+        gifticonId: String
+    ) -> Observable<Bool> {
+        return Observable.create { observer in
+            let userID = UserPreferences.getUserID()
+            self.store
+                .collection(USER_DB_ID)
+                .document("\(userID)")
+                .collection(GIFTICON_DB_ID)
+                .document("\(gifticonId)")
+                .delete() { error in
+                    if error == nil {
+                        observer.onNext(true)
+                        observer.onCompleted()
+                    } else {
+                        observer.onError(NSError())
+                    }
+                }
+            return Disposables.create()
         }
     }
 }

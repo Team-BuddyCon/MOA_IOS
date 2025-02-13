@@ -29,6 +29,12 @@ extension Date {
 }
 
 extension String {
+    func toDate(format: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = format
+        return formatter.date(from: self)
+    }
+    
     func toDday() -> Int {
         let formatter = DateFormatter()
         formatter.dateFormat = AVAILABLE_GIFTICON_TIME_FORMAT

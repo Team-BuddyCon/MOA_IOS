@@ -101,7 +101,11 @@ final class GifticonViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         MOALogger.logd()
-        //gifticonViewModel.fetchAllGifticons()
+        
+        if !isFirstEntry {
+            gifticonViewModel.fetchAllGifticons()
+        }
+        isFirstEntry = false
     }
 }
 
