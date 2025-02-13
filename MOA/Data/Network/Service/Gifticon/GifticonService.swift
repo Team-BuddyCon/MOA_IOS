@@ -35,6 +35,14 @@ protocol GifticonServiceProtocol {
         gifticonId: String
     ) -> Observable<Bool>
     
+    func createGifticon(
+        data: Data,
+        name: String,
+        expireDate: String,
+        gifticonStore: String,
+        memo: String?
+    ) -> Observable<Bool>
+    
     ///
     
     func fetchAvailableGifticon(
@@ -216,19 +224,101 @@ final class GifticonService: GifticonServiceProtocol {
     
     func deleteGifticon(gifticonId: String) -> Observable<Bool> {
         return Observable.create { observer in
-            self.store
-                .collection(FirebaseStoreID.USER.rawValue)
-                .document(self.userID)
-                .collection(FirebaseStoreID.GIFTICON.rawValue)
-                .document(gifticonId)
-                .delete { error in
-                    if error == nil {
-                        observer.onNext(true)
-                        observer.onCompleted()
-                    } else {
-                        observer.onError(NSError())
+            let storagePath = "\(self.userID)/\(gifticonId).jpeg"
+            let storageRef = self.storage.reference().child(storagePath)
+            storageRef.delete { error in
+                if error == nil {
+                    self.store
+                        .collection(FirebaseStoreID.USER.rawValue)
+                        .document(self.userID)
+                        .collection(FirebaseStoreID.GIFTICON.rawValue)
+                        .document(gifticonId)
+                        .delete { error in
+                            if error == nil {
+                                observer.onNext(true)
+                                observer.onCompleted()
+                            } else {
+                                observer.onError(error ?? NSError())
+                            }
+                        }
+                } else {
+                    observer.onError(error ?? NSError())
+                }
+            }
+            
+            return Disposables.create()
+        }
+    }
+    
+    func createGifticon(
+        data: Data,
+        name: String,
+        expireDate: String,
+        gifticonStore: String,
+        memo: String? = nil
+    ) -> Observable<Bool> {
+        return Observable.create { observer in
+            guard let gifticonStoreCategory = StoreCategory.from(typeCode: gifticonStore)?.code else {
+                observer.onError(NSError())
+                return Disposables.create()
+            }
+            
+            let uuid = UUID().uuidString
+            let uploadDate = Date().toString(format: AVAILABLE_GIFTICON_TIME_FORMAT)
+            let storagePath = "\(self.userID)/\(uuid).jpeg"
+            let storageRef = self.storage.reference().child(storagePath)
+            let metaData = StorageMetadata()
+            metaData.contentType = FirebaseStorageMIME.imageJPEG.rawValue
+            
+            storageRef.putData(data, metadata: metaData) { metadata, error in
+                guard error == nil else {
+                    MOALogger.loge("createGifticon putData error: \(String(describing: error))")
+                    observer.onError(error ?? NSError())
+                    return
+                }
+                
+                guard metadata != nil else {
+                    MOALogger.loge("createGifticon putData metadata: \(metaData)")
+                    observer.onError(error ?? NSError())
+                    return
+                }
+                
+                MOALogger.logd("createGifticon putData success")
+                storageRef.downloadURL { url, error in
+                    guard error == nil else {
+                        MOALogger.loge("createGifticon downloadURL error: \(String(describing: error))")
+                        observer.onError(error ?? NSError())
+                        return
+                    }
+                    
+                    if let imageUrl = url?.absoluteString {
+                        self.store.collection(FirebaseStoreID.USER.rawValue)
+                            .document(self.userID)
+                            .collection(FirebaseStoreID.GIFTICON.rawValue)
+                            .document(uuid)
+                            .setData([
+                                HttpKeys.Gifticon.gifticonId: uuid,
+                                HttpKeys.Gifticon.imageUrl: imageUrl,
+                                HttpKeys.Gifticon.name: name,
+                                HttpKeys.Gifticon.uplodeDate: uploadDate,
+                                HttpKeys.Gifticon.expireDate: expireDate,
+                                HttpKeys.Gifticon.gifticonStore: gifticonStore,
+                                HttpKeys.Gifticon.gifticonStoreCategory: gifticonStoreCategory,
+                                HttpKeys.Gifticon.memo: memo ?? "",
+                                HttpKeys.Gifticon.used: false
+                            ]) { error in
+                                guard error == nil else {
+                                    MOALogger.loge("createGifticon setData error: \(String(describing: error))")
+                                    observer.onError(error ?? NSError())
+                                    return
+                                }
+                                MOALogger.logd("createGifticon success")
+                                observer.onNext(true)
+                                observer.onCompleted()
+                            }
                     }
                 }
+            }
             
             return Disposables.create()
         }

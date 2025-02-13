@@ -259,7 +259,7 @@ private extension Reactive where Base: GifticonRegisterViewController {
                 )
                 return
             }
-            guard let store = viewController.storeInputView.requestInput else {
+            guard let gifticonStore = viewController.storeInputView.requestInput else {
                 viewController.showAlertModal(
                     title: GIFTICON_REGISTER_EMPTY_STORE_MODAL_TITLE,
                     confirmText: CONFIRM
@@ -276,23 +276,17 @@ private extension Reactive where Base: GifticonRegisterViewController {
                 return
             }
             
-            if let data = image.jpegData(compressionQuality: 0.8) {
-                FirebaseManager.shared.createGifticon(
-                    jpegData: data,
-                    name: name,
-                    expireDate: expireDate,
-                    gifticonStore: store,
-                    memo: memo,
-                    onSucess: {
-                        
-                    },
-                    onError: {
-                        viewController.showAlertModal(
-                            title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                            subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                            confirmText: CONFIRM
-                        )
-                    }
+            viewController.viewModel.createGifticon(
+                image: image,
+                name: name,
+                expireDate: expireDate,
+                gifticonStore: gifticonStore,
+                memo: memo
+            ) {
+                viewController.showAlertModal(
+                    title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+                    subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+                    confirmText: CONFIRM
                 )
             }
         }
