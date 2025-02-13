@@ -219,7 +219,7 @@ final class MapBottomSheet: UIView {
             .bind(to: self.rx.scrollOffset)
             .disposed(by: disposeBag)
         
-        gifticonCollectionView.rx.modelSelected(AvailableGifticon.self)
+        gifticonCollectionView.rx.modelSelected(GifticonModel.self)
             .withUnretained(self)
             .subscribe(onNext: { owner, gifticon in
                 guard let onTapGifticon = owner.onTapGifticon else { return }

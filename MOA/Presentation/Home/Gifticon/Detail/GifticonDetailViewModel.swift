@@ -12,34 +12,54 @@ import RxCocoa
 
 final class GifticonDetailViewModel: BaseViewModel {
     private let kakaoService: KakaoServiceProtocol
+    private let gifticonService: GifticonServiceProtocol
     
-    let gifticonRelay = BehaviorRelay(value: AvailableGifticon())
-    var gifticon: AvailableGifticon { gifticonRelay.value }
+    let gifticonRelay = BehaviorRelay(value: GifticonModel())
+    var gifticon: GifticonModel { gifticonRelay.value }
     
     let searchPlaceRelay = BehaviorRelay<[SearchPlace]>(value: [])
     
-    init(kakaoService: KakaoServiceProtocol) {
+    init(
+        gifticonService: GifticonServiceProtocol,
+        kakaoService: KakaoServiceProtocol
+    ) {
+        self.gifticonService = gifticonService
         self.kakaoService = kakaoService
     }
     
-    func fetchDetail(gifticonId: String) {
+    func fetchGifticon(gifticonId: String) {
         MOALogger.logd()
-        FirebaseManager.shared.getGifticon(gifticonId: gifticonId)
-            .subscribe(onNext: { [unowned self] gifticon in
-                MOALogger.logd("\(gifticon)")
-                gifticonRelay.accept(gifticon)
-            }).disposed(by: disposeBag)
+        gifticonService.fetchGifticon(gifticonId: gifticonId)
+            .subscribe(
+                onNext: { [unowned self] gifticon in
+                    MOALogger.logd("\(gifticon)")
+                    self.gifticonRelay.accept(gifticon.toModel())
+                },
+                onError: { error in
+                    MOALogger.loge(error.localizedDescription)
+                }
+            ).disposed(by: disposeBag)
     }
     
-    func changeUsed(gifticonId: String) {
+    func updateGifticonUsed(gifticonId: String) {
         MOALogger.logd()
-        FirebaseManager.shared.updateGifticon(gifticonId: gifticonId, used: !gifticon.used)
-            .subscribe(onNext: { [unowned self] success in
-                MOALogger.logd("\(success)")
-                if success {
-                    fetchDetail(gifticonId: gifticonId)
+        gifticonService.updateGifticon(
+            gifticonId: gifticonId,
+            name: nil,
+            expireDate: nil,
+            gifticonStore: nil,
+            memo: nil,
+            used: !gifticon.used
+        ).subscribe(
+            onNext: { [unowned self] isSuccess in
+                if isSuccess {
+                    fetchGifticon(gifticonId: gifticonId)
                 }
-            }).disposed(by: disposeBag)
+            },
+            onError: { error in
+                MOALogger.loge(error.localizedDescription)
+            }
+        ).disposed(by: disposeBag)
     }
     
     func searchByKeyword(keyword: String) {

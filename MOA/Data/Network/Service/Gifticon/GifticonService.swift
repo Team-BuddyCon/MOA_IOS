@@ -7,8 +7,36 @@
 
 import Foundation
 import RxSwift
+import FirebaseStorage
+import FirebaseFirestore
 
 protocol GifticonServiceProtocol {
+    
+    func fetchGifticons(
+        category: StoreCategory,
+        sortType: SortType,
+        used: Bool
+    ) -> Observable<[GifticonResponse]>
+    
+    func fetchGifticon(
+        gifticonId: String
+    ) -> Observable<GifticonResponse>
+    
+    func updateGifticon(
+        gifticonId: String,
+        name: String?,
+        expireDate: String?,
+        gifticonStore: String?,
+        memo: String?,
+        used: Bool?
+    ) -> Observable<Bool>
+    
+    func deleteGifticon(
+        gifticonId: String
+    ) -> Observable<Bool>
+    
+    ///
+    
     func fetchAvailableGifticon(
         pageNumber: Int,
         rowCount: Int,
@@ -31,7 +59,7 @@ protocol GifticonServiceProtocol {
     
     func fetchDeleteGifticon(
         gifticonId: Int
-    ) -> Observable<Result<GifticonResponse, URLError>>
+    ) -> Observable<Result<MockGifticonResponse, URLError>>
     
     func fetchUpdateGifticon(
         gifticonId: Int,
@@ -39,12 +67,12 @@ protocol GifticonServiceProtocol {
         expireDate: String,
         store: String,
         memo: String?
-    ) -> Observable<Result<GifticonResponse, URLError>>
+    ) -> Observable<Result<MockGifticonResponse, URLError>>
     
     func fetchUpdateUsedGifticon(
         gifticonId: Int,
         used: Bool
-    ) -> Observable<Result<GifticonResponse, URLError>>
+    ) -> Observable<Result<MockGifticonResponse, URLError>>
     
     func fetchUnAvailableGifticon(
         pageNumber: Int,
@@ -61,8 +89,152 @@ protocol GifticonServiceProtocol {
 
 
 final class GifticonService: GifticonServiceProtocol {
+    
+    enum FirebaseStoreID: String {
+        case USER = "users"
+        case GIFTICON = "gifticons"
+    }
+    
+    enum FirebaseStorageMIME: String {
+        case imageJPEG = "image/jpeg"
+    }
+    
     static let shared = GifticonService()
     private init() {}
+    
+    private let storage = Storage.storage()
+    private let store = Firestore.firestore()
+    private var userID: String {
+        UserPreferences.getUserID()
+    }
+    
+    func fetchGifticons(
+        category: StoreCategory,
+        sortType: SortType,
+        used: Bool
+    ) -> Observable<[GifticonResponse]> {
+        return Observable.create { observer in
+            self.store
+                .collection(FirebaseStoreID.USER.rawValue)
+                .document(self.userID)
+                .collection(FirebaseStoreID.GIFTICON.rawValue)
+                .order(by: sortType.orderByField, descending: false)
+                .whereField(HttpKeys.Gifticon.gifticonStoreCategory, in: category.categoryField)
+                .whereField(HttpKeys.Gifticon.used, isEqualTo: used)
+                .getDocuments(completion: { snapshot, error in
+                    if let error = error {
+                        observer.onError(error)
+                    } else if let snapshot = snapshot {
+                        let gifticons = snapshot.documents.compactMap { document in
+                            GifticonResponse(dic: document.data())
+                        }
+                        observer.onNext(gifticons)
+                        observer.onCompleted()
+                    } else {
+                        observer.onError(error ?? NSError())
+                    }
+                })
+            
+            return Disposables.create()
+        }
+    }
+    
+    func fetchGifticon(gifticonId: String) -> Observable<GifticonResponse> {
+        return Observable.create { observer in
+            self.store
+                .collection(FirebaseStoreID.USER.rawValue)
+                .document(self.userID)
+                .collection(FirebaseStoreID.GIFTICON.rawValue)
+                .document(gifticonId)
+                .getDocument(completion: { snapshot, error in
+                    if let error = error {
+                        observer.onError(error)
+                    } else if let snapshot = snapshot {
+                        if snapshot.exists, let data = snapshot.data() {
+                            let gifticon = GifticonResponse(dic: data)
+                            observer.onNext(gifticon)
+                            observer.onCompleted()
+                        } else {
+                            observer.onError(error ?? NSError())
+                        }
+                    } else {
+                        observer.onError(error ?? NSError())
+                    }
+                })
+            
+            return Disposables.create()
+        }
+    }
+    
+    func updateGifticon(
+        gifticonId: String,
+        name: String?,
+        expireDate: String?,
+        gifticonStore: String?,
+        memo: String?,
+        used: Bool?
+    ) -> Observable<Bool> {
+        return Observable.create { observer in
+            var updateFields: [String: Any] = [:]
+            if let name = name {
+                updateFields.updateValue(name, forKey: HttpKeys.Gifticon.name)
+            }
+            
+            if let expireDate = expireDate {
+                updateFields.updateValue(expireDate, forKey: HttpKeys.Gifticon.expireDate)
+            }
+            
+            if let gifticonStore = gifticonStore {
+                updateFields.updateValue(gifticonStore, forKey: HttpKeys.Gifticon.gifticonStore)
+            }
+            
+            if let memo = memo {
+                updateFields.updateValue(memo, forKey: HttpKeys.Gifticon.memo)
+            }
+            
+            if let used = used {
+                updateFields.updateValue(used, forKey: HttpKeys.Gifticon.used)
+            }
+            
+            self.store
+                .collection(FirebaseStoreID.USER.rawValue)
+                .document(self.userID)
+                .collection(FirebaseStoreID.GIFTICON.rawValue)
+                .document(gifticonId)
+                .updateData(updateFields) { error in
+                    if error == nil {
+                        observer.onNext(true)
+                        observer.onCompleted()
+                    } else {
+                        observer.onError(error ?? NSError())
+                    }
+                }
+            
+            return Disposables.create()
+        }
+    }
+    
+    func deleteGifticon(gifticonId: String) -> Observable<Bool> {
+        return Observable.create { observer in
+            self.store
+                .collection(FirebaseStoreID.USER.rawValue)
+                .document(self.userID)
+                .collection(FirebaseStoreID.GIFTICON.rawValue)
+                .document(gifticonId)
+                .delete { error in
+                    if error == nil {
+                        observer.onNext(true)
+                        observer.onCompleted()
+                    } else {
+                        observer.onError(NSError())
+                    }
+                }
+            
+            return Disposables.create()
+        }
+    }
+    
+    ///
     
     func fetchAvailableGifticon(
         pageNumber: Int,
@@ -109,7 +281,7 @@ final class GifticonService: GifticonServiceProtocol {
     
     func fetchDeleteGifticon(
         gifticonId: Int
-    ) -> Observable<Result<GifticonResponse, URLError>> {
+    ) -> Observable<Result<MockGifticonResponse, URLError>> {
         let request = DeleteGifticonRequest(gifticonId: gifticonId)
         return NetworkManager.shared.request(request: request)
     }
@@ -120,7 +292,7 @@ final class GifticonService: GifticonServiceProtocol {
         expireDate: String,
         store: String,
         memo: String?
-    ) -> Observable<Result<GifticonResponse, URLError>> {
+    ) -> Observable<Result<MockGifticonResponse, URLError>> {
         let request = UpdateGifticonRequest(
             gifticonId: gifticonId,
             name: name,
@@ -134,7 +306,7 @@ final class GifticonService: GifticonServiceProtocol {
     func fetchUpdateUsedGifticon(
         gifticonId: Int,
         used: Bool
-    ) -> Observable<Result<GifticonResponse, URLError>> {
+    ) -> Observable<Result<MockGifticonResponse, URLError>> {
         let request = UpdateUsedGifticonRequest(
             gifticonId: gifticonId,
             used: used

@@ -86,12 +86,6 @@ final class GifticonDetailViewController: BaseViewController {
         let view = DetailInfoView(title: GIFTICON_DETAIL_MEMO_TITLE)
         return view
     }()
-
-    let gifticonDetailViewModel = GifticonDetailViewModel(
-        kakaoService: KakaoService.shared
-    )
-    
-    let gifticonId: String
     
     let kmZoomInButton: UIButton = {
         let button = UIButton()
@@ -104,6 +98,13 @@ final class GifticonDetailViewController: BaseViewController {
     }()
     
     var mapManager: KakaoMapManager?
+    
+    let gifticonDetailViewModel = GifticonDetailViewModel(
+        gifticonService: GifticonService.shared,
+        kakaoService: KakaoService.shared
+    )
+    
+    let gifticonId: String
     
     init(gifticonId: String) {
         self.gifticonId = gifticonId
@@ -126,7 +127,7 @@ final class GifticonDetailViewController: BaseViewController {
         super.viewWillAppear(animated)
         MOALogger.logd()
         mapManager?.addObserver()
-        fetchData()
+        gifticonDetailViewModel.fetchGifticon(gifticonId: gifticonId)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -280,10 +281,6 @@ private extension GifticonDetailViewController {
         container.layer.masksToBounds = true
     }
     
-    func fetchData() {
-        gifticonDetailViewModel.fetchDetail(gifticonId: gifticonId)
-    }
-    
     func bind() {
         useButton.rx.tap
             .bind(to: self.rx.tapUse)
@@ -320,7 +317,7 @@ extension Reactive where Base: GifticonDetailViewController {
     var tapUse: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            viewController.gifticonDetailViewModel.changeUsed(gifticonId: viewController.gifticonId)
+            viewController.gifticonDetailViewModel.updateGifticonUsed(gifticonId: viewController.gifticonId)
         }
     }
     
@@ -335,8 +332,8 @@ extension Reactive where Base: GifticonDetailViewController {
         }
     }
     
-    var bindToGifticon: Binder<AvailableGifticon> {
-        return Binder<AvailableGifticon>(self.base) { (viewController: GifticonDetailViewController, gifticon) in
+    var bindToGifticon: Binder<GifticonModel> {
+        return Binder<GifticonModel>(self.base) { (viewController: GifticonDetailViewController, gifticon) in
             ImageLoadManager.shared.load(url: gifticon.imageUrl)
                 .observe(on: MainScheduler())
                 .subscribe(onNext: { image in

@@ -8,7 +8,7 @@
 import Foundation
 
 enum StoreCategory: String, CaseIterable {
-    case All = "전체"
+    case ALL = "전체"
     case CAFE = "카페"
     case CONVENIENCE_STORE = "편의점"
     case OTHERS = "기타"
@@ -66,5 +66,17 @@ enum StoreCategory: String, CaseIterable {
         default:
             return nil
         }
+    }
+    
+    var categoryField: [String] {
+        switch self {
+            case .ALL:
+                return StoreCategory.allCases.compactMap { $0.code }
+            default:
+                if let code = self.code {
+                    return [code]
+                }
+        }
+        return []
     }
 }

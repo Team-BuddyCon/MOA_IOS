@@ -233,7 +233,7 @@ private extension GifticonViewController {
             .bind(to: self.rx.isEmptyUI)
             .disposed(by: disposeBag)
         
-        gifticonCollectionView.rx.modelSelected(AvailableGifticon.self)
+        gifticonCollectionView.rx.modelSelected(GifticonModel.self)
             .subscribe(onNext: { [weak self] gifticon in
                 guard let self = self else { return }
                 MOALogger.logd("\(gifticon.gifticonId)")
@@ -266,7 +266,10 @@ extension Reactive where Base: GifticonViewController {
     var tapSort: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            let bottomSheetVC = BottomSheetViewController(sheetType: .Sort, sortType: viewController.gifticonViewModel.sortType)
+            let bottomSheetVC = BottomSheetViewController(
+                sheetType: .Sort,
+                sortType: viewController.gifticonViewModel.sortType
+            )
             bottomSheetVC.delegate = viewController
             viewController.present(bottomSheetVC, animated: true)
         }

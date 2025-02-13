@@ -14,7 +14,7 @@ final class GifticonViewModel: BaseViewModel {
     
     private let gifticonService: GifticonServiceProtocol
     
-    private let categoryRelay: BehaviorRelay<StoreCategory> = BehaviorRelay(value: .All)
+    private let categoryRelay: BehaviorRelay<StoreCategory> = BehaviorRelay(value: .ALL)
     private let sortTypeRelay: BehaviorRelay<SortType> = BehaviorRelay(value: .EXPIRE_DATE)
     var sortType: SortType { sortTypeRelay.value }
     var sortTitle: Driver<String> {
@@ -23,7 +23,7 @@ final class GifticonViewModel: BaseViewModel {
             .asDriver(onErrorJustReturn: SortType.EXPIRE_DATE.rawValue)
     }
     
-    let gifticons = BehaviorRelay<[AvailableGifticon]>(value: [])
+    let gifticons = BehaviorRelay<[GifticonModel]>(value: [])
     
     init(gifticonService: GifticonServiceProtocol) {
         self.gifticonService = gifticonService
@@ -37,18 +37,21 @@ final class GifticonViewModel: BaseViewModel {
             sortTypeRelay
         ).flatMap { [unowned self] category, sortType in
             let count = self.gifticons.value.count
-            self.gifticons.accept([AvailableGifticon](repeating: AvailableGifticon(), count: count))
-            return FirebaseManager.shared.getAllGifticon(
-                categoryType: category,
-                sortType: sortType
+            self.gifticons.accept([GifticonModel](repeating: GifticonModel(), count: count))
+            return gifticonService.fetchGifticons(
+                category: category,
+                sortType: sortType,
+                used: false
             )
-        }.subscribe(onNext: { [unowned self] gifticons in
-            self.gifticons.accept(gifticons)
-        }).disposed(by: disposeBag)
-    }
-    
-    func refresh() {
-        clearPagingData()
+        }.subscribe(
+            onNext: { [unowned self] gifticons in
+                let models = gifticons.map { $0.toModel() }
+                self.gifticons.accept(models)
+            },
+            onError: { error in
+                MOALogger.loge(error.localizedDescription)
+            }
+        ).disposed(by: disposeBag)
     }
     
     func changeCategory(category: StoreCategory) {
@@ -59,9 +62,5 @@ final class GifticonViewModel: BaseViewModel {
     func changeSort(type: SortType) {
         MOALogger.logd()
         sortTypeRelay.accept(type)
-    }
-    
-    private func clearPagingData() {
-        gifticons.accept([])
     }
 }

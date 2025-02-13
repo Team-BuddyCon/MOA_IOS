@@ -44,7 +44,7 @@ struct UnAvailableGifticonInfo: Decodable {
                 dest: AVAILABLE_GIFTICON_TIME_FORMAT
             ),
             gifticonStore: StoreType.from(string: gifticonStore) ?? .ALL,
-            gifticonStoreCategory: StoreCategory(rawValue: gifticonStoreCategory) ?? .All
+            gifticonStoreCategory: StoreCategory(rawValue: gifticonStoreCategory) ?? .ALL
         )
     }
 }

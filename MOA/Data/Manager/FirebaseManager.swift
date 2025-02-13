@@ -25,7 +25,7 @@ final class FirebaseManager {
     
     func getGifticon(
         gifticonId: String
-    ) -> Observable<AvailableGifticon> {
+    ) -> Observable<GifticonModel> {
         return Observable.create { observer in
             let userID = UserPreferences.getUserID()
             
@@ -39,8 +39,8 @@ final class FirebaseManager {
                         observer.onError(error)
                     } else if let snapshot = snapshot {
                         if snapshot.exists, let data = snapshot.data() {
-                            let gifticon = AvailableGifticon(dic: data)
-                            observer.onNext(gifticon)
+                            let gifticon = GifticonResponse(dic: data)
+                            observer.onNext(gifticon.toModel())
                             observer.onCompleted()
                         } else {
                             observer.onError(NSError())
@@ -57,7 +57,7 @@ final class FirebaseManager {
     func getAllGifticon(
         categoryType: StoreCategory,
         sortType: SortType
-    ) -> Observable<[AvailableGifticon]> {
+    ) -> Observable<[GifticonModel]> {
         return Observable.create { observer in
             let userID = UserPreferences.getUserID()
             
@@ -73,7 +73,7 @@ final class FirebaseManager {
             
             var category: [String] = []
             switch categoryType {
-            case .All:
+            case .ALL:
                 category = StoreCategory.allCases.compactMap { $0.code }
             default:
                 if let code = categoryType.code {
@@ -92,9 +92,9 @@ final class FirebaseManager {
                         observer.onError(error)
                     } else if let snapshot = snapshot {
                         let gifticons = snapshot.documents.compactMap { document in
-                            AvailableGifticon(dic: document.data())
+                            GifticonResponse(dic: document.data())
                         }
-                        observer.onNext(gifticons)
+                        observer.onNext(gifticons.map { $0.toModel() })
                         observer.onCompleted()
                     } else {
                         observer.onError(NSError())

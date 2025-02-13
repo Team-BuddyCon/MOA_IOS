@@ -29,7 +29,7 @@ final class MapViewModel: BaseViewModel {
     // 기프티콘 목록 API 호출 중
     var isLoading = false
     
-    let gifticons = BehaviorRelay<[AvailableGifticon]>(value: [])
+    let gifticons = BehaviorRelay<[GifticonModel]>(value: [])
     
     var selectedLayerID: String? = nil
     var selectedPoiID: String? = nil
@@ -49,7 +49,7 @@ final class MapViewModel: BaseViewModel {
             selectStoreTypeRelay
         ).flatMapLatest { [unowned self] pageNumber, storeType in
             self.isLoading = true
-            self.gifticons.accept(self.gifticons.value + [AvailableGifticon](repeating: AvailableGifticon(), count: 6))
+            self.gifticons.accept(self.gifticons.value + [GifticonModel](repeating: GifticonModel(), count: 6))
             return self.gifticonService
                 .fetchAvailableGifticon(
                     pageNumber: pageNumber,
@@ -58,7 +58,7 @@ final class MapViewModel: BaseViewModel {
                     storeType: storeType,
                     sortType: SortType.EXPIRE_DATE
                 )
-        }.map { [unowned self] result -> [AvailableGifticon] in
+        }.map { [unowned self] result -> [GifticonModel] in
             switch result {
             case .success(let response):
                 let data = response.gifticonInfos.content.map { $0.toModel() }

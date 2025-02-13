@@ -100,12 +100,12 @@ final class GifticonEditViewController: BaseViewController {
         return button
     }()
     
-    let gifticon: AvailableGifticon
+    let gifticon: GifticonModel
     let gifticonImage: UIImage?
-    let gifticonEditViewModel = GifticonEditViewModel()
+    let gifticonEditViewModel = GifticonEditViewModel(gifticonService: GifticonService.shared)
     
     init(
-        gifticon: AvailableGifticon,
+        gifticon: GifticonModel,
         gifticonImage: UIImage?
     ) {
         self.gifticon = gifticon
