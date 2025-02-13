@@ -11,8 +11,10 @@ import RxRelay
 import RxCocoa
 
 final class GifticonDetailViewModel: BaseViewModel {
-    private let gifticonService: GifticonServiceProtocol
     private let kakaoService: KakaoServiceProtocol
+    
+    let gifticonRelay = BehaviorRelay(value: AvailableGifticon())
+    var gifticon: AvailableGifticon { gifticonRelay.value }
     
     let detailGifticonRelay = BehaviorRelay(value: DetailGifticon())
     var detailGifticon: DetailGifticon { detailGifticonRelay.value }
@@ -23,43 +25,50 @@ final class GifticonDetailViewModel: BaseViewModel {
     
     let searchPlaceRelay = BehaviorRelay<[SearchPlace]>(value: [])
     
-    init(
-        gifticonService: GifticonServiceProtocol,
-        kakaoService: KakaoServiceProtocol
-    ) {
-        self.gifticonService = gifticonService
+    init(kakaoService: KakaoServiceProtocol) {
         self.kakaoService = kakaoService
     }
     
-    func fetchDetail(gifticonId: Int) {
-        gifticonService.fetchDetailGifticon(gifticonId: gifticonId)
-            .subscribe(onNext: { [weak self] result in
-                guard let self = self else { return }
-                switch result {
-                case .success(let response):
-                    MOALogger.logd("\(response)")
-                    detailGifticonRelay.accept(response.info.toModel())
-                    usedRelay.accept(response.info.used)
-                    used = response.info.used
-                case .failure(let error):
-                    MOALogger.loge(error.localizedDescription)
-                }
+    func fetchDetail(gifticonId: String) {
+        MOALogger.logd()
+        FirebaseManager.shared.getGifticon(gifticonId: gifticonId)
+            .subscribe(onNext: { [unowned self] gifticon in
+                MOALogger.logd("\(gifticon)")
+                gifticonRelay.accept(gifticon)
+                //detailGifticonRelay.accept(gifticon)
+//                switch result {
+//                case .success(let response):
+//                    MOALogger.logd("\(response)")
+//                    detailGifticonRelay.accept(response.info.toModel())
+//                    usedRelay.accept(response.info.used)
+//                    used = response.info.used
+//                case .failure(let error):
+//                    MOALogger.loge(error.localizedDescription)
+//                }
             }).disposed(by: disposeBag)
     }
     
-    func fetchUpdateUsed(gifticonId: Int) {
-        gifticonService.fetchUpdateUsedGifticon(gifticonId: gifticonId, used: !used)
-            .subscribe(onNext: { [weak self] result in
-                guard let self = self else { return }
-                switch result {
-                case .success(let response):
-                    MOALogger.logd("\(response)")
-                    usedRelay.accept(!used)
-                    used = !used
-                case .failure(let error):
-                    MOALogger.loge(error.localizedDescription)
+    func updateGifticon(gifticonId: String) {
+        MOALogger.logd()
+        FirebaseManager.shared.updateGifticon(gifticonId: gifticonId, used: !gifticon.used)
+            .subscribe(onNext: { [unowned self] success in
+                MOALogger.logd("\(success)")
+                if success {
+                    fetchDetail(gifticonId: gifticonId)
                 }
             }).disposed(by: disposeBag)
+//        gifticonService.fetchUpdateUsedGifticon(gifticonId: gifticonId, used: !used)
+//            .subscribe(onNext: { [weak self] result in
+//                guard let self = self else { return }
+//                switch result {
+//                case .success(let response):
+//                    MOALogger.logd("\(response)")
+//                    usedRelay.accept(!used)
+//                    used = !used
+//                case .failure(let error):
+//                    MOALogger.loge(error.localizedDescription)
+//                }
+//            }).disposed(by: disposeBag)
     }
     
     func searchByKeyword(keyword: String) {

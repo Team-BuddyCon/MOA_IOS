@@ -101,7 +101,7 @@ final class GifticonViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         MOALogger.logd()
-        gifticonViewModel.fetchAllGifticons()
+        //gifticonViewModel.fetchAllGifticons()
     }
 }
 
@@ -233,7 +233,7 @@ private extension GifticonViewController {
             .subscribe(onNext: { [weak self] gifticon in
                 guard let self = self else { return }
                 MOALogger.logd("\(gifticon.gifticonId)")
-                let detailVC = GifticonDetailViewController(gifticonId: Int(gifticon.gifticonId) ?? 0)
+                let detailVC = GifticonDetailViewController(gifticonId: gifticon.gifticonId)
                 navigationController?.pushViewController(detailVC, animated: true)
             }).disposed(by: disposeBag)
         
@@ -316,8 +316,7 @@ extension GifticonViewController: PHPickerViewControllerDelegate {
                 }
                 
                 if error != nil {
-                    // TODO 에러 팝업 노출
-                    MOALogger.loge("PHPicker load Image error: \(error?.localizedDescription)")
+                    MOALogger.loge("PHPicker load Image error: \(String(describing: error?.localizedDescription))")
                     let modalVC = ModalViewController(
                         modalType: .alertDetail,
                         title: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_TITLE,
@@ -335,8 +334,14 @@ extension GifticonViewController: PHPickerViewControllerDelegate {
     
     private func checkBarcodeImage(image: UIImage?) {
         guard let image = image else {
-            // TODO 에러 팝업 노출
             MOALogger.loge("PHPicker load Image is nil")
+            let modalVC = ModalViewController(
+                modalType: .alertDetail,
+                title: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_TITLE,
+                subTitle: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_SUBTITLE,
+                confirmText: CONFIRM
+            )
+            present(modalVC, animated: true)
             return
         }
         

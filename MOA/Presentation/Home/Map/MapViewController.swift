@@ -233,7 +233,7 @@ private extension MapViewController {
         // mapBottomSheet 초기화
         mapBottomSheet.mapViewModel = mapViewModel
         mapBottomSheet.onTapGifticon = { gifticonId in
-            let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
+            let detailVC = GifticonDetailViewController(gifticonId: String(gifticonId))
             self.navigationController?.pushViewController(detailVC, animated: true)
         }
         

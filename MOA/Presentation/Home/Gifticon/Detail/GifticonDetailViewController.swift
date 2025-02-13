@@ -87,12 +87,11 @@ final class GifticonDetailViewController: BaseViewController {
         return view
     }()
 
-    let gifticonDetailViewModel: GifticonDetailViewModel = GifticonDetailViewModel(
-        gifticonService: GifticonService.shared,
+    let gifticonDetailViewModel = GifticonDetailViewModel(
         kakaoService: KakaoService.shared
     )
     
-    let gifticonId: Int
+    let gifticonId: String
     
     let kmZoomInButton: UIButton = {
         let button = UIButton()
@@ -106,7 +105,7 @@ final class GifticonDetailViewController: BaseViewController {
     
     var mapManager: KakaoMapManager?
     
-    init(gifticonId: Int) {
+    init(gifticonId: String) {
         self.gifticonId = gifticonId
         super.init(nibName: nil, bundle: nil)
     }
@@ -137,8 +136,8 @@ final class GifticonDetailViewController: BaseViewController {
         if mapManager?.isEngineActive == false {
             mapManager?.activateEngine()
             
-            if gifticonDetailViewModel.detailGifticon.gifticonStore != .ALL || gifticonDetailViewModel.detailGifticon.gifticonStore != .OTHERS {
-                gifticonDetailViewModel.searchByKeyword(keyword: gifticonDetailViewModel.detailGifticon.gifticonStore.rawValue)
+            if gifticonDetailViewModel.gifticon.gifticonStore != .ALL || gifticonDetailViewModel.gifticon.gifticonStore != .OTHERS {
+                gifticonDetailViewModel.searchByKeyword(keyword: gifticonDetailViewModel.gifticon.gifticonStore.rawValue)
             }
         }
     }
@@ -294,6 +293,10 @@ private extension GifticonDetailViewController {
             .bind(to: self.rx.tapZoomInImage)
             .disposed(by: disposeBag)
         
+        gifticonDetailViewModel.gifticonRelay
+            .bind(to: self.rx.bindToGifticon)
+            .disposed(by: disposeBag)
+        
         gifticonDetailViewModel.detailGifticonRelay
             .bind(to: self.rx.bindGifticon)
             .disposed(by: disposeBag)
@@ -325,7 +328,7 @@ extension Reactive where Base: GifticonDetailViewController {
     var tapUse: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            viewController.gifticonDetailViewModel.fetchUpdateUsed(gifticonId: viewController.gifticonId)
+            viewController.gifticonDetailViewModel.updateGifticon(gifticonId: viewController.gifticonId)
         }
     }
     
@@ -348,6 +351,40 @@ extension Reactive where Base: GifticonDetailViewController {
             viewController.imageDimView.isHidden = !used
             viewController.useButton.status.accept(used ? .used : .active)
             viewController.useButton.setTitle(used ? GIFTICON_USED_BUTTON_TITLE : GIFTICON_USE_BUTTON_TITLE, for: .normal)
+        }
+    }
+    
+    var bindToGifticon: Binder<AvailableGifticon> {
+        return Binder<AvailableGifticon>(self.base) { (viewController: GifticonDetailViewController, gifticon) in
+            ImageLoadManager.shared.load(url: gifticon.imageUrl)
+                .observe(on: MainScheduler())
+                .subscribe(onNext: { image in
+                    if let image = image {
+                        viewController.imageView.image = image
+                    }
+                }).disposed(by: viewController.disposeBag)
+            
+            let dday = gifticon.expireDate.toDday()
+            viewController.ddayButton.dday = dday
+            
+            viewController.titleLabel.text = gifticon.name
+            viewController.expireDateInfoView.info = gifticon.expireDate
+            viewController.storeInfoView.info = gifticon.gifticonStore.rawValue
+            viewController.memoInfoView.info = gifticon.memo
+            
+            if !gifticon.used && !gifticon.imageUrl.isEmpty && dday < 0 {
+                viewController.showAlertModal(
+                    title: GIFTICON_REGISTER_EXPIRE_MODAL_TITLE,
+                    subTitle: GIFTICON_REGISTER_EXPIRE_MODAL_SUBTITLE,
+                    confirmText: CONFIRM
+                )
+            }
+            
+            viewController.ddayButton.isHidden = gifticon.used
+            viewController.imageZoomInButton.isHidden = gifticon.used
+            viewController.imageDimView.isHidden = !gifticon.used
+            viewController.useButton.status.accept(gifticon.used ? .used : .active)
+            viewController.useButton.setTitle(gifticon.used ? GIFTICON_USED_BUTTON_TITLE : GIFTICON_USE_BUTTON_TITLE, for: .normal)
         }
     }
     

@@ -23,6 +23,60 @@ final class FirebaseManager {
     private let storage = Storage.storage()
     private let store = Firestore.firestore()
     
+    func updateGifticon(
+        gifticonId: String,
+        used: Bool
+    ) -> Observable<Bool> {
+        return Observable.create { observer in
+            let userID = UserPreferences.getUserID()
+            self.store
+                .collection(USER_DB_ID)
+                .document("\(userID)")
+                .collection(GIFTICON_DB_ID)
+                .document("\(gifticonId)")
+                .updateData([HttpKeys.Gifticon.used: used]) { error in
+                    if error == nil {
+                        observer.onNext(true)
+                        observer.onCompleted()
+                    } else {
+                        observer.onError(NSError())
+                    }
+                }
+            return Disposables.create()
+        }
+    }
+    
+    func getGifticon(
+        gifticonId: String
+    ) -> Observable<AvailableGifticon> {
+        return Observable.create { observer in
+            let userID = UserPreferences.getUserID()
+            
+            self.store
+                .collection(USER_DB_ID)
+                .document("\(userID)")
+                .collection(GIFTICON_DB_ID)
+                .document("\(gifticonId)")
+                .getDocument(completion: { snapshot, error in
+                    if let error = error {
+                        observer.onError(error)
+                    } else if let snapshot = snapshot {
+                        if snapshot.exists, let data = snapshot.data() {
+                            let gifticon = AvailableGifticon(dic: data)
+                            observer.onNext(gifticon)
+                            observer.onCompleted()
+                        } else {
+                            observer.onError(NSError())
+                        }
+                    } else {
+                        observer.onError(NSError())
+                    }
+                })
+            
+            return Disposables.create()
+        }
+    }
+    
     func getAllGifticon(
         categoryType: StoreCategory,
         sortType: SortType

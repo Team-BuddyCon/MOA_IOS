@@ -128,7 +128,7 @@ private extension UnAvailableGifticonViewController {
                 guard let self = self else { return }
                 MOALogger.logd("\(gifticon.gifticonId)")
                 
-                let detailVC = GifticonDetailViewController(gifticonId: gifticon.gifticonId)
+                let detailVC = GifticonDetailViewController(gifticonId: String(gifticon.gifticonId))
                 navigationController?.pushViewController(detailVC, animated: true)
             }).disposed(by: disposeBag)
         
