@@ -68,6 +68,9 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         case .authorizedAlways, .authorizedWhenInUse:
             manager.startUpdatingLocation()
         default:
+            latitude = nil
+            longitude = nil
+            address = nil
             isGranted.accept(false)
         }
     }

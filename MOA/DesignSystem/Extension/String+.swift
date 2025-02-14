@@ -158,6 +158,7 @@ let MAP_ADDRESS_COPY = "주소 복사"
 let MAP_ADDRESS_COPY_TOAST_MESSAGE = "클립보드에 주소가 복사되었어요."
 let MAP_PERMISSION_GUIDE_MESSAGE = "위치 정보 이용에 동의해야 사용할 수 있어요."
 let MAP_NAVIGATE_SETTING_MESSAGE = "설정으로 이동"
+let MAP_NOT_PROVIDED_GUIDE_MESSAGE = "해당 기프티콘 브랜드는 지도 기능이 제한되어 있어요."
 
 // MARK: ImageSet
 let LOGIN_ICON = "LoginIcon"

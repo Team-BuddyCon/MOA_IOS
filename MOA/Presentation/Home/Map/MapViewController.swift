@@ -426,9 +426,11 @@ extension Reactive where Base: MapViewController {
             viewController.permissionGuideToastView.isHidden = isGranted
             
             if isGranted && viewController.mapManager?.isEngineActive == true {
-                viewController.mapManager?.updateLocation()
                 viewController.mapViewModel.searchPlaceByKeyword()
+            } else {
+                viewController.mapManager?.removePois()
             }
+            viewController.mapManager?.updateLocation()
         }
     }
 }

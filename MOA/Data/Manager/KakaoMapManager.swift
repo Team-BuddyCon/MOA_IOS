@@ -359,6 +359,5 @@ extension KakaoMapManager: MapControllerDelegate {
     public func authenticationFailed(_ errorCode: Int, desc: String) {
         MOALogger.loge(desc)
         kmAuth = false
-        // TODO 지도 로딩 몇번 실패 시 지도 안보여주기
     }
 }
