@@ -31,7 +31,7 @@ struct AvailableGifticonRequest: BaseRequest {
         query.updateValue(String(pageNumber), forKey: HttpKeys.Gifticon.pageNumber)
         query.updateValue(String(rowCount), forKey: HttpKeys.Gifticon.rowCount)
         
-        if let storeCategory = storeCategory, storeCategory != .All {
+        if let storeCategory = storeCategory, storeCategory != .ALL {
             query.updateValue(String(describing: storeCategory), forKey: HttpKeys.Gifticon.gifticonStoreCategory)
         }
         

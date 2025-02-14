@@ -88,6 +88,19 @@ enum StoreType: String, CaseIterable {
         }
     }
     
+    var fields: [String] {
+        switch self {
+        case .ALL:
+            return StoreType.allCases.compactMap(\.code)
+        default:
+            if let code = self.code {
+                return [code]
+            }
+            return []
+        }
+    }
+    
+    
     static func from(string: String) -> StoreType? {
         switch string {
         case "STARBUCKS":

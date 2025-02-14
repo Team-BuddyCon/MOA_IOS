@@ -13,30 +13,21 @@ import RxRelay
 final class MypageViewModel: BaseViewModel {
     
     private let gifticonService: GifticonServiceProtocol
-    let count = BehaviorRelay(value: 0)
+    let gifticonRelay: BehaviorRelay<[GifticonModel]> = BehaviorRelay(value: [])
     
     init(gifticonService: GifticonServiceProtocol) {
         self.gifticonService = gifticonService
     }
     
-    func fetchGifticonCount() {
-        gifticonService.fetchGifticonCount(
-            used: true,
-            storeCateogry: nil,
-            storeType: nil,
-            remainingDays: nil
-        ).subscribe(onNext: { [weak self] result in
-            guard let self = self else {
-                MOALogger.loge()
-                return
-            }
-            
-            switch result {
-            case .success(let response):
-                count.accept(response.count)
-            case .failure(let error):
-                MOALogger.loge(error.localizedDescription)
-            }
-        }).disposed(by: disposeBag)
+    func fetchUsedGifticons() {
+        gifticonService.fetchUsedGifticons()
+            .subscribe(
+                onNext: { [unowned self] gifticons in
+                    gifticonRelay.accept(gifticons.map { $0.toModel() })
+                },
+                onError: { error in
+                    MOALogger.loge(error.localizedDescription)
+                }
+            ).disposed(by: disposeBag)
     }
 }

@@ -7,23 +7,25 @@
 
 import Foundation
 
-struct AvailableGifticon {
-    let gifticonId: Int
+struct GifticonModel {
+    let gifticonId: String
     let imageUrl: String
     let name: String
     let memo: String
     let expireDate: String
     let gifticonStore: StoreType
     let gifticonStoreCategory: StoreCategory
+    let used: Bool
     
     init(
-        gifticonId: Int = Int.min,
+        gifticonId: String = "",
         imageUrl: String = "",
         name: String = "",
         memo: String = "",
         expireDate: String = "",
         gifticonStore: StoreType = .ALL,
-        gifticonStoreCategory: StoreCategory = .All
+        gifticonStoreCategory: StoreCategory = .ALL,
+        used: Bool = false
     ) {
         self.gifticonId = gifticonId
         self.imageUrl = imageUrl
@@ -32,5 +34,6 @@ struct AvailableGifticon {
         self.expireDate = expireDate
         self.gifticonStore = gifticonStore
         self.gifticonStoreCategory = gifticonStoreCategory
+        self.used = used
     }
 }

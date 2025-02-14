@@ -21,19 +21,26 @@ final class GifticonRegisterViewModel: BaseViewModel {
         image: UIImage,
         name: String,
         expireDate: String,
-        store: String,
-        memo: String?
+        gifticonStore: String,
+        memo: String?,
+        onError: @escaping () -> Void
     ) {
-        if let data = image.pngData() {
-            gifticonService.fetchCreateGifticon(
-                image: data,
+        if let data = image.jpegData(compressionQuality: 0.8) {
+            gifticonService.createGifticon(
+                data: data,
                 name: name,
                 expireDate: expireDate,
-                store: store,
+                gifticonStore: gifticonStore,
                 memo: memo
-            ).subscribe(onNext: { [weak self] response in
-                MOALogger.logd("\(response)")
-            }).disposed(by: disposeBag)
+            ).subscribe(
+                onNext: { isSucess in
+                    
+                },
+                onError: { error in
+                    MOALogger.loge(error.localizedDescription)
+                    onError()
+                }
+            ).disposed(by: disposeBag)
         }
     }
 }

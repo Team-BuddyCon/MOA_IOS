@@ -11,15 +11,11 @@ import RxRelay
 import RxCocoa
 
 final class GifticonDetailViewModel: BaseViewModel {
-    private let gifticonService: GifticonServiceProtocol
     private let kakaoService: KakaoServiceProtocol
+    private let gifticonService: GifticonServiceProtocol
     
-    let detailGifticonRelay = BehaviorRelay(value: DetailGifticon())
-    var detailGifticon: DetailGifticon { detailGifticonRelay.value }
-    
-    // 사용여부는 usedRelay로 관리
-    var usedRelay = PublishRelay<Bool>()
-    private var used: Bool = false
+    let gifticonRelay = BehaviorRelay(value: GifticonModel())
+    var gifticon: GifticonModel { gifticonRelay.value }
     
     let searchPlaceRelay = BehaviorRelay<[SearchPlace]>(value: [])
     
@@ -31,35 +27,39 @@ final class GifticonDetailViewModel: BaseViewModel {
         self.kakaoService = kakaoService
     }
     
-    func fetchDetail(gifticonId: Int) {
-        gifticonService.fetchDetailGifticon(gifticonId: gifticonId)
-            .subscribe(onNext: { [weak self] result in
-                guard let self = self else { return }
-                switch result {
-                case .success(let response):
-                    MOALogger.logd("\(response)")
-                    detailGifticonRelay.accept(response.info.toModel())
-                    usedRelay.accept(response.info.used)
-                    used = response.info.used
-                case .failure(let error):
+    func fetchGifticon(gifticonId: String) {
+        MOALogger.logd()
+        gifticonService.fetchGifticon(gifticonId: gifticonId)
+            .subscribe(
+                onNext: { [unowned self] gifticon in
+                    MOALogger.logd("\(gifticon)")
+                    self.gifticonRelay.accept(gifticon.toModel())
+                },
+                onError: { error in
                     MOALogger.loge(error.localizedDescription)
                 }
-            }).disposed(by: disposeBag)
+            ).disposed(by: disposeBag)
     }
     
-    func fetchUpdateUsed(gifticonId: Int) {
-        gifticonService.fetchUpdateUsedGifticon(gifticonId: gifticonId, used: !used)
-            .subscribe(onNext: { [weak self] result in
-                guard let self = self else { return }
-                switch result {
-                case .success(let response):
-                    MOALogger.logd("\(response)")
-                    usedRelay.accept(!used)
-                    used = !used
-                case .failure(let error):
-                    MOALogger.loge(error.localizedDescription)
+    func updateGifticonUsed(gifticonId: String) {
+        MOALogger.logd()
+        gifticonService.updateGifticon(
+            gifticonId: gifticonId,
+            name: nil,
+            expireDate: nil,
+            gifticonStore: nil,
+            memo: nil,
+            used: !gifticon.used
+        ).subscribe(
+            onNext: { [unowned self] isSuccess in
+                if isSuccess {
+                    fetchGifticon(gifticonId: gifticonId)
                 }
-            }).disposed(by: disposeBag)
+            },
+            onError: { error in
+                MOALogger.loge(error.localizedDescription)
+            }
+        ).disposed(by: disposeBag)
     }
     
     func searchByKeyword(keyword: String) {

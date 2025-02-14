@@ -86,7 +86,7 @@ final class MapBottomSheet: UIView {
     }()
     
     let panGesture: UIPanGestureRecognizer
-    var onTapGifticon: ((Int) -> Void)? = nil
+    var onTapGifticon: ((String) -> Void)? = nil
     
     // 생성자를 사용하지 않고 프로퍼티로 초기화 -> SnapKit Warning으로 인해 변경
     var mapViewModel: MapViewModel? = nil {
@@ -169,17 +169,22 @@ final class MapBottomSheet: UIView {
             .bind(to: self.rx.bindToStoreType)
             .disposed(by: disposeBag)
         
-        mapViewModel.gifticonCountRelay
+        mapViewModel.gifticons
+            .map { $0.count }
             .bind(to: self.rx.bindToGifticonCount)
             .disposed(by: disposeBag)
         
-        mapViewModel.imminentCountRelay
-            .bind(to: self.rx.bindToImminentCount)
+        mapViewModel.gifticons
+            .map { gifticons in
+                gifticons.map { $0.expireDate }
+                    .filter { $0.toDday() >= 0 && $0.toDday() <= 14 }
+                    .count
+            }.bind(to: self.rx.bindToImminentCount)
             .disposed(by: disposeBag)
         
         mapViewModel.gifticons
             .bind(to: gifticonCollectionView.rx.items) { collectionView, row, gifticon in
-                if gifticon.gifticonId == Int.min {
+                if gifticon.gifticonId == "" {
                     guard let cell = collectionView.dequeueReusableCell(
                         withReuseIdentifier: GifticonSkeletonCell.identifier,
                         for: IndexPath(row: row, section: 0)
@@ -214,12 +219,7 @@ final class MapBottomSheet: UIView {
                 gifticonCollectionView.layoutIfNeeded()
             }).disposed(by: disposeBag)
         
-        gifticonCollectionView.rx.contentOffset
-            .map { _ in self.gifticonCollectionView }
-            .bind(to: self.rx.scrollOffset)
-            .disposed(by: disposeBag)
-        
-        gifticonCollectionView.rx.modelSelected(AvailableGifticon.self)
+        gifticonCollectionView.rx.modelSelected(GifticonModel.self)
             .withUnretained(self)
             .subscribe(onNext: { owner, gifticon in
                 guard let onTapGifticon = owner.onTapGifticon else { return }
@@ -290,29 +290,6 @@ extension Reactive where Base: MapBottomSheet {
     var bindToImminentCount: Binder<Int> {
         return Binder<Int>(self.base) { sheetView, count in
             sheetView.imminentCountLabel.text = String(format: MAP_BOTTOM_SHEET_IMMINENT_GIFTICON_COUNT_FORMAT, count)
-        }
-    }
-    
-    var scrollOffset: Binder<UICollectionView> {
-        return Binder<UICollectionView>(self.base) { sheetView, collectionView in
-            let contentOffsetY = collectionView.contentOffset.y
-            let scrollViewHeight = collectionView.bounds.size.height
-            let contentHeight = collectionView.contentSize.height
-            let height = CGFloat(UIScreen.getWidthByDivision(division: 2, exclude: 20 + 16 + 20))
-            
-            // 스크롤 할 필요 없는 데이터의 양일 때는 페이징 처리하지 않음
-            if contentHeight <= scrollViewHeight {
-                return
-            }
-            
-            guard let mapViewModel = sheetView.mapViewModel else { return }
-            if contentOffsetY + scrollViewHeight + height >= contentHeight,
-               !mapViewModel.isScrollEnded,
-               !mapViewModel.isLoading {
-                MOALogger.logd()
-                mapViewModel.isLoading = true
-                mapViewModel.fetchMore()
-            }
         }
     }
 }

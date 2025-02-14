@@ -52,7 +52,7 @@ final class UnAvailableGifticonViewController: BaseViewController {
         MOALogger.logd()
         
         if !isFirstEntry {
-            viewModel.refresh()
+            viewModel.fetchUsedGifticons()
         }
         isFirstEntry = false
     }
@@ -78,14 +78,13 @@ private extension UnAvailableGifticonViewController {
     }
     
     func setupData() {
-        viewModel.fetch()
-        viewModel.fetchGifticonCount()
+        viewModel.fetchUsedGifticons()
     }
     
     func bind() {
-        viewModel.gifticons
+        viewModel.gifticonRelay
             .bind(to: gifticonCollectionView.rx.items) { collectionView, row, gifticon in
-                if gifticon.gifticonId == Int.min {
+                if gifticon.gifticonId.isEmpty {
                     guard let cell = collectionView.dequeueReusableCell(
                         withReuseIdentifier: GifticonSkeletonCell.identifier,
                         for: IndexPath(row: row, section: 0)
@@ -110,7 +109,7 @@ private extension UnAvailableGifticonViewController {
                 return cell
             }.disposed(by: disposeBag)
         
-        viewModel.gifticons
+        viewModel.gifticonRelay
             .observe(on: MainScheduler())
             .subscribe(onNext: { [weak self] _ in
                 guard let self = self else { return }
@@ -118,12 +117,7 @@ private extension UnAvailableGifticonViewController {
                 gifticonCollectionView.layoutIfNeeded()
             }).disposed(by: disposeBag)
         
-        gifticonCollectionView.rx.contentOffset
-            .map { _ in self.gifticonCollectionView }
-            .bind(to: self.rx.scrollOffset)
-            .disposed(by: disposeBag)
-        
-        gifticonCollectionView.rx.modelSelected(UnAvailableGifticon.self)
+        gifticonCollectionView.rx.modelSelected(GifticonModel.self)
             .subscribe(onNext: { [weak self] gifticon in
                 guard let self = self else { return }
                 MOALogger.logd("\(gifticon.gifticonId)")
@@ -132,35 +126,14 @@ private extension UnAvailableGifticonViewController {
                 navigationController?.pushViewController(detailVC, animated: true)
             }).disposed(by: disposeBag)
         
-        viewModel.count
+        viewModel.gifticonRelay
+            .map { $0.count }
             .bind(to: self.rx.bindCount)
             .disposed(by: disposeBag)
     }
 }
 
 extension Reactive where Base: UnAvailableGifticonViewController {
-    var scrollOffset: Binder<UICollectionView> {
-        return Binder<UICollectionView>(self.base) { viewController, collectionView in
-            let contentOffsetY = collectionView.contentOffset.y
-            let scrollViewHeight = collectionView.bounds.size.height
-            let contentHeight = collectionView.contentSize.height
-            let height = CGFloat(UIScreen.getWidthByDivision(division: 2, exclude: 20 + 16 + 20))
-            
-            // 스크롤 할 필요 없는 데이터의 양일 때는 페이징 처리하지 않음
-            if contentHeight <= scrollViewHeight {
-                return
-            }
-            
-            if contentOffsetY + scrollViewHeight + height >= contentHeight,
-               !viewController.viewModel.isScrollEnded,
-               !viewController.viewModel.isLoading {
-                MOALogger.logd()
-                viewController.viewModel.isLoading = true
-                viewController.viewModel.fetchMore()
-            }
-        }
-    }
-    
     var bindCount: Binder<Int> {
         return Binder<Int>(self.base) { viewController, count in
             viewController.titleLabel.text = String(format: UNAVAILABLE_GIFTICON_COUNT_TITLE_FORMAT, count)

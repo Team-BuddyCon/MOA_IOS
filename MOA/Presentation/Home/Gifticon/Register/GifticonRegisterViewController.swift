@@ -10,6 +10,8 @@ import SnapKit
 import RxSwift
 import RxCocoa
 import RxRelay
+import FirebaseStorage
+import FirebaseFirestore
 
 final class GifticonRegisterViewController: BaseViewController {
     
@@ -70,8 +72,10 @@ final class GifticonRegisterViewController: BaseViewController {
     }()
     
     let viewModel: GifticonRegisterViewModel = GifticonRegisterViewModel(gifticonService: GifticonService.shared)
-    
     var image: UIImage?
+    
+    let storage = Storage.storage()
+    let store = Firestore.firestore()
     
     init(image: UIImage) {
         self.image = image
@@ -255,7 +259,7 @@ private extension Reactive where Base: GifticonRegisterViewController {
                 )
                 return
             }
-            guard let store = viewController.storeInputView.requestInput else {
+            guard let gifticonStore = viewController.storeInputView.requestInput else {
                 viewController.showAlertModal(
                     title: GIFTICON_REGISTER_EMPTY_STORE_MODAL_TITLE,
                     confirmText: CONFIRM
@@ -271,14 +275,20 @@ private extension Reactive where Base: GifticonRegisterViewController {
                 )
                 return
             }
-        
+            
             viewController.viewModel.createGifticon(
                 image: image,
                 name: name,
                 expireDate: expireDate,
-                store: store,
+                gifticonStore: gifticonStore,
                 memo: memo
-            )
+            ) {
+                viewController.showAlertModal(
+                    title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+                    subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+                    confirmText: CONFIRM
+                )
+            }
         }
     }
 }

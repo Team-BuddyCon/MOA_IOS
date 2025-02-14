@@ -41,10 +41,10 @@ struct UnAvailableGifticonInfo: Decodable {
             memo: memo,
             expireDate: expireDate.transformTimeformat(
                 origin: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT,
-                dest: AVAILABLE_GIFTICON_UI_TIME_FORMAT
+                dest: AVAILABLE_GIFTICON_TIME_FORMAT
             ),
             gifticonStore: StoreType.from(string: gifticonStore) ?? .ALL,
-            gifticonStoreCategory: StoreCategory(rawValue: gifticonStoreCategory) ?? .All
+            gifticonStoreCategory: StoreCategory(rawValue: gifticonStoreCategory) ?? .ALL
         )
     }
 }

@@ -33,18 +33,18 @@ struct AvailableGifticonInfo: Decodable {
     let gifticonStore: String
     let gifticonStoreCategory: String
     
-    func toModel() -> AvailableGifticon {
-        AvailableGifticon(
-            gifticonId: gifticonId,
+    func toModel() -> GifticonModel {
+        GifticonModel(
+            gifticonId: String(gifticonId),
             imageUrl: imageUrl,
             name: name,
             memo: memo,
             expireDate: expireDate.transformTimeformat(
                 origin: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT,
-                dest: AVAILABLE_GIFTICON_UI_TIME_FORMAT
+                dest: AVAILABLE_GIFTICON_TIME_FORMAT
             ),
             gifticonStore: StoreType.from(string: gifticonStore) ?? .ALL,
-            gifticonStoreCategory: StoreCategory(rawValue: gifticonStoreCategory) ?? .All
+            gifticonStoreCategory: StoreCategory(rawValue: gifticonStoreCategory) ?? .ALL
         )
     }
 }

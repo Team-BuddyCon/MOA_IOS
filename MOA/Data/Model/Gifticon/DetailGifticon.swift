@@ -24,7 +24,7 @@ struct DetailGifticon {
         memo: String = "",
         expireDate: String = "",
         gifticonStore: StoreType = .ALL,
-        gifticonStoreCategory: StoreCategory = .All,
+        gifticonStoreCategory: StoreCategory = .ALL,
         used: Bool = false
     ) {
         self.gifticonId = gifticonId

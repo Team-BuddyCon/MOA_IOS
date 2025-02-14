@@ -86,13 +86,6 @@ final class GifticonDetailViewController: BaseViewController {
         let view = DetailInfoView(title: GIFTICON_DETAIL_MEMO_TITLE)
         return view
     }()
-
-    let gifticonDetailViewModel: GifticonDetailViewModel = GifticonDetailViewModel(
-        gifticonService: GifticonService.shared,
-        kakaoService: KakaoService.shared
-    )
-    
-    let gifticonId: Int
     
     let kmZoomInButton: UIButton = {
         let button = UIButton()
@@ -106,7 +99,14 @@ final class GifticonDetailViewController: BaseViewController {
     
     var mapManager: KakaoMapManager?
     
-    init(gifticonId: Int) {
+    let gifticonDetailViewModel = GifticonDetailViewModel(
+        gifticonService: GifticonService.shared,
+        kakaoService: KakaoService.shared
+    )
+    
+    let gifticonId: String
+    
+    init(gifticonId: String) {
         self.gifticonId = gifticonId
         super.init(nibName: nil, bundle: nil)
     }
@@ -127,7 +127,7 @@ final class GifticonDetailViewController: BaseViewController {
         super.viewWillAppear(animated)
         MOALogger.logd()
         mapManager?.addObserver()
-        fetchData()
+        gifticonDetailViewModel.fetchGifticon(gifticonId: gifticonId)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -137,8 +137,8 @@ final class GifticonDetailViewController: BaseViewController {
         if mapManager?.isEngineActive == false {
             mapManager?.activateEngine()
             
-            if gifticonDetailViewModel.detailGifticon.gifticonStore != .ALL || gifticonDetailViewModel.detailGifticon.gifticonStore != .OTHERS {
-                gifticonDetailViewModel.searchByKeyword(keyword: gifticonDetailViewModel.detailGifticon.gifticonStore.rawValue)
+            if gifticonDetailViewModel.gifticon.gifticonStore != .ALL || gifticonDetailViewModel.gifticon.gifticonStore != .OTHERS {
+                gifticonDetailViewModel.searchByKeyword(keyword: gifticonDetailViewModel.gifticon.gifticonStore.rawValue)
             }
         }
     }
@@ -281,10 +281,6 @@ private extension GifticonDetailViewController {
         container.layer.masksToBounds = true
     }
     
-    func fetchData() {
-        gifticonDetailViewModel.fetchDetail(gifticonId: gifticonId)
-    }
-    
     func bind() {
         useButton.rx.tap
             .bind(to: self.rx.tapUse)
@@ -294,12 +290,8 @@ private extension GifticonDetailViewController {
             .bind(to: self.rx.tapZoomInImage)
             .disposed(by: disposeBag)
         
-        gifticonDetailViewModel.detailGifticonRelay
-            .bind(to: self.rx.bindGifticon)
-            .disposed(by: disposeBag)
-        
-        gifticonDetailViewModel.usedRelay
-            .bind(to: self.rx.bindUsedState)
+        gifticonDetailViewModel.gifticonRelay
+            .bind(to: self.rx.bindToGifticon)
             .disposed(by: disposeBag)
         
         kmZoomInButton.rx.tap
@@ -325,7 +317,7 @@ extension Reactive where Base: GifticonDetailViewController {
     var tapUse: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            viewController.gifticonDetailViewModel.fetchUpdateUsed(gifticonId: viewController.gifticonId)
+            viewController.gifticonDetailViewModel.updateGifticonUsed(gifticonId: viewController.gifticonId)
         }
     }
     
@@ -334,26 +326,15 @@ extension Reactive where Base: GifticonDetailViewController {
             MOALogger.logd()
             let gifticonMapVC = GifticonDetailMapViewController(
                 searchPlaces: viewController.gifticonDetailViewModel.searchPlaceRelay.value,
-                storeType: viewController.gifticonDetailViewModel.detailGifticon.gifticonStore
+                storeType: viewController.gifticonDetailViewModel.gifticon.gifticonStore
             )
             viewController.navigationController?.pushViewController(gifticonMapVC, animated: true)
         }
     }
     
-    var bindUsedState: Binder<Bool> {
-        return Binder<Bool>(self.base) { viewController, used in
-            MOALogger.logd("\(used)")
-            viewController.ddayButton.isHidden = used
-            viewController.imageZoomInButton.isHidden = used
-            viewController.imageDimView.isHidden = !used
-            viewController.useButton.status.accept(used ? .used : .active)
-            viewController.useButton.setTitle(used ? GIFTICON_USED_BUTTON_TITLE : GIFTICON_USE_BUTTON_TITLE, for: .normal)
-        }
-    }
-    
-    var bindGifticon: Binder<DetailGifticon> {
-        return Binder<DetailGifticon>(self.base) { viewController, detailGifticon in
-            ImageLoadManager.shared.load(url: detailGifticon.imageUrl)
+    var bindToGifticon: Binder<GifticonModel> {
+        return Binder<GifticonModel>(self.base) { (viewController: GifticonDetailViewController, gifticon) in
+            ImageLoadManager.shared.load(url: gifticon.imageUrl)
                 .observe(on: MainScheduler())
                 .subscribe(onNext: { image in
                     if let image = image {
@@ -361,33 +342,34 @@ extension Reactive where Base: GifticonDetailViewController {
                     }
                 }).disposed(by: viewController.disposeBag)
             
-            let dday = detailGifticon.expireDate
-                .toString(format: AVAILABLE_GIFTICON_UI_TIME_FORMAT)
-                .toDday()
+            let dday = gifticon.expireDate.toDday()
             viewController.ddayButton.dday = dday
             
-            viewController.titleLabel.text = detailGifticon.name
-            viewController.expireDateInfoView.info = detailGifticon.expireDate
-                .toString(format: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
-                .transformTimeformat(origin: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT, dest: AVAILABLE_GIFTICON_UI_TIME_FORMAT)
+            viewController.titleLabel.text = gifticon.name
+            viewController.expireDateInfoView.info = gifticon.expireDate
+            viewController.storeInfoView.info = gifticon.gifticonStore.rawValue
+            viewController.memoInfoView.info = gifticon.memo
             
-            viewController.storeInfoView.info = detailGifticon.gifticonStore.rawValue
-            viewController.memoInfoView.info = detailGifticon.memo
-            
-            if !detailGifticon.used && !detailGifticon.imageUrl.isEmpty && dday < 0 {
+            if !gifticon.used && !gifticon.imageUrl.isEmpty && dday < 0 {
                 viewController.showAlertModal(
                     title: GIFTICON_REGISTER_EXPIRE_MODAL_TITLE,
                     subTitle: GIFTICON_REGISTER_EXPIRE_MODAL_SUBTITLE,
                     confirmText: CONFIRM
                 )
             }
+            
+            viewController.ddayButton.isHidden = gifticon.used
+            viewController.imageZoomInButton.isHidden = gifticon.used
+            viewController.imageDimView.isHidden = !gifticon.used
+            viewController.useButton.status.accept(gifticon.used ? .used : .active)
+            viewController.useButton.setTitle(gifticon.used ? GIFTICON_USED_BUTTON_TITLE : GIFTICON_USE_BUTTON_TITLE, for: .normal)
         }
     }
     
     var bindSearchPlaces: Binder<[SearchPlace]> {
         return Binder<[SearchPlace]>(self.base) { (viewController: GifticonDetailViewController, searchPlaces) in
             if searchPlaces.count > 0 {
-                let storeType = viewController.gifticonDetailViewModel.detailGifticon.gifticonStore
+                let storeType = viewController.gifticonDetailViewModel.gifticon.gifticonStore
                 viewController.mapManager?.createPois(
                     searchPlaces: searchPlaces,
                     storeType: storeType,
@@ -405,7 +387,7 @@ extension GifticonDetailViewController {
     @objc func tapEditButton() {
         MOALogger.logd()
         let editVC = GifticonEditViewController(
-            detailGifticon: gifticonDetailViewModel.detailGifticon,
+            gifticon: gifticonDetailViewModel.gifticon,
             gifticonImage: imageView.image
         )
         navigationController?.pushViewController(editVC, animated: false)

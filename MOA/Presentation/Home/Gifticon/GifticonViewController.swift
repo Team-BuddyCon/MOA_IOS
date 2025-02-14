@@ -103,7 +103,7 @@ final class GifticonViewController: BaseViewController {
         MOALogger.logd()
         
         if !isFirstEntry {
-            gifticonViewModel.refresh()
+            gifticonViewModel.fetchAllGifticons()
         }
         isFirstEntry = false
     }
@@ -172,7 +172,7 @@ private extension GifticonViewController {
             button.isClicked.accept(true)
         }
         
-        gifticonViewModel.fetch()
+        gifticonViewModel.fetchAllGifticons()
     }
     
     func bind() {
@@ -190,8 +190,9 @@ private extension GifticonViewController {
             .disposed(by: disposeBag)
         
         gifticonViewModel.gifticons
+            .debounce(.milliseconds(50), scheduler: MainScheduler.asyncInstance)
             .bind(to: gifticonCollectionView.rx.items) { collectionView, row, gifticon in
-                if gifticon.gifticonId == Int.min {
+                if gifticon.gifticonId.isEmpty {
                     guard let cell = collectionView.dequeueReusableCell(
                         withReuseIdentifier: GifticonSkeletonCell.identifier,
                         for: IndexPath(row: row, section: 0)
@@ -227,16 +228,12 @@ private extension GifticonViewController {
             }).disposed(by: disposeBag)
         
         gifticonViewModel.gifticons
+            .debounce(.milliseconds(50), scheduler: MainScheduler.asyncInstance)
             .map { $0.isEmpty }
             .bind(to: self.rx.isEmptyUI)
             .disposed(by: disposeBag)
         
-        gifticonCollectionView.rx.contentOffset
-            .map { _ in self.gifticonCollectionView }
-            .bind(to: self.rx.scrollOffset)
-            .disposed(by: disposeBag)
-        
-        gifticonCollectionView.rx.modelSelected(AvailableGifticon.self)
+        gifticonCollectionView.rx.modelSelected(GifticonModel.self)
             .subscribe(onNext: { [weak self] gifticon in
                 guard let self = self else { return }
                 MOALogger.logd("\(gifticon.gifticonId)")
@@ -266,38 +263,13 @@ extension GifticonViewController: BottomSheetDelegate {
 
 // MARK: extension
 extension Reactive where Base: GifticonViewController {
-    var scrollOffset: Binder<UICollectionView> {
-        return Binder<UICollectionView>(self.base) { viewController, collectionView in
-            let contentOffsetY = collectionView.contentOffset.y
-            let scrollViewHeight = collectionView.bounds.size.height
-            let contentHeight = collectionView.contentSize.height
-            let height = CGFloat(UIScreen.getWidthByDivision(division: 2, exclude: 20 + 16 + 20))
-            
-            // 스크롤 할 필요 없는 데이터의 양일 때는 페이징 처리하지 않음
-            if contentHeight <= scrollViewHeight {
-                return
-            }
-            
-            // 카테고리 및 정렬만 바꾸는 경우 호출되지 않도록 처리
-            if viewController.gifticonViewModel.isChangedOptions {
-                viewController.gifticonViewModel.isChangedOptions = false
-                return
-            }
-            
-            if contentOffsetY + scrollViewHeight + height >= contentHeight,
-               !viewController.gifticonViewModel.isScrollEnded,
-               !viewController.gifticonViewModel.isLoading {
-                MOALogger.logd()
-                viewController.gifticonViewModel.isLoading = true
-                viewController.gifticonViewModel.fetchMore()
-            }
-        }
-    }
-    
     var tapSort: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            let bottomSheetVC = BottomSheetViewController(sheetType: .Sort, sortType: viewController.gifticonViewModel.sortType)
+            let bottomSheetVC = BottomSheetViewController(
+                sheetType: .Sort,
+                sortType: viewController.gifticonViewModel.sortType
+            )
             bottomSheetVC.delegate = viewController
             viewController.present(bottomSheetVC, animated: true)
         }
@@ -351,8 +323,7 @@ extension GifticonViewController: PHPickerViewControllerDelegate {
                 }
                 
                 if error != nil {
-                    // TODO 에러 팝업 노출
-                    MOALogger.loge("PHPicker load Image error: \(error?.localizedDescription)")
+                    MOALogger.loge("PHPicker load Image error: \(String(describing: error?.localizedDescription))")
                     let modalVC = ModalViewController(
                         modalType: .alertDetail,
                         title: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_TITLE,
@@ -370,8 +341,14 @@ extension GifticonViewController: PHPickerViewControllerDelegate {
     
     private func checkBarcodeImage(image: UIImage?) {
         guard let image = image else {
-            // TODO 에러 팝업 노출
             MOALogger.loge("PHPicker load Image is nil")
+            let modalVC = ModalViewController(
+                modalType: .alertDetail,
+                title: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_TITLE,
+                subTitle: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_SUBTITLE,
+                confirmText: CONFIRM
+            )
+            present(modalVC, animated: true)
             return
         }
         

@@ -29,7 +29,7 @@ struct GifticonCountRequest: BaseRequest {
         var query: [String: String?] = [:]
         query.updateValue(String(used), forKey: HttpKeys.Gifticon.used)
         
-        if let storeCategory = storeCategory, storeCategory != .All {
+        if let storeCategory = storeCategory, storeCategory != .ALL {
             query.updateValue(String(describing: storeCategory), forKey: HttpKeys.Gifticon.gifticonStoreCategory)
         }
         

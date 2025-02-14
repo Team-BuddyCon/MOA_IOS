@@ -37,7 +37,7 @@ struct DetailGifticonInfo: Decodable {
             memo: memo,
             expireDate: expireDate,
             gifticonStore: StoreType.from(string: gifticonStore) ?? .ALL,
-            gifticonStoreCategory: StoreCategory(rawValue: gifticonStoreCategory) ?? .All,
+            gifticonStoreCategory: StoreCategory(rawValue: gifticonStoreCategory) ?? .ALL,
             used: used
         )
     }
