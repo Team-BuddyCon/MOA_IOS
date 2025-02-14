@@ -40,8 +40,7 @@ final class GifticonViewModel: BaseViewModel {
             self.gifticons.accept([GifticonModel](repeating: GifticonModel(), count: count))
             return gifticonService.fetchGifticons(
                 category: category,
-                sortType: sortType,
-                used: false
+                sortType: sortType
             )
         }.subscribe(
             onNext: { [unowned self] gifticons in

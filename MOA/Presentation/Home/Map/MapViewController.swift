@@ -139,8 +139,7 @@ final class MapViewController: BaseViewController {
         mapManager?.addObserver()
         
         if !isFirstEntry {
-            mapViewModel.getGifticonCount()
-            mapViewModel.refresh()
+            mapViewModel.fetchAllGifticons()
         }
         isFirstEntry = false
     }
@@ -233,7 +232,7 @@ private extension MapViewController {
         // mapBottomSheet 초기화
         mapBottomSheet.mapViewModel = mapViewModel
         mapBottomSheet.onTapGifticon = { gifticonId in
-            let detailVC = GifticonDetailViewController(gifticonId: String(gifticonId))
+            let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
             self.navigationController?.pushViewController(detailVC, animated: true)
         }
         
@@ -242,8 +241,7 @@ private extension MapViewController {
         storeTypeCollectionView.selectItem(at: firstIndexPath, animated: false, scrollPosition: .centeredHorizontally)
         
         // 초기 데이터 호출
-        mapViewModel.fetch()
-        mapViewModel.getGifticonCount()
+        mapViewModel.fetchAllGifticons()
     }
     
     func bind() {
@@ -376,7 +374,6 @@ extension MapViewController: UICollectionViewDataSource, UICollectionViewDelegat
         let storeType = storeTypes[indexPath.row]
         mapViewModel.changeStoreType(storeType: storeType)
         mapViewModel.searchPlaceByKeyword()
-        mapViewModel.getGifticonCount()
     }
 }
 

@@ -12,7 +12,7 @@ enum SortType: String {
     case CREATED_AT = "등록순"
     case NAME = "이름순"
     
-    var orderByField: String {
+    var field: String {
         switch self {
         case .EXPIRE_DATE:
             return HttpKeys.Gifticon.expireDate
