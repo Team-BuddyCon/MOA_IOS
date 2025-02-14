@@ -46,6 +46,8 @@ protocol GifticonServiceProtocol {
         memo: String?
     ) -> Observable<Bool>
     
+    func fetchUsedGifticons() -> Observable<[GifticonResponse]>
+    
     ///
     
     func fetchUnAvailableGifticon(
@@ -311,6 +313,31 @@ final class GifticonService: GifticonServiceProtocol {
                     }
                 }
             }
+            
+            return Disposables.create()
+        }
+    }
+    
+    func fetchUsedGifticons() -> Observable<[GifticonResponse]> {
+        return Observable.create { observer in
+            self.store
+                .collection(FirebaseStoreID.USER.rawValue)
+                .document(self.userID)
+                .collection(FirebaseStoreID.GIFTICON.rawValue)
+                .whereField(HttpKeys.Gifticon.used, isEqualTo: true)
+                .getDocuments(completion: { (snapshot, error) in
+                    if let error = error {
+                        observer.onError(error)
+                    } else if let snapshot = snapshot {
+                        let gifticons = snapshot.documents.compactMap { document in
+                            GifticonResponse(dic: document.data())
+                        }
+                        observer.onNext(gifticons)
+                        observer.onCompleted()
+                    } else {
+                        observer.onError(error ?? NSError())
+                    }
+                })
             
             return Disposables.create()
         }

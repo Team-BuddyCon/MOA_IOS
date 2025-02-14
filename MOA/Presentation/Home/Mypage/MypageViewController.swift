@@ -18,8 +18,9 @@ final class MypageViewController: BaseViewController {
     let menus = MenuType.allCases
     private let titleLabel: UILabel = {
         let label = UILabel()
+        let userName = UserPreferences.getLoginUserName()
         label.setTextWithLineHeight(
-            text:  "안녕하세요,\n오원석님!",
+            text: String(format: MYPAGE_MAIN_TITLE_FORMAT, userName),
             font: pretendard_bold,
             size: 22.0,
             lineSpacing: 30.8,
@@ -55,7 +56,7 @@ final class MypageViewController: BaseViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        mypageViewModel.fetchGifticonCount()
+        mypageViewModel.fetchUsedGifticons()
     }
 }
 
@@ -92,8 +93,8 @@ private extension MypageViewController {
             .bind(to: self.rx.bindUnavailableBox)
             .disposed(by: disposeBag)
         
-        mypageViewModel.count
-            .map { String(format: UNAVAILABLE_GIFTICON_COUNT_FORMAT, $0) }
+        mypageViewModel.gifticonRelay
+            .map { String(format: UNAVAILABLE_GIFTICON_COUNT_FORMAT, $0.count) }
             .bind(to: self.unavailableBox.countLabel.rx.text)
             .disposed(by: disposeBag)
     }

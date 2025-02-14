@@ -192,7 +192,7 @@ private extension GifticonViewController {
         gifticonViewModel.gifticons
             .debounce(.milliseconds(50), scheduler: MainScheduler.asyncInstance)
             .bind(to: gifticonCollectionView.rx.items) { collectionView, row, gifticon in
-                if gifticon.gifticonId == "" {
+                if gifticon.gifticonId.isEmpty {
                     guard let cell = collectionView.dequeueReusableCell(
                         withReuseIdentifier: GifticonSkeletonCell.identifier,
                         for: IndexPath(row: row, section: 0)
