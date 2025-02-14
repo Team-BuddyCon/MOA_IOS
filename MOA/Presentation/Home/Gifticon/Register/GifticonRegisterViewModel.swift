@@ -23,6 +23,7 @@ final class GifticonRegisterViewModel: BaseViewModel {
         expireDate: String,
         gifticonStore: String,
         memo: String?,
+        onSucess: @escaping (String) -> Void,
         onError: @escaping () -> Void
     ) {
         if let data = image.jpegData(compressionQuality: 0.8) {
@@ -33,8 +34,10 @@ final class GifticonRegisterViewModel: BaseViewModel {
                 gifticonStore: gifticonStore,
                 memo: memo
             ).subscribe(
-                onNext: { isSucess in
-                    
+                onNext: { gifticonId in
+                    if !gifticonId.isEmpty {
+                        onSucess(gifticonId)
+                    }
                 },
                 onError: { error in
                     MOALogger.loge(error.localizedDescription)
