@@ -97,6 +97,51 @@ final class GifticonDetailViewController: BaseViewController {
         return button
     }()
     
+    lazy var mapDimView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .black.withAlphaComponent(0.4)
+        view.layer.cornerRadius = 20
+        return view
+    }()
+    
+    lazy var mapGuideLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .grey70
+        label.setRangeFontColor(
+            text: MAP_PERMISSION_GUIDE_MESSAGE,
+            startIndex: 0,
+            endIndex: 8,
+            color: .pink100
+        )
+        label.font = UIFont(name: pretendard_medium, size: 12.0)
+        return label
+    }()
+    
+    lazy var mapGuideToastView: UIView = {
+        let view = UIView()
+        view.addSubview(mapGuideLabel)
+        view.layer.cornerRadius = 21
+        view.backgroundColor = .white
+        view.clipsToBounds = true
+        view.applyShadow(
+            color: UIColor.black.withAlphaComponent(0.1).cgColor,
+            opacity: 1,
+            blur: 10,
+            x: 0.0,
+            y: 2.0
+        )
+        
+        mapGuideLabel.snp.makeConstraints {
+            $0.center.equalToSuperview()
+        }
+        
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(openSetting))
+        view.addGestureRecognizer(tapGesture)
+        
+        return view
+    }()
+    
     var mapManager: KakaoMapManager?
     
     let gifticonDetailViewModel = GifticonDetailViewModel(
@@ -105,6 +150,8 @@ final class GifticonDetailViewController: BaseViewController {
     )
     
     let gifticonId: String
+    
+    var isActive: Bool = true
     
     init(gifticonId: String) {
         self.gifticonId = gifticonId
@@ -134,12 +181,11 @@ final class GifticonDetailViewController: BaseViewController {
         super.viewDidAppear(animated)
         MOALogger.logd()
         
-        if mapManager?.isEngineActive == false {
-            mapManager?.activateEngine()
-            
-            if gifticonDetailViewModel.gifticon.gifticonStore != .ALL || gifticonDetailViewModel.gifticon.gifticonStore != .OTHERS {
-                gifticonDetailViewModel.searchByKeyword(keyword: gifticonDetailViewModel.gifticon.gifticonStore.rawValue)
+        if isActive {
+            if mapManager?.isEngineActive == false {
+                mapManager?.activateEngine()
             }
+            gifticonDetailViewModel.searchPlaceByKeyword()
         }
     }
     
@@ -190,7 +236,9 @@ private extension GifticonDetailViewController {
             storeInfoView,
             memoInfoView,
             kmContainer,
-            kmZoomInButton
+            kmZoomInButton,
+            mapDimView,
+            mapGuideToastView
         ].forEach {
             contentView.addSubview($0)
         }
@@ -255,6 +303,16 @@ private extension GifticonDetailViewController {
             $0.width.equalTo(109)
             $0.height.equalTo(37)
         }
+        
+        mapDimView.snp.makeConstraints {
+            $0.edges.equalTo(kmContainer)
+        }
+        
+        mapGuideToastView.snp.makeConstraints {
+            $0.center.equalTo(mapDimView)
+            $0.width.equalTo(242)
+            $0.height.equalTo(42)
+        }
     }
     
     func setupNavigationBar() {
@@ -297,6 +355,20 @@ private extension GifticonDetailViewController {
     }
     
     func bind() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(willResignActive),
+            name: UIApplication.willResignActiveNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(didBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+        
         useButton.rx.tap
             .bind(to: self.rx.tapUse)
             .disposed(by: disposeBag)
@@ -315,6 +387,10 @@ private extension GifticonDetailViewController {
         
         gifticonDetailViewModel.searchPlaceRelay
             .bind(to: self.rx.bindSearchPlaces)
+            .disposed(by: disposeBag)
+        
+        LocationManager.shared.isGranted
+            .bind(to: self.rx.bindToLocationPermission)
             .disposed(by: disposeBag)
     }
 }
@@ -378,6 +454,22 @@ extension Reactive where Base: GifticonDetailViewController {
             viewController.imageDimView.isHidden = !gifticon.used
             viewController.useButton.status.accept(gifticon.used ? .used : .active)
             viewController.useButton.setTitle(gifticon.used ? GIFTICON_USED_BUTTON_TITLE : GIFTICON_USE_BUTTON_TITLE, for: .normal)
+            
+            let storeType = viewController.gifticonDetailViewModel.gifticon.gifticonStore
+            if storeType == .OTHERS {
+                viewController.mapGuideLabel.setRangeFontColor(
+                    text: MAP_NOT_PROVIDED_GUIDE_MESSAGE,
+                    startIndex: 13,
+                    endIndex: 18,
+                    color: .pink100
+                )
+                
+                viewController.mapGuideToastView.snp.remakeConstraints {
+                    $0.center.equalTo(viewController.mapDimView)
+                    $0.width.equalTo(283)
+                    $0.height.equalTo(42)
+                }
+            }
         }
     }
     
@@ -396,9 +488,26 @@ extension Reactive where Base: GifticonDetailViewController {
             }
         }
     }
+    
+    var bindToLocationPermission: Binder<Bool> {
+        return Binder<Bool>(self.base) { viewController, isGranted in
+            MOALogger.logd()
+            viewController.mapDimView.isHidden = isGranted
+            viewController.mapGuideToastView.isHidden = isGranted
+        }
+    }
 }
 
 extension GifticonDetailViewController {
+    @objc func openSetting() {
+        MOALogger.logd()
+        guard gifticonDetailViewModel.gifticon.gifticonStore != .OTHERS else { return }
+        
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
+    }
+    
     @objc func tapBackBarButton() {
         navigatePopUpTo(type: HomeTabBarController.self)
     }
@@ -410,5 +519,20 @@ extension GifticonDetailViewController {
             gifticonImage: imageView.image
         )
         navigationController?.pushViewController(editVC, animated: false)
+    }
+    
+    @objc func didBecomeActive() {
+        MOALogger.logd()
+        isActive = true
+        
+        if mapManager?.isEngineActive == false {
+            mapManager?.activateEngine()
+            gifticonDetailViewModel.searchPlaceByKeyword()
+        }
+    }
+    
+    @objc func willResignActive() {
+        MOALogger.logd()
+        isActive = false
     }
 }
