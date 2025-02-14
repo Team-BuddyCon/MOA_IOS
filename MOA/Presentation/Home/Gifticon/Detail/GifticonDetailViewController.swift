@@ -457,6 +457,8 @@ extension Reactive where Base: GifticonDetailViewController {
             
             let storeType = viewController.gifticonDetailViewModel.gifticon.gifticonStore
             if storeType == .OTHERS {
+                viewController.mapDimView.isHidden = false
+                viewController.mapGuideToastView.isHidden = false
                 viewController.mapGuideLabel.setRangeFontColor(
                     text: MAP_NOT_PROVIDED_GUIDE_MESSAGE,
                     startIndex: 13,
@@ -467,6 +469,21 @@ extension Reactive where Base: GifticonDetailViewController {
                 viewController.mapGuideToastView.snp.remakeConstraints {
                     $0.center.equalTo(viewController.mapDimView)
                     $0.width.equalTo(283)
+                    $0.height.equalTo(42)
+                }
+            } else {
+                viewController.mapDimView.isHidden = true
+                viewController.mapGuideToastView.isHidden = true
+                viewController.mapGuideLabel.setRangeFontColor(
+                    text: MAP_PERMISSION_GUIDE_MESSAGE,
+                    startIndex: 0,
+                    endIndex: 8,
+                    color: .pink100
+                )
+                
+                viewController.mapGuideToastView.snp.remakeConstraints {
+                    $0.center.equalTo(viewController.mapDimView)
+                    $0.width.equalTo(242)
                     $0.height.equalTo(42)
                 }
             }
@@ -494,6 +511,13 @@ extension Reactive where Base: GifticonDetailViewController {
             MOALogger.logd()
             viewController.mapDimView.isHidden = isGranted
             viewController.mapGuideToastView.isHidden = isGranted
+            
+            if isGranted && viewController.mapManager?.isEngineActive == true {
+                viewController.gifticonDetailViewModel.searchPlaceByKeyword()
+            } else {
+                viewController.mapManager?.removePois()
+            }
+            viewController.mapManager?.updateLocation()
         }
     }
 }

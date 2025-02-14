@@ -66,7 +66,8 @@ final class GifticonDetailViewModel: BaseViewModel {
         MOALogger.logd()
         
         let storeType = gifticon.gifticonStore
-        let keyword = (storeType == StoreType.ALL || storeType == StoreType.OTHERS) ? StoreType.STARBUCKS.rawValue : storeType.rawValue
+        guard storeType != StoreType.OTHERS && storeType != StoreType.ALL else { return }
+        let keyword = storeType.rawValue
         
         guard let latitude = LocationManager.shared.latitude else { return }
         guard let longitude = LocationManager.shared.longitude else { return }
