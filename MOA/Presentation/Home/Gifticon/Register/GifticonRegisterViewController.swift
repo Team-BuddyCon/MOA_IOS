@@ -281,14 +281,19 @@ private extension Reactive where Base: GifticonRegisterViewController {
                 name: name,
                 expireDate: expireDate,
                 gifticonStore: gifticonStore,
-                memo: memo
-            ) {
-                viewController.showAlertModal(
-                    title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                    subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                    confirmText: CONFIRM
-                )
-            }
+                memo: memo,
+                onSucess: { gifticonId in
+                    let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
+                    viewController.navigationController?.pushViewController(detailVC, animated: true)
+                },
+                onError: {
+                    viewController.showAlertModal(
+                        title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+                        subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+                        confirmText: CONFIRM
+                    )
+                }
+            )
         }
     }
 }

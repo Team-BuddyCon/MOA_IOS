@@ -258,7 +258,22 @@ private extension GifticonDetailViewController {
     }
     
     func setupNavigationBar() {
-        setupTopBarWithBackButton(title: GIFTICON_MENU_TITLE)
+        navigationItem.hidesBackButton = true
+        let backButtonItem = UIBarButtonItem(
+            image: UIImage(named: BACK_BUTTON_IMAGE_ASSET),
+            style: .plain,
+            target: self,
+            action: #selector(tapBackBarButton)
+        )
+        
+        backButtonItem.tintColor = .grey90
+        navigationItem.leftBarButtonItem = backButtonItem
+        
+        let titleLabel = UILabel()
+        titleLabel.text = GIFTICON_MENU_TITLE
+        titleLabel.font = UIFont(name: pretendard_bold, size: 15.0)
+        titleLabel.textColor = .grey90
+        navigationItem.titleView = titleLabel
         
         let label = UILabel()
         label.font = UIFont(name: pretendard_bold, size: 15.0)
@@ -384,6 +399,10 @@ extension Reactive where Base: GifticonDetailViewController {
 }
 
 extension GifticonDetailViewController {
+    @objc func tapBackBarButton() {
+        navigatePopUpTo(type: HomeTabBarController.self)
+    }
+    
     @objc func tapEditButton() {
         MOALogger.logd()
         let editVC = GifticonEditViewController(

@@ -44,7 +44,7 @@ protocol GifticonServiceProtocol {
         expireDate: String,
         gifticonStore: String,
         memo: String?
-    ) -> Observable<Bool>
+    ) -> Observable<String>
     
     func fetchUsedGifticons() -> Observable<[GifticonResponse]>
     
@@ -250,7 +250,7 @@ final class GifticonService: GifticonServiceProtocol {
         expireDate: String,
         gifticonStore: String,
         memo: String? = nil
-    ) -> Observable<Bool> {
+    ) -> Observable<String> {
         return Observable.create { observer in
             guard let gifticonStoreCategory = StoreCategory.from(typeCode: gifticonStore)?.code else {
                 observer.onError(NSError())
@@ -307,7 +307,7 @@ final class GifticonService: GifticonServiceProtocol {
                                     return
                                 }
                                 MOALogger.logd("createGifticon success")
-                                observer.onNext(true)
+                                observer.onNext(uuid)
                                 observer.onCompleted()
                             }
                     }
