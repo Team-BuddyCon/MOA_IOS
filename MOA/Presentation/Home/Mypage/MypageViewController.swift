@@ -160,6 +160,10 @@ extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
                     privacyUrl: PRIVACY_INFORMATION_URL
                 )
                 navigationController?.pushViewController(termsVC, animated: true)
+            case .OpenSourceLicense:
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
             case .Logout:
                 showSelectModal(
                     title: LOGOUT_ALERT_TITLE,
@@ -178,8 +182,6 @@ extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
             case .SignOut:
                 let withDrawVC = WithDrawViewController()
                 navigationController?.pushViewController(withDrawVC, animated: true)
-            default:
-                break
             }
         }
     }
