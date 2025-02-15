@@ -53,6 +53,17 @@ final class MypageMenuCell: UITableViewCell {
             nameLabel.text = menuType.rawValue
             infoLabel.isHidden = menuType != .Notification && menuType != .Version
             lineView.isHidden = menuType != .Notification && menuType != .OpenSourceLicense
+            
+            switch menuType {
+            case .Notification:
+                break
+            case .Version:
+                if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
+                    infoLabel.text = version
+                }
+            default:
+                break
+            }
         }
     }
     
