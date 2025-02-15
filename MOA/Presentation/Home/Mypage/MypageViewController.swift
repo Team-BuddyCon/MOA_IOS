@@ -12,6 +12,7 @@ import RxCocoa
 import RxRelay
 import FirebaseAuth
 import FirebaseCore
+import MessageUI
 
 final class MypageViewController: BaseViewController {
     
@@ -135,6 +136,21 @@ extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
             case .Notification:
                 let notificationVC = NotificationViewController()
                 navigationController?.pushViewController(notificationVC, animated: true)
+            case .Inquery:
+                if MFMailComposeViewController.canSendMail() {
+                    MOALogger.logd()
+                    let mailVC = MFMailComposeViewController()
+                    mailVC.mailComposeDelegate = self
+                    mailVC.setToRecipients([MOA_INQUERY_MAIL])
+                    mailVC.setSubject(MOA_INQUERY_SUBJECT)
+                    present(mailVC, animated: true)
+                } else {
+                    showAlertModal(
+                        title: MOA_CANT_INQUERY_TITLE,
+                        subTitle: MOA_CANT_INQUERY_SUBTITLE,
+                        confirmText: CONFIRM
+                    )
+                }
             case .Version:
                 let versionVC = VersionViewController()
                 navigationController?.pushViewController(versionVC, animated: true)
@@ -166,5 +182,11 @@ extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
                 break
             }
         }
+    }
+}
+
+extension MypageViewController: MFMailComposeViewControllerDelegate {
+    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: (any Error)?) {
+        dismiss(animated: true)
     }
 }

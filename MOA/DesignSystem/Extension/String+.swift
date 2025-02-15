@@ -27,6 +27,8 @@ let PRIVACY_INFORMATION_URL = "https://scarce-cartoon-27d.notion.site/c4e5ff54f9
 let NEXT = "다음"
 let WITHDRAW = "탈퇴"
 let USER_NAME = "사용자"
+let MOA_INQUERY_MAIL = "buddycon2022@gmail.com"
+let MOA_INQUERY_SUBJECT = "MOA 문의"
 
 // MARK: Design System
 let dday_end = "만료"
@@ -144,7 +146,8 @@ let MOA_WITH_DRAW_NOTICE_MESSAGE2 = "다시 가입하더라도 이전의 기프�
 let MOA_WITH_DRAW_POPUP_TITLE = "정말 모아를 떠나시겠어요?"
 let MOA_WITH_DRAW_POPUP_SUBTITLE = "탈퇴하면 등록한\n기프티콘이 모두 사라져요"
 let MOA_WITH_DRAW_POPUP_CANCEL = "다음에"
-
+let MOA_CANT_INQUERY_TITLE = "메일 계정 활성화 필요"
+let MOA_CANT_INQUERY_SUBTITLE = "Mail 앱에서 사용자의 Email을 계정을 설정해 주세요."
 
 // MARK: Map
 let MAP_BOTTOM_SHEET_TITLE = "사용 가능한 기프티콘"
@@ -159,6 +162,7 @@ let MAP_ADDRESS_COPY_TOAST_MESSAGE = "클립보드에 주소가 복사되었어�
 let MAP_PERMISSION_GUIDE_MESSAGE = "위치 정보 이용에 동의해야 사용할 수 있어요."
 let MAP_NAVIGATE_SETTING_MESSAGE = "설정으로 이동"
 let MAP_NOT_PROVIDED_GUIDE_MESSAGE = "해당 기프티콘 브랜드는 지도 기능이 제한되어 있어요."
+
 
 // MARK: ImageSet
 let LOGIN_ICON = "LoginIcon"
