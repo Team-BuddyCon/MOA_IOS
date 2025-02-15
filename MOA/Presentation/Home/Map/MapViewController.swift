@@ -115,7 +115,6 @@ final class MapViewController: BaseViewController {
         return view
     }()
     
-    private var isFirstEntry = true
     var isActive = true
     private var kmAuth: Bool = false
     var mapManager: KakaoMapManager?
@@ -137,11 +136,6 @@ final class MapViewController: BaseViewController {
         super.viewWillAppear(animated)
         MOALogger.logd()
         mapManager?.addObserver()
-        
-        if !isFirstEntry {
-            mapViewModel.fetchAllGifticons()
-        }
-        isFirstEntry = false
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -152,8 +146,9 @@ final class MapViewController: BaseViewController {
             if mapManager?.isEngineActive == false {
                 mapManager?.activateEngine()
             }
-            mapViewModel.searchPlaceByKeyword()
         }
+        
+        mapViewModel.refresh()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -373,7 +368,11 @@ extension MapViewController: UICollectionViewDataSource, UICollectionViewDelegat
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let storeType = storeTypes[indexPath.row]
         mapViewModel.changeStoreType(storeType: storeType)
-        mapViewModel.searchPlaceByKeyword()
+
+        // 기타는 마커 표시하지 않음
+        if storeType == .OTHERS {
+            mapManager?.removePois()
+        }
     }
 }
 
@@ -449,7 +448,7 @@ extension MapViewController {
         
         if mapManager?.isEngineActive == false {
             mapManager?.activateEngine()
-            mapViewModel.searchPlaceByKeyword()
+            mapViewModel.refresh()
         }
     }
     
