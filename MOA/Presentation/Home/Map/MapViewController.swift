@@ -115,7 +115,6 @@ final class MapViewController: BaseViewController {
         return view
     }()
     
-    var isActive = true
     private var kmAuth: Bool = false
     var mapManager: KakaoMapManager?
     let mapViewModel = MapViewModel(
@@ -142,10 +141,8 @@ final class MapViewController: BaseViewController {
         super.viewDidAppear(animated)
         MOALogger.logd()
         
-        if isActive {
-            if mapManager?.isEngineActive == false {
-                mapManager?.activateEngine()
-            }
+        if mapManager?.isEngineActive == false {
+            mapManager?.activateEngine()
         }
         
         mapViewModel.refresh()
@@ -424,10 +421,9 @@ extension Reactive where Base: MapViewController {
             viewController.dimView.isHidden = isGranted
             viewController.permissionGuideToastView.isHidden = isGranted
             
+            // 설정을 들어가지 않고 위치 권한 팝업에서 허용 시에 refresh
             if isGranted && viewController.mapManager?.isEngineActive == true {
-                viewController.mapViewModel.searchPlaceByKeyword()
-            } else {
-                viewController.mapManager?.removePois()
+                viewController.mapViewModel.refresh()
             }
             viewController.mapManager?.updateLocation()
         }
@@ -444,16 +440,18 @@ extension MapViewController {
         
     @objc func didBecomeActive() {
         MOALogger.logd()
-        isActive = true
         
         if mapManager?.isEngineActive == false {
             mapManager?.activateEngine()
-            mapViewModel.refresh()
+            
+            // 선택된 마커가 있는 경우에는 마커 갱신을 하지 않기 위해 refresh 막기, refresh는 권한이 설정에서 부여되면 현재 위치 기반 마커를 표시해주기 위해
+            if mapViewModel.selectedPoiID == nil && mapViewModel.selectedLayerID == nil {
+                mapViewModel.refresh()
+            }
         }
     }
     
     @objc func willResignActive() {
         MOALogger.logd()
-        isActive = false
     }
 }
