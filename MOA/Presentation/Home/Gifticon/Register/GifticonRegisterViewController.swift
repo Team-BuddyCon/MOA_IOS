@@ -275,18 +275,24 @@ private extension Reactive where Base: GifticonRegisterViewController {
                 )
                 return
             }
-            
+        
             viewController.viewModel.createGifticon(
                 image: image,
                 name: name,
                 expireDate: expireDate,
                 gifticonStore: gifticonStore,
                 memo: memo,
+                onLoading: {
+                    let loadingVC = RegisterLoadingViewController()
+                    viewController.present(loadingVC, animated: false)
+                },
                 onSucess: { gifticonId in
+                    viewController.dismiss(animated: false)
                     let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
                     viewController.navigationController?.pushViewController(detailVC, animated: true)
                 },
                 onError: {
+                    viewController.dismiss(animated: false)
                     viewController.showAlertModal(
                         title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
                         subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,

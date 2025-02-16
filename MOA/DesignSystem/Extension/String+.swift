@@ -102,6 +102,8 @@ let GIFTICON_REGISTER_EXPIRE_MODAL_TITLE = "유효기간이 지난 기프티콘�
 let GIFTICON_REGISTER_EXPIRE_MODAL_SUBTITLE = "아래의 사용완료 버튼을 눌러주세요."
 let GIFTICON_REGISTER_ERROR_POPUP_TITLE = "일시적인 오류가 발생했어요"
 let GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE = "다시 한 번 시도해 주세요."
+let GIFTICON_REGISTER_LOADING_POPUP_TITLE = "기프티콘을 등록 중입니다"
+let GIFTICON_REGISTER_LOADING_POPUP_SUBTITLE = "잠시만 기다려주세요"
 let GIFTICON_DETAIL_EXPIRE_DATE_TITLE = "유효기간"
 let GIFTICON_DETAIL_STORE_TITLE = "사용처"
 let GIFTICON_DETAIL_MEMO_TITLE = "메모"
@@ -146,8 +148,8 @@ let MOA_WITH_DRAW_NOTICE_MESSAGE2 = "다시 가입하더라도 이전의 기프�
 let MOA_WITH_DRAW_POPUP_TITLE = "정말 모아를 떠나시겠어요?"
 let MOA_WITH_DRAW_POPUP_SUBTITLE = "탈퇴하면 등록한\n기프티콘이 모두 사라져요"
 let MOA_WITH_DRAW_POPUP_CANCEL = "다음에"
-let MOA_CANT_INQUERY_TITLE = "메일 계정 활성화 필요"
-let MOA_CANT_INQUERY_SUBTITLE = "Mail 앱에서 사용자의 Email을 계정을 설정해 주세요."
+let MOA_CANT_INQUERY_TITLE = "이메일로 문의를 받고 있어요"
+let MOA_CANT_INQUERY_SUBTITLE = "이메일 로그인 이후 문의해 주세요."
 
 // MARK: Map
 let MAP_BOTTOM_SHEET_TITLE = "사용 가능한 기프티콘"
@@ -162,7 +164,6 @@ let MAP_ADDRESS_COPY_TOAST_MESSAGE = "클립보드에 주소가 복사되었어�
 let MAP_PERMISSION_GUIDE_MESSAGE = "위치 정보 이용에 동의해야 사용할 수 있어요."
 let MAP_NAVIGATE_SETTING_MESSAGE = "설정으로 이동"
 let MAP_NOT_PROVIDED_GUIDE_MESSAGE = "해당 기프티콘 브랜드는 지도 기능이 제한되어 있어요."
-
 
 // MARK: ImageSet
 let LOGIN_ICON = "LoginIcon"
@@ -208,6 +209,11 @@ let ALL_STORE = "AllStore"
 let NAVER_MAP_ICON = "NaverMapIcon"
 let KAKAO_MAP_ICON = "KakaoMapIcon"
 let GOOGLE_MAP_ICON = "GoogleMapIcon"
+let REGISTER_LOADING1_ICON = "RegisterLoading1"
+let REGISTER_LOADING2_ICON = "RegisterLoading2"
+let REGISTER_LOADING3_ICON = "RegisterLoading3"
+let REGISTER_LOADING4_ICON = "RegisterLoading4"
+let REGISTER_LOADING5_ICON = "RegisterLoading5"
 
 // MARK: Font
 let pretendard_black = "Pretendard-Black"
