@@ -23,10 +23,12 @@ final class GifticonRegisterViewModel: BaseViewModel {
         expireDate: String,
         gifticonStore: String,
         memo: String?,
+        onLoading: @escaping () -> Void,
         onSucess: @escaping (String) -> Void,
         onError: @escaping () -> Void
     ) {
         if let data = image.jpegData(compressionQuality: 0.8) {
+            onLoading()
             gifticonService.createGifticon(
                 data: data,
                 name: name,
