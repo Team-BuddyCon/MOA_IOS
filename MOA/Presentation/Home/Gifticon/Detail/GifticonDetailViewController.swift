@@ -513,10 +513,11 @@ extension Reactive where Base: GifticonDetailViewController {
     var bindToLocationPermission: Binder<Bool> {
         return Binder<Bool>(self.base) { viewController, isGranted in
             MOALogger.logd()
-            viewController.mapDimView.isHidden = isGranted
-            viewController.mapGuideToastView.isHidden = isGranted
+            let storeType = viewController.gifticonDetailViewModel.gifticon.gifticonStore
+            viewController.mapDimView.isHidden = storeType != .OTHERS && isGranted
+            viewController.mapGuideToastView.isHidden = storeType != .OTHERS && isGranted
             
-            if isGranted && viewController.mapManager?.isEngineActive == true {
+            if storeType != .OTHERS && isGranted && viewController.mapManager?.isEngineActive == true {
                 viewController.gifticonDetailViewModel.searchPlaceByKeyword()
             } else {
                 viewController.mapManager?.removePois()
