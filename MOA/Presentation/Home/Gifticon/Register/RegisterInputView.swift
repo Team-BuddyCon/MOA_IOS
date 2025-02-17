@@ -209,7 +209,7 @@ final class RegisterInputView: UIView {
         
         if let expireDate = expireDate {
             selectDate = expireDate
-            requestInput = expireDate.toString(format: AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT)
+            requestInput = expireDate.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT)
             inputLabel.text = expireDate.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT)
             return
         }

@@ -425,7 +425,11 @@ extension Reactive where Base: GifticonDetailViewController {
     
     var bindToGifticon: Binder<GifticonModel> {
         return Binder<GifticonModel>(self.base) { (viewController: GifticonDetailViewController, gifticon) in
-            ImageLoadManager.shared.load(url: gifticon.imageUrl)
+            ImageLoadManager.shared.load(
+                url: gifticon.imageUrl,
+                identifier: gifticon.gifticonId,
+                expireDate: gifticon.expireDate
+            )
                 .observe(on: MainScheduler())
                 .subscribe(onNext: { image in
                     if let image = image {
@@ -509,10 +513,11 @@ extension Reactive where Base: GifticonDetailViewController {
     var bindToLocationPermission: Binder<Bool> {
         return Binder<Bool>(self.base) { viewController, isGranted in
             MOALogger.logd()
-            viewController.mapDimView.isHidden = isGranted
-            viewController.mapGuideToastView.isHidden = isGranted
+            let storeType = viewController.gifticonDetailViewModel.gifticon.gifticonStore
+            viewController.mapDimView.isHidden = storeType != .OTHERS && isGranted
+            viewController.mapGuideToastView.isHidden = storeType != .OTHERS && isGranted
             
-            if isGranted && viewController.mapManager?.isEngineActive == true {
+            if storeType != .OTHERS && isGranted && viewController.mapManager?.isEngineActive == true {
                 viewController.gifticonDetailViewModel.searchPlaceByKeyword()
             } else {
                 viewController.mapManager?.removePois()

@@ -15,6 +15,7 @@ struct GifticonResponse {
     let expireDate: String
     let gifticonStore: String
     let gifticonStoreCategory: String
+    let uploadDate: String
     let used: Bool
     
     init(dic: [String: Any]) {
@@ -25,6 +26,7 @@ struct GifticonResponse {
         self.expireDate = (dic[HttpKeys.Gifticon.expireDate] as? String) ?? ""
         self.gifticonStore = (dic[HttpKeys.Gifticon.gifticonStore] as? String) ?? ""
         self.gifticonStoreCategory = (dic[HttpKeys.Gifticon.gifticonStoreCategory] as? String) ?? ""
+        self.uploadDate = (dic[HttpKeys.Gifticon.uplodeDate] as? String) ?? ""
         self.used = (dic[HttpKeys.Gifticon.used] as? Bool) ?? false
     }
     
@@ -37,6 +39,7 @@ struct GifticonResponse {
             expireDate: expireDate,
             gifticonStore: StoreType.from(string: gifticonStore) ?? .ALL,
             gifticonStoreCategory: StoreCategory.from(string: gifticonStoreCategory) ?? .ALL,
+            uploadDate: uploadDate,
             used: used
         )
     }

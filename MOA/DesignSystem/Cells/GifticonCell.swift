@@ -78,19 +78,18 @@ final class GifticonCell: UICollectionViewCell {
     }
     
     func setData(
-        dday: Int,
-        imageURL: String,
-        storeType: StoreType,
-        title: String,
-        date: String,
-        used: Bool = false
+        gifticon: GifticonModel
     ) {
-        ddayButton.dday = dday
-        storeLabel.text = storeType.rawValue
-        titleLabel.text = title
-        dateLabel.text = date
+        ddayButton.dday = gifticon.expireDate.toDday()
+        storeLabel.text = gifticon.gifticonStore.rawValue
+        titleLabel.text = gifticon.name
+        dateLabel.text = gifticon.expireDate
         
-        ImageLoadManager.shared.load(url: imageURL)
+        ImageLoadManager.shared.load(
+                url: gifticon.imageUrl,
+                identifier: gifticon.gifticonId,
+                expireDate: gifticon.expireDate
+            )
             .observe(on: MainScheduler())
             .subscribe(onNext: { [weak self] image in
                 guard let self = self else {
@@ -99,13 +98,13 @@ final class GifticonCell: UICollectionViewCell {
                 }
                 
                 if let image = image {
-                    dimView.isHidden = !used
+                    dimView.isHidden = !gifticon.used
                     imageView.image = image
                     
                 }
             }).disposed(by: disposeBag)
         
-        if used {
+        if gifticon.used {
             ddayButton.isHidden = true
             storeLabel.textColor = .grey70
             dateLabel.textColor = .grey70
