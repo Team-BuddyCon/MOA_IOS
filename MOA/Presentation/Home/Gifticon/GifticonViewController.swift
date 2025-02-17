@@ -209,13 +209,7 @@ private extension GifticonViewController {
                     return UICollectionViewCell()
                 }
                 
-                cell.setData(
-                    dday: gifticon.expireDate.toDday(),
-                    imageURL: gifticon.imageUrl,
-                    storeType: gifticon.gifticonStore,
-                    title: gifticon.name,
-                    date: gifticon.expireDate
-                )
+                cell.setData(gifticon: gifticon)
                 return cell
             }.disposed(by: disposeBag)
         

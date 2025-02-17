@@ -162,6 +162,7 @@ private extension LoginViewController {
                     }
                     
                     if let result = result {
+                        UserPreferences.setSignUp()
                         UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
                         UserPreferences.setUserID(userID: result.user.uid)
                         UIApplication.shared.navigationHome()

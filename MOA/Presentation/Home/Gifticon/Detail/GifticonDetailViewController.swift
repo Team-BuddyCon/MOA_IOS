@@ -425,7 +425,11 @@ extension Reactive where Base: GifticonDetailViewController {
     
     var bindToGifticon: Binder<GifticonModel> {
         return Binder<GifticonModel>(self.base) { (viewController: GifticonDetailViewController, gifticon) in
-            ImageLoadManager.shared.load(url: gifticon.imageUrl)
+            ImageLoadManager.shared.load(
+                url: gifticon.imageUrl,
+                identifier: gifticon.gifticonId,
+                expireDate: gifticon.expireDate
+            )
                 .observe(on: MainScheduler())
                 .subscribe(onNext: { image in
                     if let image = image {

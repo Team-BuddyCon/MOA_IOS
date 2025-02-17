@@ -1,5 +1,5 @@
 //
-//  AvailableGifticon.swift
+//  GifticonModel.swift
 //  MOA
 //
 //  Created by 오원석 on 11/11/24.
@@ -15,6 +15,7 @@ struct GifticonModel {
     let expireDate: String
     let gifticonStore: StoreType
     let gifticonStoreCategory: StoreCategory
+    let uploadDate: String
     let used: Bool
     
     init(
@@ -25,6 +26,7 @@ struct GifticonModel {
         expireDate: String = "",
         gifticonStore: StoreType = .ALL,
         gifticonStoreCategory: StoreCategory = .ALL,
+        uploadDate: String = "",
         used: Bool = false
     ) {
         self.gifticonId = gifticonId
@@ -34,6 +36,7 @@ struct GifticonModel {
         self.expireDate = expireDate
         self.gifticonStore = gifticonStore
         self.gifticonStoreCategory = gifticonStoreCategory
+        self.uploadDate = uploadDate
         self.used = used
     }
 }
