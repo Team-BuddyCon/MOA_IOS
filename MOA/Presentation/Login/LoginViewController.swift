@@ -12,6 +12,8 @@ import RxRelay
 import FirebaseCore
 import FirebaseAuth
 import GoogleSignIn
+import CryptoKit
+import AuthenticationServices
 
 final class LoginViewController: BaseViewController {
     
@@ -37,6 +39,8 @@ final class LoginViewController: BaseViewController {
         button.addTarget(self, action: #selector(tapAppleLogin), for: .touchUpInside)
         return button
     }()
+    
+    fileprivate var currentNonce: String?
     
     init(
         isLogout: Bool = false,
@@ -120,12 +124,22 @@ private extension LoginViewController {
                 GIDSignIn.sharedInstance.signIn(withPresenting: self) { result, error in
                     guard error == nil else {
                         MOALogger.loge("signIn error: \(String(describing: error))")
+                        self.showAlertModal(
+                            title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+                            subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+                            confirmText: CONFIRM
+                        )
                         return
                     }
                     
                     guard let user = result?.user,
                           let idToken = user.idToken?.tokenString else {
-                        MOALogger.loge()
+                        MOALogger.loge("signIn user idToken is nil")
+                        self.showAlertModal(
+                            title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+                            subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+                            confirmText: CONFIRM
+                        )
                         return
                     }
                     
@@ -133,6 +147,11 @@ private extension LoginViewController {
                     Auth.auth().signIn(with: credential) { result, error in
                         guard error == nil else {
                             MOALogger.loge(error?.localizedDescription)
+                            self.showAlertModal(
+                                title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+                                subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+                                confirmText: CONFIRM
+                            )
                             return
                         }
                         
@@ -151,6 +170,11 @@ private extension LoginViewController {
                 guard let user = user,
                       let idToken = user.idToken?.tokenString else {
                     MOALogger.loge()
+                    self.showAlertModal(
+                        title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+                        subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+                        confirmText: CONFIRM
+                    )
                     return
                 }
                 
@@ -158,6 +182,11 @@ private extension LoginViewController {
                 Auth.auth().signIn(with: credential) { result, error in
                     guard error == nil else {
                         MOALogger.loge(error?.localizedDescription)
+                        self.showAlertModal(
+                            title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+                            subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+                            confirmText: CONFIRM
+                        )
                         return
                     }
                     
@@ -173,6 +202,118 @@ private extension LoginViewController {
     }
     
     @objc func tapAppleLogin() {
+        MOALogger.logd()
+        let nonce = randomNonceString()
+        currentNonce = nonce
+        let appleIDProvider = ASAuthorizationAppleIDProvider()
+        let request = appleIDProvider.createRequest()
+        request.requestedScopes = [.fullName, .email]
+        request.nonce = sha256(nonce)
         
+        let authorizationController = ASAuthorizationController(authorizationRequests: [request])
+        authorizationController.delegate = self
+        authorizationController.presentationContextProvider = self
+        authorizationController.performRequests()
     }
+}
+
+// 애플 로그인 요청 응답 Delegate
+extension LoginViewController: ASAuthorizationControllerDelegate {
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        MOALogger.logd()
+        if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+            guard let nonce = self.currentNonce else {
+                MOALogger.loge("Invalid state: A login callback was received, but no login request was sent.")
+                return
+            }
+            
+            guard let appleIDToken = appleIDCredential.identityToken else {
+                MOALogger.logd("Unable to fetch identity token")
+                self.showAlertModal(
+                    title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+                    subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+                    confirmText: CONFIRM
+                )
+                return
+            }
+            
+            guard let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
+                MOALogger.loge("Unable to serialize token string from data: \(appleIDToken.debugDescription)")
+                self.showAlertModal(
+                    title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+                    subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+                    confirmText: CONFIRM
+                )
+                return
+            }
+            
+            let credential = OAuthProvider.appleCredential(
+                withIDToken: idTokenString,
+                rawNonce: nonce,
+                fullName: appleIDCredential.fullName
+            )
+            
+            Auth.auth().signIn(with: credential) { result, error in
+                guard error == nil else {
+                    MOALogger.loge(error?.localizedDescription)
+                    self.showAlertModal(
+                        title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+                        subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+                        confirmText: CONFIRM
+                    )
+                    return
+                }
+                
+                if let result = result {
+                    UserPreferences.setSignUp()
+                    UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
+                    UserPreferences.setUserID(userID: result.user.uid)
+                    UIApplication.shared.navigationHome()
+                }
+            }
+        }
+    }
+    
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: any Error) {
+        MOALogger.loge(error.localizedDescription)
+        self.showAlertModal(
+            title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+            subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+            confirmText: CONFIRM
+        )
+    }
+}
+
+extension LoginViewController: ASAuthorizationControllerPresentationContextProviding {
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        MOALogger.logd()
+        return self.view.window!
+    }
+}
+
+private func randomNonceString(length: Int = 32) -> String {
+    precondition(length > 0)
+    
+    var randomBytes = [UInt8](repeating: 0, count: length)
+    let errorCode = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
+    if errorCode != errSecSuccess {
+        MOALogger.loge("Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)")
+        // TODO 팝업 노출
+    }
+    
+    let charset: [Character] = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+    let nonce = randomBytes.map { byte in
+        charset[Int(byte) % charset.count]
+    }
+    
+    return String(nonce)
+}
+
+private func sha256(_ input: String) -> String {
+    let inputData = Data(input.utf8)
+    let hashedData = SHA256.hash(data: inputData)
+    let hashString = hashedData.compactMap {
+        String(format: "%02x", $0)
+    }.joined()
+    return hashString
 }
