@@ -11,6 +11,12 @@ private let SHOULD_ENTRY_LOGIN = "SHOULD_ENTRY_LOGIN"
 private let LOGIN_USER_NAME = "LOGIN_USER_NAME"
 private let USER_ID = "USER_ID"
 private let SIGN_UP = "SIGN_UP"
+private let OAUTH_SERVICE = "OAUTH_SERVICE"
+
+enum OAuthService: String {
+    case Google = "Google"
+    case Apple = "Apple"
+}
 
 final class UserPreferences {
     
@@ -44,9 +50,9 @@ final class UserPreferences {
         return isSignUp
     }
     
-    static func setSignUp() {
+    static func setSignUp(sign: Bool) {
         MOALogger.logd()
-        UserDefaults.standard.set(true, forKey: SIGN_UP)
+        UserDefaults.standard.set(sign, forKey: SIGN_UP)
     }
     
     static func getUserID() -> String {
@@ -57,5 +63,15 @@ final class UserPreferences {
     static func setUserID(userID: String) {
         MOALogger.logd()
         UserDefaults.standard.set(userID, forKey: USER_ID)
+    }
+    
+    static func getOAuthService() -> String {
+        let service = UserDefaults.standard.string(forKey: OAUTH_SERVICE) ?? ""
+        return service
+    }
+    
+    static func setOAuthService(service: String) {
+        MOALogger.logd()
+        UserDefaults.standard.set(service, forKey: OAUTH_SERVICE)
     }
 }

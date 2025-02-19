@@ -12,7 +12,6 @@ import RxRelay
 import FirebaseCore
 import FirebaseAuth
 import GoogleSignIn
-import CryptoKit
 import AuthenticationServices
 
 final class LoginViewController: BaseViewController {
@@ -156,6 +155,7 @@ private extension LoginViewController {
                         }
                         
                         if let result = result {
+                            UserPreferences.setOAuthService(service: OAuthService.Google.rawValue)
                             if UserPreferences.isSignUp() {
                                 UIApplication.shared.navigationHome()
                             } else {
@@ -191,10 +191,14 @@ private extension LoginViewController {
                     }
                     
                     if let result = result {
-                        UserPreferences.setSignUp()
-                        UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
-                        UserPreferences.setUserID(userID: result.user.uid)
-                        UIApplication.shared.navigationHome()
+                        UserPreferences.setOAuthService(service: OAuthService.Google.rawValue)
+                        if UserPreferences.isSignUp() {
+                            UIApplication.shared.navigationHome()
+                        } else {
+                            UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
+                            UserPreferences.setUserID(userID: result.user.uid)
+                            self.navigationController?.pushViewController(SignUpViewController(), animated: true)
+                        }
                     }
                 }
             }
@@ -203,12 +207,12 @@ private extension LoginViewController {
     
     @objc func tapAppleLogin() {
         MOALogger.logd()
-        let nonce = randomNonceString()
+        let nonce = CryptoUtils.randomNonceString()
         currentNonce = nonce
         let appleIDProvider = ASAuthorizationAppleIDProvider()
         let request = appleIDProvider.createRequest()
         request.requestedScopes = [.fullName, .email]
-        request.nonce = sha256(nonce)
+        request.nonce = CryptoUtils.sha256(nonce)
         
         let authorizationController = ASAuthorizationController(authorizationRequests: [request])
         authorizationController.delegate = self
@@ -224,6 +228,11 @@ extension LoginViewController: ASAuthorizationControllerDelegate {
         if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
             guard let nonce = self.currentNonce else {
                 MOALogger.loge("Invalid state: A login callback was received, but no login request was sent.")
+                self.showAlertModal(
+                    title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+                    subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+                    confirmText: CONFIRM
+                )
                 return
             }
             
@@ -265,10 +274,14 @@ extension LoginViewController: ASAuthorizationControllerDelegate {
                 }
                 
                 if let result = result {
-                    UserPreferences.setSignUp()
-                    UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
-                    UserPreferences.setUserID(userID: result.user.uid)
-                    UIApplication.shared.navigationHome()
+                    UserPreferences.setOAuthService(service: OAuthService.Apple.rawValue)
+                    if UserPreferences.isSignUp() {
+                        UIApplication.shared.navigationHome()
+                    } else {
+                        UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
+                        UserPreferences.setUserID(userID: result.user.uid)
+                        self.navigationController?.pushViewController(SignUpViewController(), animated: true)
+                    }
                 }
             }
         }
@@ -289,31 +302,4 @@ extension LoginViewController: ASAuthorizationControllerPresentationContextProvi
         MOALogger.logd()
         return self.view.window!
     }
-}
-
-private func randomNonceString(length: Int = 32) -> String {
-    precondition(length > 0)
-    
-    var randomBytes = [UInt8](repeating: 0, count: length)
-    let errorCode = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
-    if errorCode != errSecSuccess {
-        MOALogger.loge("Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)")
-        // TODO 팝업 노출
-    }
-    
-    let charset: [Character] = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
-    let nonce = randomBytes.map { byte in
-        charset[Int(byte) % charset.count]
-    }
-    
-    return String(nonce)
-}
-
-private func sha256(_ input: String) -> String {
-    let inputData = Data(input.utf8)
-    let hashedData = SHA256.hash(data: inputData)
-    let hashString = hashedData.compactMap {
-        String(format: "%02x", $0)
-    }.joined()
-    return hashString
 }
