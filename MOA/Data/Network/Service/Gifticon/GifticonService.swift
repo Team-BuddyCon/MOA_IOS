@@ -48,19 +48,7 @@ protocol GifticonServiceProtocol {
     
     func fetchUsedGifticons() -> Observable<[GifticonResponse]>
     
-    ///
-    
-    func fetchUnAvailableGifticon(
-        pageNumber: Int,
-        rowCount: Int
-    ) -> Observable<Result<UnAvailableGifticonResponse, URLError>>
-    
-    func fetchGifticonCount(
-        used: Bool,
-        storeCateogry: StoreCategory?,
-        storeType: StoreType?,
-        remainingDays: Int?
-    ) -> Observable<Result<GifticonCountResponse, URLError>>
+    func deleteGifticons() -> Observable<Bool>
 }
 
 
@@ -343,31 +331,66 @@ final class GifticonService: GifticonServiceProtocol {
         }
     }
     
-    ///
-
-    func fetchUnAvailableGifticon(
-        pageNumber: Int,
-        rowCount: Int
-    ) -> Observable<Result<UnAvailableGifticonResponse, URLError>> {
-        let request = UnAvailableGifticonRequest(
-            pageNumber: pageNumber,
-            rowCount: rowCount
-        )
-        return NetworkManager.shared.request(request: request)
-    }
-    
-    func fetchGifticonCount(
-        used: Bool,
-        storeCateogry: StoreCategory?,
-        storeType: StoreType?,
-        remainingDays: Int?
-    ) -> Observable<Result<GifticonCountResponse, URLError>> {
-        let request = GifticonCountRequest(
-            used: used,
-            storeCategory: storeCateogry,
-            storeType: storeType,
-            remainingDays: remainingDays
-        )
-        return NetworkManager.shared.request(request: request)
+    func deleteGifticons() -> Observable<Bool> {
+        return Observable.create { observer in
+            let storagePath = "\(self.userID)"
+            let storageRef = self.storage.reference().child(storagePath)
+            self.store
+                .collection(FirebaseStoreID.USER.rawValue)
+                .document(self.userID)
+                .collection(FirebaseStoreID.GIFTICON.rawValue)
+                .getDocuments(completion: { snapshot, error in
+                    if let error = error {
+                        observer.onError(error)
+                    } else if let snapshot = snapshot {
+                        let gifticons = snapshot.documents.compactMap { document in
+                            GifticonResponse(dic: document.data())
+                        }
+                        
+                        gifticons.forEach { gifticon in
+                            let childRef = storageRef.child("\(gifticon.gifticonId).jpeg")
+                            childRef.delete(completion: { err in
+                                if let err = err {
+                                    observer.onError(err)
+                                }
+                            })
+                        }
+                    } else {
+                        observer.onNext(false)
+                    }
+                })
+            
+            self.store
+                .collection(FirebaseStoreID.USER.rawValue)
+                .document(self.userID)
+                .collection(FirebaseStoreID.GIFTICON.rawValue)
+                .getDocuments(completion: { snapshot, error in
+                    if let error = error {
+                        observer.onError(error)
+                    } else if let snapshot = snapshot {
+                        snapshot.documents.forEach { document in
+                            document.reference.delete(completion: { err in
+                                if let err = err {
+                                    observer.onError(err)
+                                }
+                            })
+                        }
+                    }
+                })
+            
+            self.store
+                .collection(FirebaseStoreID.USER.rawValue)
+                .document(self.userID)
+                .getDocument(completion: { snapshot, error in
+                    if let error = error {
+                        observer.onError(error)
+                    } else {
+                        observer.onNext(true)
+                    }
+                })
+            
+            
+            return Disposables.create()
+        }
     }
 }

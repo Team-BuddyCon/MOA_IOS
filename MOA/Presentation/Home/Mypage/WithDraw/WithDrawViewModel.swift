@@ -12,7 +12,26 @@ import RxRelay
 
 final class WithDrawViewModel: BaseViewModel {
     
+    let gifticonService: GifticonServiceProtocol
     let phrase = BehaviorRelay(value: WithDrawPhrase.Reason)
     let reason = BehaviorRelay(value: WithDrawReason.NotUseApp)
+    let logoutTrigger = PublishRelay<Bool>()
+    
+    init(gifticonService: GifticonServiceProtocol) {
+        self.gifticonService = gifticonService
+    }
+    
+    func deleteGifticons() {
+        gifticonService.deleteGifticons()
+            .subscribe(
+                onNext: { isSuccess in
+                    self.logoutTrigger.accept(isSuccess)
+                },
+                onError: { error in
+                    MOALogger.loge(error.localizedDescription)
+                    self.logoutTrigger.accept(false)
+                }
+            ).disposed(by: disposeBag)
+    }
 }
 
