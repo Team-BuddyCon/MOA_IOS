@@ -14,6 +14,8 @@ import FirebaseCore
 import FirebaseAuth
 import GoogleSignIn
 import FirebaseAnalytics
+import FirebaseStorage
+import FirebaseFirestore
 import AuthenticationServices
 
 enum WithDrawPhrase {
@@ -132,8 +134,10 @@ final class WithDrawViewController: BaseViewController {
         return label
     }()
     
+    let storage = Storage.storage()
+    let store = Firestore.firestore()
     fileprivate var currentNonce: String?
-    let withDrawViewModel = WithDrawViewModel()
+    let withDrawViewModel = WithDrawViewModel(gifticonService: GifticonService.shared)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -242,6 +246,10 @@ private extension WithDrawViewController {
         confirmButton.rx.tap
             .bind(to: self.rx.bindToConfirmButton)
             .disposed(by: disposeBag)
+        
+        withDrawViewModel.logoutTrigger
+            .bind(to: self.rx.bindToLogoutEvent)
+            .disposed(by: disposeBag)
     }
 }
 
@@ -315,6 +323,24 @@ extension Reactive where Base: WithDrawViewController {
             }
         }
     }
+    
+    var bindToLogoutEvent: Binder<Bool> {
+        return Binder<Bool>(self.base) { viewController, isSuccess in
+            //viewController.dismiss(animated: false)
+            if isSuccess {
+                do {
+                    UserPreferences.setSignUp(sign: false)
+                    let auth = Auth.auth()
+                    try auth.signOut()
+                    UIApplication.shared.setRootViewController(viewController: LoginViewController(isWithDraw: true))
+                } catch {
+                    viewController.logoutFail()
+                }
+            } else {
+                viewController.logoutFail()
+            }
+        }
+    }
 }
 
 extension WithDrawViewController {
@@ -336,36 +362,8 @@ extension WithDrawViewController {
             
             let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: user.accessToken.tokenString)
             let currentUser = Auth.auth().currentUser
-            let auth = Auth.auth()
             currentUser?.reauthenticate(with: credential) { result, error in
-                guard error == nil else {
-                    MOALogger.loge("user reauthenticate \(String(describing: error))")
-                    return
-                }
-                
-                currentUser?.delete { error in
-                    guard error == nil else {
-                        MOALogger.loge("user delete \(String(describing: error))")
-                        return
-                    }
-                    
-                    do {
-                        try auth.signOut()
-                        let reason = self.withDrawViewModel.reason.value.rawValue + (self.withDrawViewModel.reason.value == .Etc ? "(\(String(describing: self.reasonTextField.text)))" : "")
-                        Analytics.logEvent(
-                            FirebaseLogEvent.withDraw.rawValue,
-                            parameters: [
-                                FirebaseLogParameter.withDrawReason.rawValue : reason
-                            ]
-                        )
-                        
-                        GIDSignIn.sharedInstance.signOut()
-                        UserPreferences.setSignUp(sign: false)
-                        UIApplication.shared.setRootViewController(viewController: LoginViewController(isWithDraw: true))
-                    } catch let error as NSError {
-                        MOALogger.loge("signOut error \(error.localizedDescription)")
-                    }
-                }
+                self.logOutSuccess(result: result, error: error)
             }
         })
     }
@@ -383,69 +381,75 @@ extension WithDrawViewController {
         authorizationController.presentationContextProvider = self
         authorizationController.performRequests()
     }
+    
+    func logOutSuccess(result: AuthDataResult?, error: Error?) {
+        let currentUser = Auth.auth().currentUser
+        let auth = Auth.auth()
+        
+        guard error == nil else {
+            MOALogger.loge("user reauthenticate \(String(describing: error))")
+            return
+        }
+        
+        currentUser?.delete { error in
+            guard error == nil else {
+                MOALogger.loge("user delete \(String(describing: error))")
+                self.logoutFail()
+                return
+            }
+            
+            let reason = self.withDrawViewModel.reason.value.rawValue + (self.withDrawViewModel.reason.value == .Etc ? "(\(String(describing: self.reasonTextField.text)))" : "")
+            Analytics.logEvent(
+                FirebaseLogEvent.withDraw.rawValue,
+                parameters: [
+                    FirebaseLogParameter.withDrawReason.rawValue : reason
+                ]
+            )
+            
+            if UserPreferences.getOAuthService() == OAuthService.Google.rawValue {
+                GIDSignIn.sharedInstance.signOut()
+            }
+            
+            self.withDrawViewModel.deleteGifticons()
+//            let loadingVC = RegisterLoadingViewController()
+//            self.present(loadingVC, animated: false)
+        }
+    }
+    
+    func logoutFail() {
+        self.showAlertModal(
+            title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+            subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+            confirmText: CONFIRM
+        )
+    }
 }
 
 extension WithDrawViewController: ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
     func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
         guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential else {
             MOALogger.loge("Unable to retrieve AppleIDCredential")
-            self.showAlertModal(
-                title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                confirmText: CONFIRM
-            )
+            logoutFail()
             return
         }
         
         guard let nonce = currentNonce else {
-            self.showAlertModal(
-                title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                confirmText: CONFIRM
-            )
+            logoutFail()
             return
         }
         
         guard let appleIDToken = appleIDCredential.identityToken else {
             MOALogger.logd("Unable to fetch identity token")
-            self.showAlertModal(
-                title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                confirmText: CONFIRM
-            )
+            logoutFail()
             return
         }
         
         guard let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
             MOALogger.loge("Unable to serialize token string from data: \(appleIDToken.debugDescription)")
-            self.showAlertModal(
-                title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                confirmText: CONFIRM
-            )
+            logoutFail()
             return
         }
-        
-        guard let appleAuthCode = appleIDCredential.authorizationCode else {
-            MOALogger.loge("Unable to fetch authorization code")
-            self.showAlertModal(
-                title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                confirmText: CONFIRM
-            )
-            return
-         }
-
-        guard let authCodeString = String(data: appleAuthCode, encoding: .utf8) else {
-            MOALogger.loge("Unable to serialize auth code string from data: \(appleAuthCode.debugDescription)")
-            self.showAlertModal(
-                title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                confirmText: CONFIRM
-            )
-            return
-        }
-        
+ 
         let credential = OAuthProvider.appleCredential(
             withIDToken: idTokenString,
             rawNonce: nonce,
@@ -453,45 +457,14 @@ extension WithDrawViewController: ASAuthorizationControllerDelegate, ASAuthoriza
         )
         
         let currentUser = Auth.auth().currentUser
-        let auth = Auth.auth()
         currentUser?.reauthenticate(with: credential) { result, error in
-            guard error == nil else {
-                MOALogger.loge("user reauthenticate \(String(describing: error))")
-                return
-            }
-            
-            currentUser?.delete { error in
-                guard error == nil else {
-                    MOALogger.loge("user delete \(String(describing: error))")
-                    return
-                }
-                
-                do {
-                    try auth.signOut()
-                    let reason = self.withDrawViewModel.reason.value.rawValue + (self.withDrawViewModel.reason.value == .Etc ? "(\(String(describing: self.reasonTextField.text)))" : "")
-                    Analytics.logEvent(
-                        FirebaseLogEvent.withDraw.rawValue,
-                        parameters: [
-                            FirebaseLogParameter.withDrawReason.rawValue : reason
-                        ]
-                    )
-                    
-                    UserPreferences.setSignUp(sign: false)
-                    UIApplication.shared.setRootViewController(viewController: LoginViewController(isWithDraw: true))
-                } catch let error as NSError {
-                    MOALogger.loge("signOut error \(error.localizedDescription)")
-                }
-            }
+            self.logOutSuccess(result: result, error: error)
         }
     }
     
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: any Error) {
         MOALogger.loge(error.localizedDescription)
-        self.showAlertModal(
-            title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-            subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-            confirmText: CONFIRM
-        )
+        self.logoutFail()
     }
     
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
