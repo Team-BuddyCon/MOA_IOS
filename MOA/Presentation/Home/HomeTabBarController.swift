@@ -17,6 +17,7 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         MOALogger.logd()
         setupAppearance()
         setupViewControllers()
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -26,6 +27,7 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         if isInit {
             Toast.shared.show(message: LOGIN_SUCCESS_TOAST_TITLE)
             isInit = false
+            requestNotificationPermission()
         }
     }
     
@@ -79,5 +81,46 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         
         return true
     }
-}
+    
+    func requestNotificationPermission() {
+        MOALogger.logd()
+        
+        
+        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
+        let notificationCenter = UNUserNotificationCenter.current()
+        notificationCenter.requestAuthorization(options: authOptions) { isGranted, error in
+            if let error = error {
+                MOALogger.loge(error.localizedDescription)
+                return
+            }
+            
+            MOALogger.logd("\(isGranted)")
+        }
+        
+        let content = UNMutableNotificationContent()
+        content.title = "테스트"
+        content.body = "테스트입니다."
+        
+        let calendar = Calendar.current
 
+        // 현재 시간을 기준으로 5초를 추가한 Date 생성
+        let now = Date()
+        let fiveSecondsLater = calendar.date(byAdding: .second, value: 10, to: now)!
+
+        // 5초 후의 Date를 DateComponents로 변환
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: fiveSecondsLater)
+
+        print("5초 뒤: \(components)")
+
+
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
+        let uuid = UUID().uuidString
+        let request = UNNotificationRequest(identifier: uuid, content: content, trigger: trigger)
+        
+        notificationCenter.add(request, withCompletionHandler: { error in
+            if let error = error {
+                MOALogger.loge(error.localizedDescription)
+            }
+        })
+    }
+}
