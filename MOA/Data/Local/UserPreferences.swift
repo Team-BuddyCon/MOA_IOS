@@ -12,6 +12,8 @@ private let LOGIN_USER_NAME = "LOGIN_USER_NAME"
 private let USER_ID = "USER_ID"
 private let SIGN_UP = "SIGN_UP"
 private let OAUTH_SERVICE = "OAUTH_SERVICE"
+private let NOTIFICATION_ISON = "NOTIFICATION_ISON"
+private let NOTIFICATION_DDAY = "NOTIFICATION_DDAY"
 
 enum OAuthService: String {
     case Google = "Google"
@@ -24,7 +26,6 @@ final class UserPreferences {
     
     static func isShouldEntryLogin() -> Bool {
         let isShould = UserDefaults.standard.bool(forKey: SHOULD_ENTRY_LOGIN)
-        MOALogger.logd("\(isShould)")
         return isShould
     }
     
@@ -35,7 +36,6 @@ final class UserPreferences {
     
     static func getLoginUserName() -> String {
         let userName = UserDefaults.standard.string(forKey: LOGIN_USER_NAME) ?? ""
-        MOALogger.logd(userName)
         return userName
     }
     
@@ -46,12 +46,11 @@ final class UserPreferences {
     
     static func isSignUp() -> Bool {
         let isSignUp = UserDefaults.standard.bool(forKey: SIGN_UP)
-        MOALogger.logd("\(isSignUp)")
         return isSignUp
     }
     
     static func setSignUp(sign: Bool) {
-        MOALogger.logd()
+        MOALogger.logd("\(sign)")
         UserDefaults.standard.set(sign, forKey: SIGN_UP)
     }
     
@@ -61,7 +60,7 @@ final class UserPreferences {
     }
     
     static func setUserID(userID: String) {
-        MOALogger.logd()
+        MOALogger.logd(userID)
         UserDefaults.standard.set(userID, forKey: USER_ID)
     }
     
@@ -71,7 +70,27 @@ final class UserPreferences {
     }
     
     static func setOAuthService(service: String) {
-        MOALogger.logd()
+        MOALogger.logd(service)
         UserDefaults.standard.set(service, forKey: OAUTH_SERVICE)
+    }
+    
+    static func isNotificationOn() -> Bool {
+        let isOn = UserDefaults.standard.bool(forKey: NOTIFICATION_ISON)
+        return isOn
+    }
+    
+    static func setNotificationOn(isOn: Bool) {
+        MOALogger.logd("\(isOn)")
+        UserDefaults.standard.set(isOn, forKey: NOTIFICATION_ISON)
+    }
+    
+    static func getNotificationDday() -> NotificationDday {
+        let dday = UserDefaults.standard.integer(forKey: NOTIFICATION_DDAY)
+        return NotificationDday(rawValue: dday) ?? NotificationDday.day14
+    }
+    
+    static func setNotificationDday(dday: NotificationDday) {
+        MOALogger.logd()
+        UserDefaults.standard.set(dday.rawValue, forKey: NOTIFICATION_DDAY)
     }
 }

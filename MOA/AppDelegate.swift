@@ -26,7 +26,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         guard let appKey = Bundle.main.infoDictionary?["KakaoApiKey"] as? String else {
             return false
         }
-        UNUserNotificationCenter.current().delegate = self
+        
         RxKakaoSDK.initSDK(appKey: appKey)
         SDKInitializer.InitSDK(appKey: appKey)
         FirebaseApp.configure()
@@ -35,17 +35,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
         return GIDSignIn.sharedInstance.handle(url)
-    }
-}
-
-extension AppDelegate: UNUserNotificationCenterDelegate {
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        MOALogger.logd()
-        completionHandler([.list, .badge, .sound])
-    }
-    
-    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        MOALogger.logd()
-        completionHandler()
     }
 }

@@ -8,6 +8,14 @@
 import UIKit
 import SnapKit
 
+enum NotificationDday: Int {
+    case day14 = 14
+    case day7 = 7
+    case day3 = 3
+    case day1 = 1
+    case day = 0
+}
+
 final class NotificationViewController: BaseViewController {
     
     private let titleLabel: UILabel = {
@@ -18,9 +26,8 @@ final class NotificationViewController: BaseViewController {
         return label
     }()
     
-    private let notiSwitch: UISwitch = {
+    private lazy var notiSwitch: UISwitch = {
         let noti = UISwitch()
-        noti.isOn = true
         noti.onTintColor = .pink100
         noti.tintColor = .grey40
         noti.transform = CGAffineTransformMakeScale(40 / 51.0, 24 / 31.0)
@@ -41,39 +48,80 @@ final class NotificationViewController: BaseViewController {
         return label
     }()
     
-    private let notiDday14: SelectCheckButton = {
-        let view = SelectCheckButton(title: NOTIFICATION_D_DAY_14, isOn: true)
+    private lazy var notiDday14: SelectCheckButton = {
+        let view = SelectCheckButton(title: NOTIFICATION_D_DAY_14)
+        view.isSelect = isOnNotification && dday == .day14
         return view
     }()
     
-    private let notiDday7: SelectCheckButton = {
+    private lazy var  notiDday7: SelectCheckButton = {
         let view = SelectCheckButton(title: NOTIFICATION_D_DAY_7)
+        view.isSelect = isOnNotification && dday == .day7
         return view
     }()
     
-    private let notiDday3: SelectCheckButton = {
+    private lazy var  notiDday3: SelectCheckButton = {
         let view = SelectCheckButton(title: NOTIFICATION_D_DAY_3)
-        view.isSelect = false
+        view.isSelect = isOnNotification && dday == .day3
         return view
     }()
     
-    private let notiDday1: SelectCheckButton = {
+    private lazy var  notiDday1: SelectCheckButton = {
         let view = SelectCheckButton(title: NOTIFICATION_D_DAY_1)
-        view.isSelect = false
+        view.isSelect = isOnNotification && dday == .day1
         return view
     }()
     
-    private let notiDday: SelectCheckButton = {
+    private lazy var  notiDday: SelectCheckButton = {
         let view = SelectCheckButton(title: NOTIFICATION_D_DAY)
-        view.isSelect = false
+        view.isSelect = isOnNotification && dday == .day
         return view
     }()
+    
+    var isOnNotification: Bool = true {
+        didSet {
+            notiSwitch.isOn = isOnNotification
+            if isOnNotification {
+                notiDday14.isSelect = dday == .day14
+                notiDday7.isSelect = dday == .day7
+                notiDday3.isSelect = dday == .day3
+                notiDday1.isSelect = dday == .day1
+                notiDday.isSelect = dday == .day
+            } else {
+                notiDday14.isSelect = false
+                notiDday7.isSelect = false
+                notiDday3.isSelect = false
+                notiDday1.isSelect = false
+                notiDday.isSelect = false
+            }
+        }
+    }
+    
+    var dday: NotificationDday = .day {
+        didSet {
+            notiDday14.isSelect = isOnNotification && dday == .day14
+            notiDday7.isSelect = isOnNotification && dday == .day7
+            notiDday3.isSelect = isOnNotification && dday == .day3
+            notiDday1.isSelect = isOnNotification && dday == .day1
+            notiDday.isSelect = isOnNotification && dday == .day
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
         setupLayout()
         bind()
+        
+        isOnNotification = UserPreferences.isNotificationOn()
+        dday = UserPreferences.getNotificationDday()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        MOALogger.logd()
+        UserPreferences.setNotificationOn(isOn: isOnNotification)
+        UserPreferences.setNotificationDday(dday: dday)
     }
 }
 
@@ -147,49 +195,34 @@ private extension NotificationViewController {
     }
     
     func bind() {
+        notiSwitch.rx.isOn
+            .subscribe(onNext: { [unowned self] isOn in
+                self.isOnNotification = isOn
+            }).disposed(by: disposeBag)
+        
         notiDday14.tapGesture.rx.event
-            .subscribe(onNext: { [weak self] _ in
-                self?.notiDday14.isSelect = true
-                self?.notiDday7.isSelect = false
-                self?.notiDday3.isSelect = false
-                self?.notiDday1.isSelect = false
-                self?.notiDday.isSelect = false
+            .subscribe(onNext: { [unowned self] _ in
+                self.dday = .day14
             }).disposed(by: disposeBag)
         
         notiDday7.tapGesture.rx.event
-            .subscribe(onNext: { [weak self] _ in
-                self?.notiDday14.isSelect = false
-                self?.notiDday7.isSelect = true
-                self?.notiDday3.isSelect = false
-                self?.notiDday1.isSelect = false
-                self?.notiDday.isSelect = false
+            .subscribe(onNext: { [unowned self] _ in
+                self.dday = .day7
             }).disposed(by: disposeBag)
         
         notiDday3.tapGesture.rx.event
-            .subscribe(onNext: { [weak self] _ in
-                self?.notiDday14.isSelect = false
-                self?.notiDday7.isSelect = false
-                self?.notiDday3.isSelect = true
-                self?.notiDday1.isSelect = false
-                self?.notiDday.isSelect = false
+            .subscribe(onNext: { [unowned self] _ in
+                self.dday = .day3
             }).disposed(by: disposeBag)
         
         notiDday1.tapGesture.rx.event
-            .subscribe(onNext: { [weak self] _ in
-                self?.notiDday14.isSelect = false
-                self?.notiDday7.isSelect = false
-                self?.notiDday3.isSelect = false
-                self?.notiDday1.isSelect = true
-                self?.notiDday.isSelect = false
+            .subscribe(onNext: { [unowned self] _ in
+                self.dday = .day1
             }).disposed(by: disposeBag)
         
         notiDday.tapGesture.rx.event
-            .subscribe(onNext: { [weak self] _ in
-                self?.notiDday14.isSelect = false
-                self?.notiDday7.isSelect = false
-                self?.notiDday3.isSelect = false
-                self?.notiDday1.isSelect = false
-                self?.notiDday.isSelect = true
+            .subscribe(onNext: { [unowned self] _ in
+                self.dday = .day
             }).disposed(by: disposeBag)
     }
 }

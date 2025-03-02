@@ -27,7 +27,12 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         if isInit {
             Toast.shared.show(message: LOGIN_SUCCESS_TOAST_TITLE)
             isInit = false
-            requestNotificationPermission()
+            
+            let calender = Calendar.current
+            let now = Date()
+            let fiveSecondsLater = calender.date(byAdding: .second, value: 10, to: now)!
+            
+            NotificationManager.shared.requestAuhthorization()
         }
     }
     
@@ -85,7 +90,6 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
     func requestNotificationPermission() {
         MOALogger.logd()
         
-        
         let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
         let notificationCenter = UNUserNotificationCenter.current()
         notificationCenter.requestAuthorization(options: authOptions) { isGranted, error in
@@ -113,14 +117,30 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         print("5초 뒤: \(components)")
 
 
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         let uuid = UUID().uuidString
         let request = UNNotificationRequest(identifier: uuid, content: content, trigger: trigger)
         
         notificationCenter.add(request, withCompletionHandler: { error in
+            MOALogger.logd("request1")
             if let error = error {
                 MOALogger.loge(error.localizedDescription)
             }
         })
+        
+        let content2 = UNMutableNotificationContent()
+        content2.title = "테스트2"
+        content2.body = "테스트2입니다."
+        
+        let trigger2 = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        let request2 = UNNotificationRequest(identifier: uuid, content: content2, trigger: trigger2)
+        
+        notificationCenter.add(request2, withCompletionHandler: { error in
+            MOALogger.logd("request2")
+            if let error = error {
+                MOALogger.loge(error.localizedDescription)
+            }
+        })
+        
     }
 }
