@@ -247,8 +247,8 @@ private extension WithDrawViewController {
             .bind(to: self.rx.bindToConfirmButton)
             .disposed(by: disposeBag)
         
-        withDrawViewModel.logoutTrigger
-            .bind(to: self.rx.bindToLogoutEvent)
+        withDrawViewModel.withDrawTigger
+            .bind(to: self.rx.bindToWithDrawEvent)
             .disposed(by: disposeBag)
     }
 }
@@ -324,9 +324,8 @@ extension Reactive where Base: WithDrawViewController {
         }
     }
     
-    var bindToLogoutEvent: Binder<Bool> {
+    var bindToWithDrawEvent: Binder<Bool> {
         return Binder<Bool>(self.base) { viewController, isSuccess in
-            //viewController.dismiss(animated: false)
             if isSuccess {
                 do {
                     UserPreferences.setSignUp(sign: false)

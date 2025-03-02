@@ -11,9 +11,11 @@ private let SHOULD_ENTRY_LOGIN = "SHOULD_ENTRY_LOGIN"
 private let LOGIN_USER_NAME = "LOGIN_USER_NAME"
 private let USER_ID = "USER_ID"
 private let SIGN_UP = "SIGN_UP"
+private let SHOW_LOGIN_POPUP = "SHOW_LOGIN_POPUP"
 private let OAUTH_SERVICE = "OAUTH_SERVICE"
 private let NOTIFICATION_ISON = "NOTIFICATION_ISON"
 private let NOTIFICATION_DDAY = "NOTIFICATION_DDAY"
+private let NOTIFICATION_AUTHORIZATION_CHECK = "NOTIFICATION_AUTHORIZATION_CHECK"
 
 enum OAuthService: String {
     case Google = "Google"
@@ -24,6 +26,7 @@ final class UserPreferences {
     
     private init() {}
     
+    // 워크쓰루 이미 본 경우 넘기기 위한 Bool 변수
     static func isShouldEntryLogin() -> Bool {
         let isShould = UserDefaults.standard.bool(forKey: SHOULD_ENTRY_LOGIN)
         return isShould
@@ -34,16 +37,7 @@ final class UserPreferences {
         UserDefaults.standard.set(true, forKey: SHOULD_ENTRY_LOGIN)
     }
     
-    static func getLoginUserName() -> String {
-        let userName = UserDefaults.standard.string(forKey: LOGIN_USER_NAME) ?? ""
-        return userName
-    }
-    
-    static func setLoginUserName(name: String?) {
-        MOALogger.logd(name)
-        UserDefaults.standard.set(name, forKey: LOGIN_USER_NAME)
-    }
-    
+    // 이미 회원가입한 경우
     static func isSignUp() -> Bool {
         let isSignUp = UserDefaults.standard.bool(forKey: SIGN_UP)
         return isSignUp
@@ -52,6 +46,26 @@ final class UserPreferences {
     static func setSignUp(sign: Bool) {
         MOALogger.logd("\(sign)")
         UserDefaults.standard.set(sign, forKey: SIGN_UP)
+    }
+    
+    static func isShowLoginPopup() -> Bool {
+        let isShow = UserDefaults.standard.bool(forKey: SHOW_LOGIN_POPUP)
+        return isShow
+    }
+    
+    static func setShowLogin(isShow: Bool) {
+        MOALogger.logd("\(isShow)")
+        UserDefaults.standard.set(isShow, forKey: SHOW_LOGIN_POPUP)
+    }
+    
+    static func getLoginUserName() -> String {
+        let userName = UserDefaults.standard.string(forKey: LOGIN_USER_NAME) ?? ""
+        return userName
+    }
+    
+    static func setLoginUserName(name: String?) {
+        MOALogger.logd(name)
+        UserDefaults.standard.set(name, forKey: LOGIN_USER_NAME)
     }
     
     static func getUserID() -> String {
@@ -92,5 +106,15 @@ final class UserPreferences {
     static func setNotificationDday(dday: NotificationDday) {
         MOALogger.logd()
         UserDefaults.standard.set(dday.rawValue, forKey: NOTIFICATION_DDAY)
+    }
+    
+    static func isCheckNotificationAuthorization() -> Bool {
+        let isCheck = UserDefaults.standard.bool(forKey: NOTIFICATION_AUTHORIZATION_CHECK)
+        return isCheck
+    }
+    
+    static func setCheckNotificationAuthorization() {
+        MOALogger.logd()
+        UserDefaults.standard.set(true, forKey: NOTIFICATION_AUTHORIZATION_CHECK)
     }
 }

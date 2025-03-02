@@ -15,7 +15,7 @@ final class WithDrawViewModel: BaseViewModel {
     let gifticonService: GifticonServiceProtocol
     let phrase = BehaviorRelay(value: WithDrawPhrase.Reason)
     let reason = BehaviorRelay(value: WithDrawReason.NotUseApp)
-    let logoutTrigger = PublishRelay<Bool>()
+    let withDrawTigger = PublishRelay<Bool>()
     
     init(gifticonService: GifticonServiceProtocol) {
         self.gifticonService = gifticonService
@@ -25,11 +25,11 @@ final class WithDrawViewModel: BaseViewModel {
         gifticonService.deleteGifticons()
             .subscribe(
                 onNext: { isSuccess in
-                    self.logoutTrigger.accept(isSuccess)
+                    self.withDrawTigger.accept(isSuccess)
                 },
                 onError: { error in
                     MOALogger.loge(error.localizedDescription)
-                    self.logoutTrigger.accept(false)
+                    self.withDrawTigger.accept(false)
                 }
             ).disposed(by: disposeBag)
     }

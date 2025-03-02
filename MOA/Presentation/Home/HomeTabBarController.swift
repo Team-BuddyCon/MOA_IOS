@@ -10,8 +10,6 @@ import SnapKit
 
 final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate {
     
-    private var isInit: Bool = true
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
@@ -23,15 +21,12 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // TODO 앱 로그인 시에만 노출 (로그인 화면에서 UserDefault true, 여기서 false)
-        if isInit {
+        if UserPreferences.isShowLoginPopup() {
             Toast.shared.show(message: LOGIN_SUCCESS_TOAST_TITLE)
-            isInit = false
-            
-            let calender = Calendar.current
-            let now = Date()
-            let fiveSecondsLater = calender.date(byAdding: .second, value: 10, to: now)!
-            
+            UserPreferences.setShowLogin(isShow: false)
+        }
+        
+        if !UserPreferences.isCheckNotificationAuthorization() {
             NotificationManager.shared.requestAuhthorization()
         }
     }

@@ -63,6 +63,7 @@ final class LoginViewController: BaseViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        UserPreferences.setShowLogin(isShow: true)
         
         if isLogout {
             showAlertModal(
