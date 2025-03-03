@@ -281,6 +281,7 @@ private extension Reactive where Base: GifticonEditViewController {
                 cancelText: CLOSE
             ) {
                 viewController.gifticonEditViewModel.updateGifticon(
+                    viewController.gifticon,
                     gifticonId: viewController.gifticon.gifticonId,
                     name: name,
                     expireDate: expireDate,
