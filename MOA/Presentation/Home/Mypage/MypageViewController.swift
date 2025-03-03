@@ -173,6 +173,7 @@ extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
                 ) {
                     let auth = Auth.auth()
                     do {
+                        NotificationManager.shared.removeAll()
                         try auth.signOut()
                         UIApplication.shared.setRootViewController(viewController: LoginViewController(isLogout: true))
                     } catch let error as NSError {
@@ -180,6 +181,7 @@ extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
                     }
                 }
             case .SignOut:
+                NotificationManager.shared.removeAll()
                 let withDrawVC = WithDrawViewController()
                 navigationController?.pushViewController(withDrawVC, animated: true)
             }
