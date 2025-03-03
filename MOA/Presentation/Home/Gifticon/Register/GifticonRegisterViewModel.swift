@@ -38,6 +38,10 @@ final class GifticonRegisterViewModel: BaseViewModel {
             ).subscribe(
                 onNext: { gifticonId in
                     if !gifticonId.isEmpty {
+                        self.registerNotification(
+                            expireDate: expireDate,
+                            name: name
+                        )
                         onSucess(gifticonId)
                     }
                 },
@@ -47,5 +51,25 @@ final class GifticonRegisterViewModel: BaseViewModel {
                 }
             ).disposed(by: disposeBag)
         }
+    }
+    
+    private func registerNotification(
+        expireDate: String,
+        name: String
+    ) {
+        MOALogger.logd()
+        guard UserPreferences.isNotificationOn() else { return }
+        
+        let date = expireDate.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT)
+        let notificationDate = UserPreferences.getNotificationDday().getNotificationDate(target: date)
+        
+        guard let notificationDate = notificationDate else { return }
+        if notificationDate <= Date() { return }
+        
+        NotificationManager.shared.register(
+            expireDate,
+            date: notificationDate,
+            name: name
+        )
     }
 }

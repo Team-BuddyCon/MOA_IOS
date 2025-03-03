@@ -38,10 +38,9 @@ final class GifticonEditViewModel: BaseViewModel {
             onNext: { [unowned self] isSuccess in
                 if isSuccess {
                     updateNotification(
-                        prev_id: prev_model.expireDate,
+                        prev_expireDate: prev_model.expireDate,
                         prev_name: prev_model.name,
-                        identifier: expireDate,
-                        expireDate: expireDate.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT),
+                        expireDate: expireDate,
                         name: name
                     )
                     navigationResult.accept(.update)
@@ -71,24 +70,24 @@ final class GifticonEditViewModel: BaseViewModel {
     }
     
     private func updateNotification(
-        prev_id: String,
+        prev_expireDate: String,
         prev_name: String,
-        identifier: String,
-        expireDate: Date?,
+        expireDate: String,
         name: String
     ) {
         MOALogger.logd()
         guard UserPreferences.isNotificationOn() else { return }
         
-        NotificationManager.shared.remove(prev_id, name: prev_name)
+        NotificationManager.shared.remove(prev_expireDate, name: prev_name)
         
-        let notificationDate = UserPreferences.getNotificationDday().getNotificationDate(target: expireDate)
+        let date = expireDate.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT)
+        let notificationDate = UserPreferences.getNotificationDday().getNotificationDate(target: date)
         
         guard let notificationDate = notificationDate else { return }
         if notificationDate <= Date() { return }
         
         NotificationManager.shared.register(
-            identifier,
+            expireDate,
             date: notificationDate,
             name: name
         )
