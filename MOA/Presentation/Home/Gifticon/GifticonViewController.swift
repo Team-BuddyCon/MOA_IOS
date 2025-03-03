@@ -102,10 +102,9 @@ final class GifticonViewController: BaseViewController {
         super.viewWillAppear(animated)
         MOALogger.logd()
         
-        if !isFirstEntry {
+        if !gifticonViewModel.isFirstFetch {
             gifticonViewModel.fetchAllGifticons()
         }
-        isFirstEntry = false
     }
 }
 

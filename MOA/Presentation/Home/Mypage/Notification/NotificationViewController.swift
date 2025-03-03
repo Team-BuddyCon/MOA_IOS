@@ -14,6 +14,10 @@ enum NotificationDday: Int {
     case day3 = 3
     case day1 = 1
     case day = 0
+    
+    func getNotificationDate(target: Date) -> Date? {
+        return target.addingTimeInterval(-Double((self.rawValue * 24 * 3600)))
+    }
 }
 
 final class NotificationViewController: BaseViewController {

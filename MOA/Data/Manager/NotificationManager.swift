@@ -12,6 +12,7 @@ final class NotificationManager: NSObject {
     static let shared = NotificationManager()
     
     private let notificationCenter = UNUserNotificationCenter.current()
+    private var identifiers: [String] = []
     
     private override init() {
         super.init()
@@ -62,7 +63,22 @@ final class NotificationManager: NSObject {
                 MOALogger.loge(error.localizedDescription)
                 return
             }
+            
+            self.identifiers.append(identifier)
         }
+    }
+    
+    func remove(_ identifier: String) {
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
+        
+        if let index = identifiers.firstIndex(of: identifier) {
+            identifiers.remove(at: index)
+        }
+    }
+    
+    func removeAll() {
+        notificationCenter.removeAllPendingNotificationRequests()
+        identifiers.removeAll()
     }
 }
 
