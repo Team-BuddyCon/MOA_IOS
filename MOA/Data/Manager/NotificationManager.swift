@@ -11,6 +11,7 @@ import UserNotifications
 final class NotificationManager: NSObject {
     static let shared = NotificationManager()
     
+    var notificationDay: NotificationDday = UserPreferences.getNotificationDday()
     private let notificationCenter = UNUserNotificationCenter.current()
     private var identifierDic: [String: [String]] = [:] {
         didSet {

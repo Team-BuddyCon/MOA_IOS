@@ -112,6 +112,8 @@ final class NotificationViewController: BaseViewController {
         }
     }
     
+    private let notificationViewModel = NotificationViewModel(gifticonService: GifticonService.shared)
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
@@ -122,9 +124,23 @@ final class NotificationViewController: BaseViewController {
         dday = UserPreferences.getNotificationDday()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        notificationViewModel.fetchAllGifticons()
+    }
+    
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         MOALogger.logd()
+        
+        if isOnNotification {
+            if NotificationManager.shared.notificationDay != dday {
+                notificationViewModel.updateNotifications(dday: dday)
+            }
+        } else {
+            NotificationManager.shared.removeAll()
+        }
+        
         UserPreferences.setNotificationOn(isOn: isOnNotification)
         UserPreferences.setNotificationDday(dday: dday)
     }
