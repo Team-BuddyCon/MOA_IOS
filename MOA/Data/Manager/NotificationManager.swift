@@ -12,7 +12,11 @@ final class NotificationManager: NSObject {
     static let shared = NotificationManager()
     
     private let notificationCenter = UNUserNotificationCenter.current()
-    private var identifiers: [String] = []
+    private var identifierDic: [String: [String]] = [:] {
+        didSet {
+            MOALogger.logd("\(identifierDic)")
+        }
+    }
     
     private override init() {
         super.init()
@@ -24,6 +28,8 @@ final class NotificationManager: NSObject {
         
         let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
         notificationCenter.requestAuthorization(options: authOptions) { isGranted, error in
+            UserPreferences.setCheckNotificationAuthorization()
+            
             if let error = error {
                 MOALogger.loge(error.localizedDescription)
                 return
@@ -40,13 +46,22 @@ final class NotificationManager: NSObject {
     func register(
         _ identifier: String,
         date: Date,
-        title: String,
-        body: String
+        name: String
     ) {
         MOALogger.logd("\(identifier)")
+        
+        var isRegistered: Bool = false
+        if identifierDic.contains(where: { $0.key == identifier }) {
+            notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
+            isRegistered = true
+            self.identifierDic[identifier]?.append(name)
+        } else {
+            self.identifierDic[identifier] = [name]
+        }
+        
         let content = UNMutableNotificationContent()
-        content.title = title
-        content.body = body
+        content.title = isRegistered ? "\(name)외에 \(String(describing: identifierDic[identifier]?.count)) 개 만료 임박" : "\(name) 만료 임박"
+        content.body = isRegistered ? "\(name)외에 \(String(describing: identifierDic[identifier]?.count)) 개가 곧 만료돼요" : "\(name) 곧 만료돼요"
         
         let calendar = Calendar.current
         let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
@@ -63,22 +78,57 @@ final class NotificationManager: NSObject {
                 MOALogger.loge(error.localizedDescription)
                 return
             }
-            
-            self.identifiers.append(identifier)
         }
     }
     
-    func remove(_ identifier: String) {
-        notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
+    func remove(
+        _ identifier: String,
+        name: String
+    ) {
+        MOALogger.logd("\(identifier)")
         
-        if let index = identifiers.firstIndex(of: identifier) {
-            identifiers.remove(at: index)
+        if var count = identifierDic[identifier]?.count {
+            notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
+            if count > 1 {
+                if let index = identifierDic[identifier]?.firstIndex(of: name) {
+                    identifierDic[identifier]?.remove(at: index)
+                    count -= 1
+                }
+                
+                let content = UNMutableNotificationContent()
+                content.title = count > 1 ? "\(name)외에 \(count) 개 만료 임박" : "\(name) 만료 임박"
+                content.body = count > 1 ? "\(name)외에 \(count) 개가 곧 만료돼요" : "\(name) 곧 만료돼요"
+                
+                let date = identifier.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT)
+                let notificationDate = UserPreferences.getNotificationDday().getNotificationDate(target: date)
+                guard let notificationDate = notificationDate else { return }
+                
+                let calendar = Calendar.current
+                let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: notificationDate)
+                
+                let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+                let request = UNNotificationRequest(
+                    identifier: identifier,
+                    content: content,
+                    trigger: trigger
+                )
+                
+                notificationCenter.add(request) { error in
+                    if let error = error {
+                        MOALogger.loge(error.localizedDescription)
+                        return
+                    }
+                }
+                
+            } else {
+                identifierDic.removeValue(forKey: identifier)
+            }
         }
     }
     
     func removeAll() {
         notificationCenter.removeAllPendingNotificationRequests()
-        identifiers.removeAll()
+        identifierDic.removeAll()
     }
 }
 

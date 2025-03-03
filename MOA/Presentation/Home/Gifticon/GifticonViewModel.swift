@@ -89,31 +89,20 @@ final class GifticonViewModel: BaseViewModel {
         
         expireDateGroup.forEach {
             let expireDate = $0.key.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT)
-            let count = $0.value.count
             let notificationDate = UserPreferences.getNotificationDday().getNotificationDate(target: $0.key)
+            let gifticons = $0.value
             
             guard let notificationDate = notificationDate else { return }
             if notificationDate <= Date() { return }
             
             MOALogger.logd("notificationDate: \(notificationDate), expireDate: \(expireDate)")
             
-            // TODO 메세지, 본문 변경
-            if count > 1 {
+            gifticons.forEach { gifticon in
                 NotificationManager.shared.register(
                     expireDate,
                     date: notificationDate,
-                    title: "기프티콘 \(count)개 만료 임박",
-                    body: "기프티콘 \(count)개가 곧 만료돼요"
+                    name: gifticon.name
                 )
-            } else {
-                if let gifticon = $0.value.first {
-                    NotificationManager.shared.register(
-                        expireDate,
-                        date: notificationDate,
-                        title: "\(gifticon.name) 만료 임박",
-                        body: "\(gifticon.name) 곧 만료돼요"
-                    )
-                }
             }
         }
     }

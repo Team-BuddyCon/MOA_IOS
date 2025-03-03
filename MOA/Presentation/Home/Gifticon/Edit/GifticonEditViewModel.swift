@@ -45,15 +45,29 @@ final class GifticonEditViewModel: BaseViewModel {
         ).disposed(by: disposeBag)
     }
     
-    func deleteGifticon(gifticonId: String) {
+    func deleteGifticon(
+        gifticonId: String,
+        name: String,
+        expireDate: String
+    ) {
         gifticonService.deleteGifticon(gifticonId: gifticonId)
             .subscribe(
                 onNext: { [unowned self] isSuccess in
+                    removeNotification(identifier: expireDate, name: name)
                     navigationResult.accept(.delete)
                 },
                 onError: { error in
                     MOALogger.loge(error.localizedDescription)
                 }
             ).disposed(by: disposeBag)
+    }
+    
+    private func removeNotification(
+        identifier: String,
+        name: String
+    ) {
+        MOALogger.logd()
+        guard UserPreferences.isNotificationOn() else { return }
+        NotificationManager.shared.remove(identifier, name: name)
     }
 }

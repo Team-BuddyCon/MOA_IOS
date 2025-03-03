@@ -15,7 +15,8 @@ enum NotificationDday: Int {
     case day1 = 1
     case day = 0
     
-    func getNotificationDate(target: Date) -> Date? {
+    func getNotificationDate(target: Date?) -> Date? {
+        guard let target = target else { return nil }
         return target.addingTimeInterval(-Double((self.rawValue * 24 * 3600)))
     }
 }
