@@ -52,6 +52,10 @@ final class NotificationManager: NSObject {
         
         var isRegistered: Bool = false
         if identifierDic.contains(where: { $0.key == identifier }) {
+            if let index = identifierDic[identifier]?.firstIndex(of: name) {
+                return
+            }
+            
             notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
             isRegistered = true
             self.identifierDic[identifier]?.append(name)
@@ -90,6 +94,10 @@ final class NotificationManager: NSObject {
         
         // 등록된 알림이 없으면 무시
         if !identifierDic.contains(where: { $0.key == identifier }) { return }
+        
+        // name 기프티콘에 해당되는 알림은 없을 경우 무시
+        if identifierDic[identifier]?.firstIndex(of: name) == nil { return }
+        
         notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
         
         var count = identifierDic[identifier]?.count ?? 0

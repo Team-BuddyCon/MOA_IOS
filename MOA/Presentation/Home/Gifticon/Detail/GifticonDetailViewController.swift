@@ -201,7 +201,21 @@ final class GifticonDetailViewController: BaseViewController {
         super.viewDidDisappear(animated)
         
         if gifticonDetailViewModel.gifticon.used {
-            NotificationManager.shared.remove(gifticonDetailViewModel.gifticon.expireDate, name: gifticonDetailViewModel.gifticon.name)
+            NotificationManager.shared.remove(
+                gifticonDetailViewModel.gifticon.expireDate,
+                name: gifticonDetailViewModel.gifticon.name
+            )
+        } else {
+            let date = gifticonDetailViewModel.gifticon.expireDate.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT)
+            let notificationDate = UserPreferences.getNotificationDday().getNotificationDate(target: date)
+            guard let notificationDate = notificationDate else { return }
+            if notificationDate <= Date() { return }
+            
+            NotificationManager.shared.register(
+                gifticonDetailViewModel.gifticon.expireDate,
+                date: notificationDate,
+                name: gifticonDetailViewModel.gifticon.name
+            )
         }
     }
 }
