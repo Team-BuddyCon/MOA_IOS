@@ -196,6 +196,14 @@ final class GifticonDetailViewController: BaseViewController {
         super.viewWillDisappear(animated)
         MOALogger.logd()
     }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        
+        if gifticonDetailViewModel.gifticon.used {
+            NotificationManager.shared.remove(gifticonDetailViewModel.gifticon.expireDate, name: gifticonDetailViewModel.gifticon.name)
+        }
+    }
 }
 
 private extension GifticonDetailViewController {

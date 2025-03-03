@@ -81,47 +81,54 @@ final class NotificationManager: NSObject {
         }
     }
     
+    // 단일 기프티콘 만료 알림 or 다중 기프티콘 만료 알림에 따라 신규 등록 필요
     func remove(
         _ identifier: String,
         name: String
     ) {
         MOALogger.logd("\(identifier)")
         
-        if var count = identifierDic[identifier]?.count {
-            notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
-            if count > 1 {
-                if let index = identifierDic[identifier]?.firstIndex(of: name) {
-                    identifierDic[identifier]?.remove(at: index)
-                    count -= 1
-                }
-                
-                let content = UNMutableNotificationContent()
-                content.title = count > 1 ? "\(name)외에 \(count) 개 만료 임박" : "\(name) 만료 임박"
-                content.body = count > 1 ? "\(name)외에 \(count) 개가 곧 만료돼요" : "\(name) 곧 만료돼요"
-                
-                let date = identifier.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT)
-                let notificationDate = UserPreferences.getNotificationDday().getNotificationDate(target: date)
-                guard let notificationDate = notificationDate else { return }
-                
-                let calendar = Calendar.current
-                let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: notificationDate)
-                
-                let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-                let request = UNNotificationRequest(
-                    identifier: identifier,
-                    content: content,
-                    trigger: trigger
-                )
-                
-                notificationCenter.add(request) { error in
-                    if let error = error {
-                        MOALogger.loge(error.localizedDescription)
-                        return
-                    }
-                }
-                
-            } else {
-                identifierDic.removeValue(forKey: identifier)
+        // 등록된 알림이 없으면 무시
+        if !identifierDic.contains(where: { $0.key == identifier }) { return }
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
+        
+        var count = identifierDic[identifier]?.count ?? 0
+        guard count > 0 else { return }
+        
+        if count > 1 {
+            if let index = identifierDic[identifier]?.firstIndex(of: name) {
+                identifierDic[identifier]?.remove(at: index)
+            }
+        } else {
+            identifierDic.removeValue(forKey: identifier)
+        }
+        
+        count -= 1
+        guard count > 0 else { return }
+        guard let titleName = identifierDic[identifier]?.first else { return }
+        
+        let content = UNMutableNotificationContent()
+        content.title = count > 1 ? "\(titleName)외에 \(count) 개 만료 임박" : "\(titleName) 만료 임박"
+        content.body = count > 1 ? "\(titleName)외에 \(count) 개가 곧 만료돼요" : "\(titleName) 곧 만료돼요"
+        
+        let date = identifier.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT)
+        let notificationDate = UserPreferences.getNotificationDday().getNotificationDate(target: date)
+        guard let notificationDate = notificationDate else { return }
+        
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: notificationDate)
+        
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        let request = UNNotificationRequest(
+            identifier: identifier,
+            content: content,
+            trigger: trigger
+        )
+        
+        notificationCenter.add(request) { error in
+            if let error = error {
+                MOALogger.loge(error.localizedDescription)
+                return
             }
         }
     }
