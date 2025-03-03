@@ -31,6 +31,7 @@ extension Date {
 extension String {
     func toDate(format: String) -> Date? {
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
         formatter.dateFormat = format
         return formatter.date(from: self)
     }
@@ -38,9 +39,12 @@ extension String {
     func toDday() -> Int {
         let formatter = DateFormatter()
         formatter.dateFormat = AVAILABLE_GIFTICON_TIME_FORMAT
-        let date = formatter.date(from: self)
+        let date = formatter.date(from: self) ?? Date()
+        
         let calendar = Calendar.current
-        return calendar.dateComponents([.day], from: Date(), to: date ?? Date()).day ?? 0
+        let fromDate = calendar.startOfDay(for: Date())
+        let toDate = calendar.startOfDay(for: date)
+        return calendar.dateComponents([.day], from: fromDate, to: toDate).day ?? 0
     }
     
     func transformTimeformat(

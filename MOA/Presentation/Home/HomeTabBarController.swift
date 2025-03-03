@@ -10,22 +10,24 @@ import SnapKit
 
 final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate {
     
-    private var isInit: Bool = true
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
         setupAppearance()
         setupViewControllers()
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // TODO 앱 로그인 시에만 노출 (로그인 화면에서 UserDefault true, 여기서 false)
-        if isInit {
+        if UserPreferences.isShowLoginPopup() {
             Toast.shared.show(message: LOGIN_SUCCESS_TOAST_TITLE)
-            isInit = false
+            UserPreferences.setShowLogin(isShow: false)
+        }
+        
+        if !UserPreferences.isCheckNotificationAuthorization() {
+            NotificationManager.shared.requestAuhthorization()
         }
     }
     
@@ -79,5 +81,61 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         
         return true
     }
-}
+    
+    func requestNotificationPermission() {
+        MOALogger.logd()
+        
+        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
+        let notificationCenter = UNUserNotificationCenter.current()
+        notificationCenter.requestAuthorization(options: authOptions) { isGranted, error in
+            if let error = error {
+                MOALogger.loge(error.localizedDescription)
+                return
+            }
+            
+            MOALogger.logd("\(isGranted)")
+        }
+        
+        let content = UNMutableNotificationContent()
+        content.title = "테스트"
+        content.body = "테스트입니다."
+        
+        let calendar = Calendar.current
 
+        // 현재 시간을 기준으로 5초를 추가한 Date 생성
+        let now = Date()
+        let fiveSecondsLater = calendar.date(byAdding: .second, value: 10, to: now)!
+
+        // 5초 후의 Date를 DateComponents로 변환
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: fiveSecondsLater)
+
+        print("5초 뒤: \(components)")
+
+
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        let uuid = UUID().uuidString
+        let request = UNNotificationRequest(identifier: uuid, content: content, trigger: trigger)
+        
+        notificationCenter.add(request, withCompletionHandler: { error in
+            MOALogger.logd("request1")
+            if let error = error {
+                MOALogger.loge(error.localizedDescription)
+            }
+        })
+        
+        let content2 = UNMutableNotificationContent()
+        content2.title = "테스트2"
+        content2.body = "테스트2입니다."
+        
+        let trigger2 = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        let request2 = UNNotificationRequest(identifier: uuid, content: content2, trigger: trigger2)
+        
+        notificationCenter.add(request2, withCompletionHandler: { error in
+            MOALogger.logd("request2")
+            if let error = error {
+                MOALogger.loge(error.localizedDescription)
+            }
+        })
+        
+    }
+}
