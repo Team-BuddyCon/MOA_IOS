@@ -122,6 +122,8 @@ final class MapViewController: BaseViewController {
         kakaoService: KakaoService.shared
     )
     
+    var isActive: Bool = true
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
@@ -141,19 +143,23 @@ final class MapViewController: BaseViewController {
         super.viewDidAppear(animated)
         MOALogger.logd()
         
-        if mapManager?.isEngineActive == false {
-            mapManager?.activateEngine()
+        // 최초 권한 팝업: viewWillAppear -> willResignActive -> viewDidAppear
+        // 엔진은 앱이 활성화 상태에서만 가능 -> 마커 추가, 지도 표시, 카메라 이동 등
+        if isActive {
+            if mapManager?.isEngineActive == false {
+                mapManager?.activateEngine()
+            }
+            
+            mapViewModel.refresh()
         }
-        
-        mapViewModel.refresh()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
+        MOALogger.logd()
         mapManager?.kmAuth = false
         mapManager?.removeObserver()
         mapManager?.pauseEngine()
         super.viewWillDisappear(animated)
-        MOALogger.logd()
     }
 }
 
@@ -440,7 +446,10 @@ extension MapViewController {
         
     @objc func didBecomeActive() {
         MOALogger.logd()
+        isActive = true
         
+        // 엔진이 활성화 되지 않는 상태: 최초 팝업, 딥링크로 이동, 권한 설정으로 이동
+        // 포그라운드 올라올 때 엔진 활성화 시키기
         if mapManager?.isEngineActive == false {
             mapManager?.activateEngine()
             
@@ -453,5 +462,6 @@ extension MapViewController {
     
     @objc func willResignActive() {
         MOALogger.logd()
+        isActive = false
     }
 }
