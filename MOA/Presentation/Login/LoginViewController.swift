@@ -157,17 +157,15 @@ private extension LoginViewController {
                         
                         if let result = result {
                             UserPreferences.setOAuthService(service: OAuthService.Google.rawValue)
+                            UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
+                            UserPreferences.setUserID(userID: result.user.uid)
                             if result.additionalUserInfo?.newUser() == true {
                                 if UserPreferences.isSignUp() {
                                     UIApplication.shared.navigationHome()
                                 } else {
-                                    UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
-                                    UserPreferences.setUserID(userID: result.user.uid)
                                     self.navigationController?.pushViewController(SignUpViewController(), animated: true)
                                 }
                             } else {
-                                UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
-                                UserPreferences.setUserID(userID: result.user.uid)
                                 UIApplication.shared.navigationHome()
                             }
                         }
@@ -199,21 +197,17 @@ private extension LoginViewController {
                     
                     if let result = result {
                         UserPreferences.setOAuthService(service: OAuthService.Google.rawValue)
+                        UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
+                        UserPreferences.setUserID(userID: result.user.uid)
                         if result.additionalUserInfo?.newUser() == true {
                             if UserPreferences.isSignUp() {
                                 UIApplication.shared.navigationHome()
                             } else {
-                                UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
-                                UserPreferences.setUserID(userID: result.user.uid)
                                 self.navigationController?.pushViewController(SignUpViewController(), animated: true)
                             }
                         } else {
-                            UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
-                            UserPreferences.setUserID(userID: result.user.uid)
                             UIApplication.shared.navigationHome()
                         }
-                        
-                      
                     }
                 }
             }
@@ -290,17 +284,15 @@ extension LoginViewController: ASAuthorizationControllerDelegate {
                 
                 if let result = result {
                     UserPreferences.setOAuthService(service: OAuthService.Apple.rawValue)
+                    UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
+                    UserPreferences.setUserID(userID: result.user.uid)
                     if result.additionalUserInfo?.newUser() == true {
                         if UserPreferences.isSignUp() {
                             UIApplication.shared.navigationHome()
                         } else {
-                            UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
-                            UserPreferences.setUserID(userID: result.user.uid)
                             self.navigationController?.pushViewController(SignUpViewController(), animated: true)
                         }
                     } else {
-                        UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
-                        UserPreferences.setUserID(userID: result.user.uid)
                         UIApplication.shared.navigationHome()
                     }
                 }
