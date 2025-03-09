@@ -62,13 +62,13 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
             items[2].title = MYPAGE_MENU_TITLE
         }
         
-        setupTopBarWithLargeTitle(title: GIFTICON_MENU_TITLE)
+        setupTopBarWithLargeTitleAndNotification(title: GIFTICON_MENU_TITLE)
     }
     
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
 
         if viewController is GifticonViewController {
-            setupTopBarWithLargeTitle(title: GIFTICON_MENU_TITLE)
+            setupTopBarWithLargeTitleAndNotification(title: GIFTICON_MENU_TITLE)
         }
         
         if viewController is MapViewController {

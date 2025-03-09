@@ -47,6 +47,14 @@ extension String {
         return calendar.dateComponents([.day], from: fromDate, to: toDate).day ?? 0
     }
     
+    func toDTime() -> Int {
+        let formatter = DateFormatter()
+        formatter.dateFormat = AVAILABLE_GIFTICON_TIME_FORMAT
+        let date = formatter.date(from: self) ?? Date()
+        let calendar = Calendar.current
+        return calendar.dateComponents([.hour], from: Date(), to: date).hour ?? 0
+    }
+    
     func transformTimeformat(
         origin: String,
         dest: String

@@ -29,6 +29,7 @@ let WITHDRAW = "탈퇴"
 let USER_NAME = "사용자"
 let MOA_INQUERY_MAIL = "buddycon2022@gmail.com"
 let MOA_INQUERY_SUBJECT = "MOA 문의"
+let GIFTICON = "기프티콘"
 
 // MARK: Design System
 let dday_end = "만료"
@@ -214,6 +215,7 @@ let REGISTER_LOADING2_ICON = "RegisterLoading2"
 let REGISTER_LOADING3_ICON = "RegisterLoading3"
 let REGISTER_LOADING4_ICON = "RegisterLoading4"
 let REGISTER_LOADING5_ICON = "RegisterLoading5"
+let NOTIFICATION_GIFTICON_ICON = "NotificationGifticonIcon"
 
 // MARK: Font
 let pretendard_black = "Pretendard-Black"

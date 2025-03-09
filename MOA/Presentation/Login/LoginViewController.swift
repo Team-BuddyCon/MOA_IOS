@@ -166,6 +166,7 @@ private extension LoginViewController {
                                     self.navigationController?.pushViewController(SignUpViewController(), animated: true)
                                 }
                             } else {
+                                UserPreferences.setSignUp(sign: true)
                                 UIApplication.shared.navigationHome()
                             }
                         }
@@ -206,6 +207,7 @@ private extension LoginViewController {
                                 self.navigationController?.pushViewController(SignUpViewController(), animated: true)
                             }
                         } else {
+                            UserPreferences.setSignUp(sign: true)
                             UIApplication.shared.navigationHome()
                         }
                     }
@@ -293,6 +295,7 @@ extension LoginViewController: ASAuthorizationControllerDelegate {
                             self.navigationController?.pushViewController(SignUpViewController(), animated: true)
                         }
                     } else {
+                        UserPreferences.setSignUp(sign: true)
                         UIApplication.shared.navigationHome()
                     }
                 }

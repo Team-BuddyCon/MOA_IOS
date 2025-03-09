@@ -3,6 +3,7 @@
     <entity name="NotificationInfo" representedClassName="NotificationInfo" syncable="YES">
         <attribute name="count" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="date" optional="YES" attributeType="String"/>
+        <attribute name="gifticonId" optional="YES" attributeType="String"/>
         <attribute name="message" optional="YES" attributeType="String"/>
     </entity>
 </model>

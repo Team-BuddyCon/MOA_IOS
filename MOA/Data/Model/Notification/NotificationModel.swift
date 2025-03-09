@@ -11,4 +11,5 @@ struct NotificationModel {
     let count: Int
     let date: String
     let message: String
+    let gifticonId: String
 }

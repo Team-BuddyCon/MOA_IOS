@@ -34,6 +34,7 @@ class NotificationDataManager {
             info.setValue(notification.count, forKey: "count")
             info.setValue(notification.date, forKey: "date")
             info.setValue(notification.message, forKey: "message")
+            info.setValue(notification.gifticonId, forKey: "gifticonId")
             
             do {
                 try context.save()

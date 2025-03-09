@@ -25,6 +25,11 @@ extension UIViewController {
         navigationItem.rightBarButtonItem = nil
     }
     
+    func setupTopBarWithLargeTitleAndNotification(title: String) {
+        navigationItem.leftBarButtonItem = makeLeftLargeTitle(title: title)
+        navigationItem.rightBarButtonItem = makeNotificationButton()
+    }
+    
     func setupTopBarWithBackButton(title: String){
         navigationItem.leftBarButtonItem = makeBackButton()
         navigationItem.titleView = makeTitle(title: title)
@@ -65,8 +70,15 @@ extension UIViewController {
     @objc private func makeNotificationButton() -> UIBarButtonItem {
         let button = UIButton()
         button.setImage(UIImage(named: NOTIFICATION_ICON), for: .normal)
+        button.setImage(UIImage(named: NOTIFICATION_ICON), for: .highlighted)
         button.tintColor = .grey90
         button.clipsToBounds = true
+        button.addTarget(self, action: #selector(tapNotification), for: .touchUpInside)
         return UIBarButtonItem(customView: button)
+    }
+    
+    @objc private func tapNotification() {
+        let notificationDataVC = NotificationDataViewController()
+        navigationController?.pushViewController(notificationDataVC, animated: false)
     }
 }
