@@ -78,8 +78,8 @@ final class GifticonViewModel: BaseViewModel {
         // 등록된 알림 모두 제거
         NotificationManager.shared.removeAll()
         
-        let expireGroup = Dictionary(grouping: gifticons.value) { $0.expireDate }
-        let expireDateGroup = Dictionary(uniqueKeysWithValues: expireGroup.compactMap {
+        let expireGroup: [String: [GifticonModel]] = Dictionary(grouping: gifticons.value) { $0.expireDate }
+        let expireDateGroup: [Date: [GifticonModel]] = Dictionary(uniqueKeysWithValues: expireGroup.compactMap {
             if let date = $0.key.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT) {
                 return (date, $0.value)
             } else {
@@ -87,22 +87,24 @@ final class GifticonViewModel: BaseViewModel {
             }
         })
         
-        expireDateGroup.forEach {
-            let expireDate = $0.key.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT)
-            let notificationDate = UserPreferences.getNotificationDday().getNotificationDate(target: $0.key)
-            let gifticons = $0.value
+        expireDateGroup.forEach { group in
+            let expireDate = group.key.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT)
+            let gifticons = group.value
             
-            guard let notificationDate = notificationDate else { return }
-            if notificationDate <= Date() { return }
-            
-            MOALogger.logd("notificationDate: \(notificationDate), expireDate: \(expireDate)")
-            
-            gifticons.forEach { gifticon in
-                NotificationManager.shared.register(
-                    expireDate,
-                    date: notificationDate,
-                    name: gifticon.name
-                )
+            let notificationTriggerDays = UserPreferences.getNotificationTriggerDays()
+            notificationTriggerDays.forEach { triggerDay in
+                if let notificationDate = triggerDay.getNotificationDate(target: group.key),
+                   notificationDate > Date() {
+                    MOALogger.logd("notificationDate: \(notificationDate), expireDate: \(expireDate)")
+                    
+                    gifticons.forEach { gifticon in
+                        NotificationManager.shared.register(
+                            expireDate,
+                            date: notificationDate,
+                            name: gifticon.name
+                        )
+                    }
+                }
             }
         }
     }

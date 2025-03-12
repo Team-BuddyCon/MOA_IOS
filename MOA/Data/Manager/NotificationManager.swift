@@ -39,7 +39,7 @@ final class NotificationManager: NSObject {
             MOALogger.logd("\(isGranted)")
             UserPreferences.setNotificationOn(isOn: isGranted)
             if isGranted {
-                UserPreferences.setNotificationDday(dday: NotificationDday.day14)
+                UserPreferences.setNotificationTriggerDay(NotificationDday.day14)
             }
         }
     }
@@ -53,7 +53,7 @@ final class NotificationManager: NSObject {
         
         var isRegistered: Bool = false
         if identifierDic.contains(where: { $0.key == identifier }) {
-            if let index = identifierDic[identifier]?.firstIndex(of: name) {
+            if (identifierDic[identifier]?.firstIndex(of: name)) != nil {
                 return
             }
             
