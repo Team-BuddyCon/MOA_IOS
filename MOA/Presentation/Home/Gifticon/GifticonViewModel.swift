@@ -73,39 +73,14 @@ final class GifticonViewModel: BaseViewModel {
     // 최초 기프티콘 화면 진입 시에 기프티콘 알림 등록
     func registerNotifications() {
         MOALogger.logd()
-        guard UserPreferences.isNotificationOn() else { return }
         
-        // 등록된 알림 모두 제거
         NotificationManager.shared.removeAll()
-        
-        let expireGroup: [String: [GifticonModel]] = Dictionary(grouping: gifticons.value) { $0.expireDate }
-        let expireDateGroup: [Date: [GifticonModel]] = Dictionary(uniqueKeysWithValues: expireGroup.compactMap {
-            if let date = $0.key.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT) {
-                return (date, $0.value)
-            } else {
-                return nil
-            }
-        })
-        
-        expireDateGroup.forEach { group in
-            let expireDate = group.key.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT)
-            let gifticons = group.value
-            
-            let notificationTriggerDays = UserPreferences.getNotificationTriggerDays()
-            notificationTriggerDays.forEach { triggerDay in
-                if let notificationDate = triggerDay.getNotificationDate(target: group.key),
-                   notificationDate > Date() {
-                    MOALogger.logd("notificationDate: \(notificationDate), expireDate: \(expireDate)")
-                    
-                    gifticons.forEach { gifticon in
-                        NotificationManager.shared.register(
-                            expireDate,
-                            date: notificationDate,
-                            name: gifticon.name
-                        )
-                    }
-                }
-            }
+        gifticons.value.forEach { gifticon in
+            NotificationManager.shared.register(
+                gifticon.expireDate,
+                name: gifticon.name,
+                gifticonId: gifticon.gifticonId
+            )
         }
     }
 }

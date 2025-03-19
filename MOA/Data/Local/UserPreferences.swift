@@ -130,6 +130,18 @@ final class UserPreferences {
         UserDefaults.standard.set(days, forKey: NOTIFICATION_TRIGGER_DAYS)
     }
     
+    static func removeAllNotificationTriggerDays() {
+        MOALogger.logd()
+        UserDefaults.standard.set([], forKey: NOTIFICATION_TRIGGER_DAYS)
+    }
+    
+    static func isTriggerDays(_ day: NotificationDday) -> Bool {
+        MOALogger.logd("\(day)")
+        return getNotificationTriggerDays()
+            .map { $0.rawValue }
+            .contains(where: { $0 == day.rawValue })
+    }
+    
     static func isCheckNotificationAuthorization() -> Bool {
         let isCheck = UserDefaults.standard.bool(forKey: NOTIFICATION_AUTHORIZATION_CHECK)
         return isCheck
