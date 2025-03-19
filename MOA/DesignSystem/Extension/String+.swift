@@ -29,6 +29,7 @@ let WITHDRAW = "탈퇴"
 let USER_NAME = "사용자"
 let MOA_INQUERY_MAIL = "buddycon2022@gmail.com"
 let MOA_INQUERY_SUBJECT = "MOA 문의"
+let GIFTICON = "기프티콘"
 
 // MARK: Design System
 let dday_end = "만료"
@@ -165,6 +166,18 @@ let MAP_PERMISSION_GUIDE_MESSAGE = "위치 정보 이용에 동의해야 사용�
 let MAP_NAVIGATE_SETTING_MESSAGE = "설정으로 이동"
 let MAP_NOT_PROVIDED_GUIDE_MESSAGE = "해당 기프티콘 브랜드는 지도 기능이 제한되어 있어요."
 
+// MARK: Notification
+let NOTIFICATION_14_SINGLE_TITLE_FORMAT = "%@ 기프티콘이 2주 뒤에 만료되어요."
+let NOTIFICATION_14_MULTI_TITLE_FORMAT = "%@ 외에 %d개 기프티콘이 2주 뒤에 만료되어요."
+let NOTIFICATION_7_SINGLE_TITLE_FORMAT = "%@ 기프티콘이 1주 뒤에 만료되어요."
+let NOTIFICATION_7_MULTI_TITLE_FORMAT = "%@ 외에 %d개 기프티콘이 1주 뒤에 만료되어요."
+let NOTIFICATION_3_SINGLE_TITLE_FORMAT = "%@ 기프티콘이 3일 뒤에 만료되어요.근처에 사용 가능한 매장이 있는지 보러갈까요?"
+let NOTIFICATION_3_MULTI_TITLE_FORMAT = "%@ 외에 %d개 기프티콘이 3일 뒤에 만료되어요.근처에 사용 가능한 매장이 있는지 보러갈까요?"
+let NOTIFICATION_1_SINGLE_TITLE_FORMAT = "%@ 기프티콘이 내일 만료되어요.근처에 사용 가능한 매장을 찾아서 꼭 사용해보아요."
+let NOTIFICATION_1_MULTI_TITLE_FORMAT = "%@ 외에 %d개 기프티콘이 내일 만료되어요.근처에 사용 가능한 매장을 찾아서 꼭 사용해보아요."
+let NOTIFICATION_SINGLE_TITLE_FORMAT = "%@ 기프티콘이 오늘 만료되어요.지금 바로 사용하러 가볼까요?"
+let NOTIFICATION_MULTI_TITLE_FORMAT = "%@ 외에 %d개 기프티콘이 오늘 만료되어요.지금 바로 사용하러 가볼까요?"
+
 // MARK: ImageSet
 let LOGIN_ICON = "LoginIcon"
 let KAKAO_LOGIN_BUTTON_IMAGES = "KakaoLoginButton"
@@ -214,6 +227,7 @@ let REGISTER_LOADING2_ICON = "RegisterLoading2"
 let REGISTER_LOADING3_ICON = "RegisterLoading3"
 let REGISTER_LOADING4_ICON = "RegisterLoading4"
 let REGISTER_LOADING5_ICON = "RegisterLoading5"
+let NOTIFICATION_GIFTICON_ICON = "NotificationGifticonIcon"
 
 // MARK: Font
 let pretendard_black = "Pretendard-Black"

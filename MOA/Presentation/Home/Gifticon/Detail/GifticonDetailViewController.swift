@@ -203,18 +203,15 @@ final class GifticonDetailViewController: BaseViewController {
         if gifticonDetailViewModel.gifticon.used {
             NotificationManager.shared.remove(
                 gifticonDetailViewModel.gifticon.expireDate,
-                name: gifticonDetailViewModel.gifticon.name
+                name: gifticonDetailViewModel.gifticon.name,
+                gifticonId: gifticonDetailViewModel.gifticon.gifticonId
             )
         } else {
-            let date = gifticonDetailViewModel.gifticon.expireDate.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT)
-            let notificationDate = UserPreferences.getNotificationDday().getNotificationDate(target: date)
-            guard let notificationDate = notificationDate else { return }
-            if notificationDate <= Date() { return }
-            
+            // Edit 변경으로 새 알림 등록
             NotificationManager.shared.register(
                 gifticonDetailViewModel.gifticon.expireDate,
-                date: notificationDate,
-                name: gifticonDetailViewModel.gifticon.name
+                name: gifticonDetailViewModel.gifticon.expireDate,
+                gifticonId: gifticonDetailViewModel.gifticon.gifticonId
             )
         }
     }

@@ -40,8 +40,10 @@ final class GifticonEditViewModel: BaseViewModel {
                     updateNotification(
                         prev_expireDate: prev_model.expireDate,
                         prev_name: prev_model.name,
-                        expireDate: expireDate,
-                        name: name
+                        prev_gifticonId: prev_model.gifticonId,
+                        next_expireDate: expireDate,
+                        next_name: name,
+                        next_gifticonId: gifticonId
                     )
                     navigationResult.accept(.update)
                 }
@@ -60,7 +62,11 @@ final class GifticonEditViewModel: BaseViewModel {
         gifticonService.deleteGifticon(gifticonId: gifticonId)
             .subscribe(
                 onNext: { [unowned self] isSuccess in
-                    removeNotification(identifier: expireDate, name: name)
+                    NotificationManager.shared.remove(
+                        expireDate,
+                        name: name,
+                        gifticonId: gifticonId
+                    )
                     navigationResult.accept(.delete)
                 },
                 onError: { error in
@@ -72,33 +78,25 @@ final class GifticonEditViewModel: BaseViewModel {
     private func updateNotification(
         prev_expireDate: String,
         prev_name: String,
-        expireDate: String,
-        name: String
+        prev_gifticonId: String,
+        next_expireDate: String,
+        next_name: String,
+        next_gifticonId: String
     ) {
         MOALogger.logd()
-        guard UserPreferences.isNotificationOn() else { return }
         
-        NotificationManager.shared.remove(prev_expireDate, name: prev_name)
-        
-        let date = expireDate.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT)
-        let notificationDate = UserPreferences.getNotificationDday().getNotificationDate(target: date)
-        
-        guard let notificationDate = notificationDate else { return }
-        if notificationDate <= Date() { return }
-        
-        NotificationManager.shared.register(
-            expireDate,
-            date: notificationDate,
-            name: name
+        // 이전 expireDate, name, gifticonId로 된 알림 제거
+        NotificationManager.shared.remove(
+            prev_expireDate,
+            name: prev_name,
+            gifticonId: prev_gifticonId
         )
-    }
-    
-    private func removeNotification(
-        identifier: String,
-        name: String
-    ) {
-        MOALogger.logd()
-        guard UserPreferences.isNotificationOn() else { return }
-        NotificationManager.shared.remove(identifier, name: name)
+        
+        // 신규 알림 등록
+        NotificationManager.shared.register(
+            next_expireDate,
+            name: next_name,
+            gifticonId: next_gifticonId
+        )
     }
 }

@@ -35,36 +35,15 @@ final class NotificationViewModel: BaseViewModel {
         ).disposed(by: disposeBag)
     }
     
-    func updateNotifications(dday: NotificationDday) {
+    func updateNotifications() {
         MOALogger.logd()
         NotificationManager.shared.removeAll()
-        
-        let expireGroup = Dictionary(grouping: gifticons.value) { $0.expireDate }
-        let expireDateGroup = Dictionary(uniqueKeysWithValues: expireGroup.compactMap {
-            if let date = $0.key.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT) {
-                return (date, $0.value)
-            } else {
-                return nil
-            }
-        })
-        
-        expireDateGroup.forEach {
-            let expireDate = $0.key.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT)
-            let notificationDate = dday.getNotificationDate(target: $0.key)
-            let gifticons = $0.value
-            
-            guard let notificationDate = notificationDate else { return }
-            if notificationDate <= Date() { return }
-            
-            MOALogger.logd("notificationDate: \(notificationDate), expireDate: \(expireDate)")
-            
-            gifticons.forEach { gifticon in
-                NotificationManager.shared.register(
-                    expireDate,
-                    date: notificationDate,
-                    name: gifticon.name
-                )
-            }
+        gifticons.value.forEach { gifticon in
+            NotificationManager.shared.register(
+                gifticon.expireDate,
+                name: gifticon.name,
+                gifticonId: gifticon.gifticonId
+            )
         }
     }
 }

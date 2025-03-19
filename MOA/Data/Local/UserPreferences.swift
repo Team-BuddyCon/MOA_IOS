@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Algorithms
 
 private let SHOULD_ENTRY_LOGIN = "SHOULD_ENTRY_LOGIN"
 private let LOGIN_USER_NAME = "LOGIN_USER_NAME"
@@ -15,6 +16,7 @@ private let SHOW_LOGIN_POPUP = "SHOW_LOGIN_POPUP"
 private let OAUTH_SERVICE = "OAUTH_SERVICE"
 private let NOTIFICATION_ISON = "NOTIFICATION_ISON"
 private let NOTIFICATION_DDAY = "NOTIFICATION_DDAY"
+private let NOTIFICATION_TRIGGER_DAYS = "NOTIFICATION_TRIGGER_DAYS"
 private let NOTIFICATION_AUTHORIZATION_CHECK = "NOTIFICATION_AUTHORIZATION_CHECK"
 
 enum OAuthService: String {
@@ -106,6 +108,38 @@ final class UserPreferences {
     static func setNotificationDday(dday: NotificationDday) {
         MOALogger.logd()
         UserDefaults.standard.set(dday.rawValue, forKey: NOTIFICATION_DDAY)
+    }
+    
+    static func getNotificationTriggerDays() -> [NotificationDday] {
+        let days = UserDefaults.standard.value(forKey: NOTIFICATION_TRIGGER_DAYS)
+        MOALogger.logd("\((days as? [Int])?.compactMap { NotificationDday(rawValue: $0) } ?? [])")
+        return (days as? [Int])?.compactMap { NotificationDday(rawValue: $0) } ?? []
+    }
+    
+    static func setNotificationTriggerDay(_ day: NotificationDday) {
+        MOALogger.logd("\(day)")
+        let days = getNotificationTriggerDays().map { $0.rawValue } + [day].map { $0.rawValue }
+        let uniqueDays = Array(Set(days)).sorted(by: >)
+        UserDefaults.standard.set(uniqueDays, forKey: NOTIFICATION_TRIGGER_DAYS)
+    }
+    
+    static func removeNotificationTriggerDay(_ day: NotificationDday) {
+        MOALogger.logd("\(day)")
+        var days = getNotificationTriggerDays().map { $0.rawValue }
+        days.removeAll(where: { $0 == day.rawValue })
+        UserDefaults.standard.set(days, forKey: NOTIFICATION_TRIGGER_DAYS)
+    }
+    
+    static func removeAllNotificationTriggerDays() {
+        MOALogger.logd()
+        UserDefaults.standard.set([], forKey: NOTIFICATION_TRIGGER_DAYS)
+    }
+    
+    static func isTriggerDays(_ day: NotificationDday) -> Bool {
+        MOALogger.logd("\(day)")
+        return getNotificationTriggerDays()
+            .map { $0.rawValue }
+            .contains(where: { $0 == day.rawValue })
     }
     
     static func isCheckNotificationAuthorization() -> Bool {

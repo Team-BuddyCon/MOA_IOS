@@ -15,6 +15,9 @@ extension UIColor {
     /// 0xFFFFEDF0
     static let pink50 = UIColor(red: 255/255, green: 237/255, blue: 240/255, alpha: 1.0)
     
+    /// 0xFFFFF6F8
+    static let pink20 = UIColor(red: 255/255, green: 246/255, blue: 248/255, alpha: 1.0)
+    
     /// 0xFFF6F7FA
     static let grey10 = UIColor(red: 246/255, green: 247/255, blue: 250/255, alpha: 1.0)
     
