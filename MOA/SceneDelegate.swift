@@ -27,15 +27,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.makeKeyAndVisible()
         
         var rootViewController = UIViewController()
-        if UserPreferences.isShouldEntryLogin() {
-            if UserPreferences.isSignUp() {
-                let currentUser = Auth.auth().currentUser
-                rootViewController = currentUser == nil ? UINavigationController(rootViewController: LoginViewController()) : UINavigationController(rootViewController: HomeTabBarController())
-            } else {
-                rootViewController = UINavigationController(rootViewController: LoginViewController())
-            }
+        if let userInfo = connectionOptions.notificationResponse?.notification.request.content.userInfo,
+           let gifticonId = userInfo["gifticonId"] as? String {
+            let navigationController = UINavigationController(rootViewController: HomeTabBarController())
+            let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
+            navigationController.pushViewController(detailVC, animated: false)
+            rootViewController = navigationController
         } else {
-            rootViewController = WalkThroughViewController()
+            if UserPreferences.isShouldEntryLogin() {
+                if UserPreferences.isSignUp() {
+                    let currentUser = Auth.auth().currentUser
+                    rootViewController = currentUser == nil ? UINavigationController(rootViewController: LoginViewController()) : UINavigationController(rootViewController: HomeTabBarController())
+                } else {
+                    rootViewController = UINavigationController(rootViewController: LoginViewController())
+                }
+            } else {
+                rootViewController = WalkThroughViewController()
+            }
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in

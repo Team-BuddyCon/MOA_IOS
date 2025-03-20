@@ -64,4 +64,18 @@ extension UIApplication {
             window.makeKeyAndVisible()
         }
     }
+    
+    func navigationGifticonDetail(gifticonId: String) {
+        MOALogger.logd()
+        if let windowScene = connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first(where: { $0.isKeyWindow }) {
+            
+            let navigationController = UINavigationController(rootViewController: HomeTabBarController())
+            let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
+            navigationController.pushViewController(detailVC, animated: false)
+            
+            window.rootViewController = navigationController
+            window.makeKeyAndVisible()
+        }
+    }
 }

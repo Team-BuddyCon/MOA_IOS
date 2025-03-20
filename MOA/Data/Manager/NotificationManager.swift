@@ -5,8 +5,8 @@
 //  Created by 오원석 on 2/28/25.
 //
 
-import Foundation
 import UserNotifications
+import UIKit
 
 final class NotificationManager: NSObject {
     static let shared = NotificationManager()
@@ -224,6 +224,43 @@ final class NotificationManager: NSObject {
         }
     }
     
+    // TODO: 삭제
+    func registerTestNotification(
+        _ identifier: String,
+        expireDate: Date?,
+        name: String,
+        count: Int,
+        gifticonId: String? = nil
+    ) {
+        guard let expireDate = expireDate else { return }
+        let title = name
+        let body = count == 1 ? "\(title)이 얼마 남지 않았습니다." : "\(title)이외 \(count)개가 얼마 남지 않았습니다."
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        
+        if let gifticonId = gifticonId {
+            content.userInfo = ["gifticonId" : gifticonId]
+        }
+        
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: expireDate)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        
+        let request = UNNotificationRequest(
+            identifier: identifier,
+            content: content,
+            trigger: trigger
+        )
+        
+        notificationCenter.add(request) { error in
+            if let error = error {
+                MOALogger.loge(error.localizedDescription)
+                return
+            }
+        }
+    }
+    
     private func makeNotificationContent(
         triggerDay: NotificationDday,
         name: String,
@@ -251,7 +288,15 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         completionHandler([.list, .banner, .badge, .sound])
     }
     
+    // 앱이 포그라운드나 백그라운드 있을 때 처리
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         MOALogger.logd()
+        
+        let userInfo = response.notification.request.content.userInfo
+        if let gifticonId = userInfo["gifticonId"] as? String {
+            UIApplication.shared.navigationGifticonDetail(gifticonId: gifticonId)
+        }
+        
+        completionHandler()
     }
 }
