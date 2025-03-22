@@ -28,6 +28,7 @@ final class ModalViewController: BaseViewController {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.textColor = .grey90
+        label.numberOfLines = 2
         return label
     }()
     

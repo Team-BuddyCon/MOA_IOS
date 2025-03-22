@@ -26,9 +26,7 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
             UserPreferences.setShowLogin(isShow: false)
         }
         
-        if !UserPreferences.isCheckNotificationAuthorization() {
-            NotificationManager.shared.requestAuhthorization()
-        }
+        NotificationManager.shared.requestAuhthorization()
     }
     
     private func setupAppearance() {

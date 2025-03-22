@@ -54,7 +54,16 @@ final class NotificationSettingViewController: BaseViewController {
         noti.onTintColor = .pink100
         noti.tintColor = .grey40
         noti.transform = CGAffineTransformMakeScale(40 / 51.0, 24 / 31.0)
+        noti.isEnabled = UserPreferences.isCheckNotificationAuthorization()
+        noti.isOn = UserPreferences.isCheckNotificationAuthorization() && UserPreferences.isNotificationOn()
         return noti
+    }()
+    
+    private lazy var switchView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .clear
+        view.isHidden = UserPreferences.isCheckNotificationAuthorization()
+        return view
     }()
     
     private let lineView: UIView = {
@@ -124,7 +133,8 @@ final class NotificationSettingViewController: BaseViewController {
         MOALogger.logd()
         setupLayout()
         bind()
-        isOnNotification = UserPreferences.isNotificationOn()
+        isOnNotification = UserPreferences.isCheckNotificationAuthorization() && UserPreferences.isNotificationOn()
+        switchView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tapSwitch)))
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -160,6 +170,7 @@ private extension NotificationSettingViewController {
         [
             titleLabel,
             notiSwitch,
+            switchView,
             lineView,
             descLabel,
             notiDday14,
@@ -179,6 +190,10 @@ private extension NotificationSettingViewController {
         notiSwitch.snp.makeConstraints {
             $0.centerY.equalTo(titleLabel.snp.centerY)
             $0.trailing.equalToSuperview().inset(20)
+        }
+        
+        switchView.snp.makeConstraints {
+            $0.edges.equalTo(notiSwitch)
         }
         
         lineView.snp.makeConstraints {
@@ -283,5 +298,48 @@ private extension NotificationSettingViewController {
                     triggerDays.removeAll(where: { $0 == .day })
                 }
             }).disposed(by: disposeBag)
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(didBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+    }
+    
+    @objc func didBecomeActive() {
+        MOALogger.logd()
+        NotificationManager.shared.checkNotificationAuthorization {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                notiSwitch.isOn = UserPreferences.isCheckNotificationAuthorization() && UserPreferences.isNotificationOn()
+                notiSwitch.isEnabled = UserPreferences.isCheckNotificationAuthorization()
+                switchView.isHidden = UserPreferences.isCheckNotificationAuthorization()
+                
+                if UserPreferences.isNotificationOn() {
+                    triggerDays.removeAll()
+                    triggerDays.append(.day14)
+                }
+                
+                isOnNotification = UserPreferences.isCheckNotificationAuthorization() && UserPreferences.isNotificationOn()
+            }
+        }
+    }
+    
+    @objc func tapSwitch() {
+        MOALogger.logd()
+        
+        showSelectModal(
+            title: NOTIFICATION_AUTHORIZATION_POPUP_TITLE,
+            subTitle: NOTIFICATION_AUTHORIZATION_POPUP_SUBTITLE,
+            confirmText: NOTIFICATION_AUTHORIZATION_POPUP_CONFIRM,
+            cancelText: CANCEL
+        ) {
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(url)
+            }
+        }
     }
 }
+
