@@ -134,7 +134,7 @@ extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
         if let cell = tableView.cellForRow(at: indexPath) as? MypageMenuCell {
             switch cell.menuType {
             case .Notification:
-                let notificationVC = NotificationViewController()
+                let notificationVC = NotificationSettingViewController()
                 navigationController?.pushViewController(notificationVC, animated: true)
             case .Inquery:
                 if MFMailComposeViewController.canSendMail() {

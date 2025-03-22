@@ -27,11 +27,21 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.makeKeyAndVisible()
         
         var rootViewController = UIViewController()
+        
+        // 알림 이벤트로 앱 시작 시
         if let userInfo = connectionOptions.notificationResponse?.notification.request.content.userInfo,
-           let gifticonId = userInfo["gifticonId"] as? String {
+           let count = userInfo[NotificationManager.count] as? Int,
+           let gifticonId = userInfo[NotificationManager.gifticonId] as? String {
             let navigationController = UINavigationController(rootViewController: HomeTabBarController())
-            let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
-            navigationController.pushViewController(detailVC, animated: false)
+            if count > 1 {
+                // 다중 기프티콘 알림
+                let notificationDataVC = NotificationViewController()
+                navigationController.pushViewController(notificationDataVC, animated: false)
+            } else {
+                // 단일 기프티콘 알림
+                let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
+                navigationController.pushViewController(detailVC, animated: false)
+            }
             rootViewController = navigationController
         } else {
             if UserPreferences.isShouldEntryLogin() {

@@ -8,8 +8,8 @@
 import Foundation
 import CoreData
 
-class NotificationDataManager {
-    static let shared = NotificationDataManager()
+class LocalNotificationDataManager {
+    static let shared = LocalNotificationDataManager()
     private init() {}
     
     private lazy var persistentContainer: NSPersistentContainer = {
@@ -35,6 +35,7 @@ class NotificationDataManager {
             info.setValue(notification.date, forKey: "date")
             info.setValue(notification.message, forKey: "message")
             info.setValue(notification.gifticonId, forKey: "gifticonId")
+            info.setValue(notification.isRead, forKey: "isRead")
             
             do {
                 try context.save()
@@ -47,11 +48,43 @@ class NotificationDataManager {
         return false
     }
     
-    func fetchNotification() -> [NotificationInfo] {
+    func updateNotification(_ notification: NotificationModel) -> Bool {
+        MOALogger.logd("\(notification)")
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>.init(entityName: "NotificationInfo")
+        fetchRequest.predicate = NSPredicate(format: "date = %@", notification.date)
+        do {
+            if let info = try context.fetch(fetchRequest)[0] as? NotificationInfo {
+                info.setValue(true, forKey: "isRead")
+                
+                do {
+                    try context.save()
+                    return true
+                } catch {
+                    MOALogger.loge(error.localizedDescription)
+                    return false
+                }
+            }
+        } catch {
+            MOALogger.loge(error.localizedDescription)
+            return false
+        }
+        
+        return false
+    }
+    
+    func fetchNotification() -> [NotificationModel] {
         MOALogger.logd()
         do {
             if let notifications = try context.fetch(NotificationInfo.fetchRequest()) as? [NotificationInfo] {
-                return notifications
+                return notifications.reversed().map {
+                    NotificationModel(
+                        count: Int($0.count),
+                        date: $0.date,
+                        message: $0.message,
+                        gifticonId: $0.gifticonId,
+                        isRead: $0.isRead
+                    )
+                }
             }
             return []
         } catch {

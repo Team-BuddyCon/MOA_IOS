@@ -85,6 +85,12 @@ final class GifticonViewModel: BaseViewModel {
         
         let date = Date()
         let dummy = Calendar.current.date(byAdding: .second, value: 10, to: date)
-        NotificationManager.shared.registerTestNotification("test", expireDate: dummy, name: "테스트", count: 1, gifticonId: "5E64F632-7EB3-4ED5-8E28-318223244346")
+        NotificationManager.shared.registerTestNotification(
+            "test",
+            expireDate: dummy,
+            name: "테스트",
+            count: 3,
+            gifticonId: "5E64F632-7EB3-4ED5-8E28-318223244346"
+        )
     }
 }
