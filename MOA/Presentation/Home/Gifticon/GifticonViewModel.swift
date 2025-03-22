@@ -51,8 +51,8 @@ final class GifticonViewModel: BaseViewModel {
                 
                 if self.isFirstFetch {
                     registerNotifications()
-                    removeLocalNotifications()
                     insertLocatlNotificiations()
+                    removeLocalNotifications()
                     self.isFirstFetch = false
                 }
             },
