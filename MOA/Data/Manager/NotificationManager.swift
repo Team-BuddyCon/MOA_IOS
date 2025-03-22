@@ -319,9 +319,9 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
             )
             
             if count > 1 {
-                UIApplication.shared.navigationHome()
+                UIApplication.shared.navigateNotification()
             } else {
-                UIApplication.shared.navigationGifticonDetail(gifticonId: gifticonId)
+                UIApplication.shared.navigateGifticonDetail(gifticonId: gifticonId)
             }
         }
         

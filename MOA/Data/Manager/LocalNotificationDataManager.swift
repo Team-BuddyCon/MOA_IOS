@@ -51,7 +51,7 @@ class LocalNotificationDataManager {
     func updateNotification(_ notification: NotificationModel) -> Bool {
         MOALogger.logd("\(notification)")
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>.init(entityName: "NotificationInfo")
-        fetchRequest.predicate = NSPredicate(format: "date = %@", notification.date)
+        fetchRequest.predicate = NSPredicate(format: "gifticonId = %@ AND date = %@", notification.gifticonId, notification.date)
         do {
             if let info = try context.fetch(fetchRequest)[0] as? NotificationInfo {
                 info.setValue(true, forKey: "isRead")

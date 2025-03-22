@@ -161,13 +161,13 @@ private extension LoginViewController {
                             UserPreferences.setUserID(userID: result.user.uid)
                             if result.additionalUserInfo?.newUser() == true {
                                 if UserPreferences.isSignUp() {
-                                    UIApplication.shared.navigationHome()
+                                    UIApplication.shared.navigateHome()
                                 } else {
                                     self.navigationController?.pushViewController(SignUpViewController(), animated: true)
                                 }
                             } else {
                                 UserPreferences.setSignUp(sign: true)
-                                UIApplication.shared.navigationHome()
+                                UIApplication.shared.navigateHome()
                             }
                         }
                     }
@@ -202,13 +202,13 @@ private extension LoginViewController {
                         UserPreferences.setUserID(userID: result.user.uid)
                         if result.additionalUserInfo?.newUser() == true {
                             if UserPreferences.isSignUp() {
-                                UIApplication.shared.navigationHome()
+                                UIApplication.shared.navigateHome()
                             } else {
                                 self.navigationController?.pushViewController(SignUpViewController(), animated: true)
                             }
                         } else {
                             UserPreferences.setSignUp(sign: true)
-                            UIApplication.shared.navigationHome()
+                            UIApplication.shared.navigateHome()
                         }
                     }
                 }
@@ -290,13 +290,13 @@ extension LoginViewController: ASAuthorizationControllerDelegate {
                     UserPreferences.setUserID(userID: result.user.uid)
                     if result.additionalUserInfo?.newUser() == true {
                         if UserPreferences.isSignUp() {
-                            UIApplication.shared.navigationHome()
+                            UIApplication.shared.navigateHome()
                         } else {
                             self.navigationController?.pushViewController(SignUpViewController(), animated: true)
                         }
                     } else {
                         UserPreferences.setSignUp(sign: true)
-                        UIApplication.shared.navigationHome()
+                        UIApplication.shared.navigateHome()
                     }
                 }
             }

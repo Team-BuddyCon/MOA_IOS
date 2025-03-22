@@ -55,7 +55,7 @@ private extension NotificationViewController {
     func bind() {
         viewModel.notificationsRelay.subscribe(
             onNext: { [unowned self] notifications in
-                MOALogger.logd("\(notifications)")
+                viewModel.readNotifications()
             }
         ).disposed(by: disposeBag)
     }
@@ -82,9 +82,9 @@ extension NotificationViewController: NotificationInfoViewCellDelegate {
     func tapInfoView(notificationModel: NotificationModel) {
         // 단일
         if notificationModel.count == 1 {
-            UIApplication.shared.navigationGifticonDetail(gifticonId: notificationModel.gifticonId)
+            UIApplication.shared.navigateGifticonDetail(gifticonId: notificationModel.gifticonId)
         } else {
-            UIApplication.shared.navigationHome()
+            UIApplication.shared.navigateHome()
         }
     }
 }

@@ -87,6 +87,6 @@ final class SignUpCompleteViewController: BaseViewController {
     @objc func tapStartButton() {
         MOALogger.logd()
         UserPreferences.setSignUp(sign: true)
-        UIApplication.shared.navigationHome()
+        UIApplication.shared.navigateHome()
     }
 }
