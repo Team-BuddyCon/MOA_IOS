@@ -1,5 +1,5 @@
 //
-//  NotificationViewController.swift
+//  NotificationSettingViewController.swift
 //  MOA
 //
 //  Created by 오원석 on 1/11/25.
@@ -39,7 +39,7 @@ enum NotificationDday: Int {
     }
 }
 
-final class NotificationViewController: BaseViewController {
+final class NotificationSettingViewController: BaseViewController {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
@@ -117,7 +117,7 @@ final class NotificationViewController: BaseViewController {
     let prevTriggerDays: [NotificationDday] = UserPreferences.getNotificationTriggerDays()
     var triggerDays: [NotificationDday] = UserPreferences.getNotificationTriggerDays()
     
-    private let notificationViewModel = NotificationViewModel(gifticonService: GifticonService.shared)
+    private let notificationViewModel = NotificationSettingViewModel(gifticonService: GifticonService.shared)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -154,7 +154,7 @@ final class NotificationViewController: BaseViewController {
     }
 }
 
-private extension NotificationViewController {
+private extension NotificationSettingViewController {
     func setupLayout() {
         setupTopBarWithBackButton(title: SETTING_NOTIFICATION_TITLE)
         [

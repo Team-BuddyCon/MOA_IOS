@@ -7,14 +7,7 @@
 
 import UIKit
 
-final class NotificationDataViewController: BaseViewController {
-    
-    private let mocks: [NotificationModel] = [
-        NotificationModel(count: 1, date: "2025.01.03", message: "'마왕족발' 기프티콘이 오늘 만료되어요.\n지금 바로 사용하러 가볼까요?", gifticonId: ""),
-        NotificationModel(count: 2, date: "2025.03.03", message: "'마왕족발' 기프티콘이 오늘 만료되어요.\n지금 바로 사용하러 가볼까요?", gifticonId: ""),
-        NotificationModel(count: 1, date: "2025.03.10", message: "'마왕족발' 기프티콘이 오늘 만료되어요.\n지금 바로 사용하러 가볼까요?", gifticonId: ""),
-        NotificationModel(count: 5, date: "2025.02.03", message: "'마왕족발' 기프티콘이 오늘 만료되어요.\n지금 바로 사용하러 가볼까요?", gifticonId: "")
-    ]
+final class NotificationViewController: BaseViewController {
     
     private lazy var notificationTableView: UITableView = {
         let tableView = UITableView()
@@ -26,6 +19,8 @@ final class NotificationDataViewController: BaseViewController {
         tableView.dataSource = self
         return tableView
     }()
+    
+    private let viewModel = NotificationViewModel()
     
     private var eventID: String?
     
@@ -42,11 +37,11 @@ final class NotificationDataViewController: BaseViewController {
         super.viewDidLoad()
         MOALogger.logd()
         setupLayout()
+        bind()
     }
-    
 }
 
-private extension NotificationDataViewController {
+private extension NotificationViewController {
     func setupLayout() {
         setupTopBarWithBackButton(title: NOTIFICATION)
         
@@ -56,11 +51,19 @@ private extension NotificationDataViewController {
             $0.edges.equalToSuperview()
         }
     }
+    
+    func bind() {
+        viewModel.notificationsRelay.subscribe(
+            onNext: { [unowned self] notifications in
+                viewModel.readNotifications()
+            }
+        ).disposed(by: disposeBag)
+    }
 }
 
-extension NotificationDataViewController: UITableViewDataSource {
+extension NotificationViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return mocks.count
+        return viewModel.notifcationModels.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -68,8 +71,20 @@ extension NotificationDataViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         
-        let mock = mocks[indexPath.row]
-        cell.setNotificationInfo(mock, highlight: indexPath.row == 0)
+        let model = viewModel.notifcationModels[indexPath.row]
+        cell.setNotificationInfo(model, highlight: !model.isRead)
+        cell.delegate = self
         return cell
+    }
+}
+
+extension NotificationViewController: NotificationInfoViewCellDelegate {
+    func tapInfoView(notificationModel: NotificationModel) {
+        // 단일
+        if notificationModel.count == 1 {
+            UIApplication.shared.navigateGifticonDetail(gifticonId: notificationModel.gifticonId)
+        } else {
+            UIApplication.shared.navigateHome()
+        }
     }
 }

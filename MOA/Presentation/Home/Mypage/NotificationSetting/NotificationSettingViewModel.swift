@@ -1,5 +1,5 @@
 //
-//  NotificationViewModel.swift
+//  NotificationSettingViewModel.swift
 //  MOA
 //
 //  Created by 오원석 on 3/4/25.
@@ -10,7 +10,7 @@ import RxSwift
 import RxRelay
 import RxCocoa
 
-final class NotificationViewModel: BaseViewModel {
+final class NotificationSettingViewModel: BaseViewModel {
     private let gifticonService: GifticonServiceProtocol
     let gifticons = BehaviorRelay<[GifticonModel]>(value: [])
     

@@ -8,7 +8,7 @@
 import UIKit
 
 protocol NotificationInfoViewCellDelegate {
-    func tapInfoView()
+    func tapInfoView(notificationModel: NotificationModel)
 }
 
 final class NotificationInfoViewCell: UITableViewCell {
@@ -55,9 +55,12 @@ final class NotificationInfoViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func setNotificationInfo(_ notificationInfo: NotificationModel, highlight: Bool = false) {
+    var notificationModel: NotificationModel?
+    
+    func setNotificationInfo(_ notificationModel: NotificationModel, highlight: Bool = false) {
+        self.notificationModel = notificationModel
         msgLabel.setTextWithLineHeight(
-            text: notificationInfo.message,
+            text: notificationModel.message,
             font: pretendard_medium,
             size: 15.0,
             lineSpacing: 21.0,
@@ -65,9 +68,9 @@ final class NotificationInfoViewCell: UITableViewCell {
         )
         backgroundColor = highlight == true ? .pink20 : .white
         
-        let dday = abs(notificationInfo.date.toDday())
+        let dday = abs(notificationModel.date.toDday())
         if dday == 0 {
-            let dtime = abs(notificationInfo.date.toDTime())
+            let dtime = abs(notificationModel.date.toDTime())
             dateLabel.text = "\(dtime)시간 전"
         } else {
             dateLabel.text = "\(dday)일 전"
@@ -129,6 +132,8 @@ private extension NotificationInfoViewCell {
 
 extension NotificationInfoViewCell {
     @objc func tapCell() {
-        delegate?.tapInfoView()
+        if let notificationModel = notificationModel {
+            delegate?.tapInfoView(notificationModel: notificationModel)
+        }
     }
 }

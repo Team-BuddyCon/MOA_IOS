@@ -78,7 +78,7 @@ extension UIViewController {
     }
     
     @objc private func tapNotification() {
-        let notificationDataVC = NotificationDataViewController()
+        let notificationDataVC = NotificationViewController()
         navigationController?.pushViewController(notificationDataVC, animated: false)
     }
 }

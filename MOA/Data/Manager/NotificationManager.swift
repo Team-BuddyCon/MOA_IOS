@@ -5,11 +5,14 @@
 //  Created by 오원석 on 2/28/25.
 //
 
-import Foundation
 import UserNotifications
+import UIKit
 
 final class NotificationManager: NSObject {
     static let shared = NotificationManager()
+    static let gifticonId = "gifticonId"
+    static let expireDate = "expireDate"
+    static let count = "count"
     
     private let notificationCenter = UNUserNotificationCenter.current()
     
@@ -192,7 +195,7 @@ final class NotificationManager: NSObject {
         triggerDay: NotificationDday,
         name: String,
         count: Int,
-        gifticonId: String? = nil
+        gifticonId: String
     ) {
         let current = Date()
         if let notificationDate = triggerDay.getNotificationDate(target: expireDate),
@@ -200,6 +203,7 @@ final class NotificationManager: NSObject {
            let future = Calendar.current.date(byAdding: .day, value: 90, to: current),
            notificationDate > current && expireDate < future {  // 알림 시간이 현재 시간보다 미래이고, 현재+90일 내에 만료되는 경우에만 등록
             let content = makeNotificationContent(
+                expireDate: expireDate,
                 triggerDay: triggerDay,
                 name: name,
                 count: count,
@@ -224,21 +228,65 @@ final class NotificationManager: NSObject {
         }
     }
     
-    private func makeNotificationContent(
-        triggerDay: NotificationDday,
+    // TODO: 삭제
+    func registerTestNotification(
+        _ identifier: String,
+        expireDate: Date?,
         name: String,
         count: Int,
         gifticonId: String? = nil
-    ) -> UNMutableNotificationContent {
+    ) {
+        guard let expireDate = expireDate else { return }
         let title = name
-        let body = triggerDay.getBody(name: name, count: count)
+        let body = count == 1 ? "\(title)이 얼마 남지 않았습니다." : "\(title)이외 \(count)개가 얼마 남지 않았습니다."
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
         
         if let gifticonId = gifticonId {
-            content.userInfo = ["gifticonId" : gifticonId]
+            content.userInfo = [
+                NotificationManager.gifticonId : gifticonId,
+                NotificationManager.expireDate : expireDate.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT),
+                NotificationManager.count : count
+            ]
         }
+        
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: expireDate)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        
+        let request = UNNotificationRequest(
+            identifier: identifier,
+            content: content,
+            trigger: trigger
+        )
+        
+        notificationCenter.add(request) { error in
+            if let error = error {
+                MOALogger.loge(error.localizedDescription)
+                return
+            }
+        }
+    }
+    
+    private func makeNotificationContent(
+        expireDate: Date,
+        triggerDay: NotificationDday,
+        name: String,
+        count: Int,
+        gifticonId: String
+    ) -> UNMutableNotificationContent {
+        let isMaxLenght = name.count > 10
+        let title = isMaxLenght ? String(name.prefix(10)) + "..." : name
+        let body = triggerDay.getBody(name: title, count: count)
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.userInfo = [
+            NotificationManager.gifticonId : gifticonId,
+            NotificationManager.expireDate : expireDate.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT),
+            NotificationManager.count : count
+        ]
         
         return content
     }
@@ -251,7 +299,32 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         completionHandler([.list, .banner, .badge, .sound])
     }
     
+    // 앱이 포그라운드나 백그라운드 있을 때 처리
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         MOALogger.logd()
+        
+        let body = response.notification.request.content.body
+        let userInfo = response.notification.request.content.userInfo
+        if let gifticonId = userInfo[NotificationManager.gifticonId] as? String,
+           let expireDate = userInfo[NotificationManager.expireDate] as? String,
+           let count = userInfo[NotificationManager.count] as? Int {
+            let _ = LocalNotificationDataManager.shared.insertNotification(
+                NotificationModel(
+                    count: count,
+                    date: expireDate,
+                    message: body,
+                    gifticonId: gifticonId,
+                    isRead: false
+                )
+            )
+            
+            if count > 1 {
+                UIApplication.shared.navigateNotification()
+            } else {
+                UIApplication.shared.navigateGifticonDetail(gifticonId: gifticonId)
+            }
+        }
+        
+        completionHandler()
     }
 }

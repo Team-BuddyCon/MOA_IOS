@@ -27,15 +27,47 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.makeKeyAndVisible()
         
         var rootViewController = UIViewController()
-        if UserPreferences.isShouldEntryLogin() {
-            if UserPreferences.isSignUp() {
-                let currentUser = Auth.auth().currentUser
-                rootViewController = currentUser == nil ? UINavigationController(rootViewController: LoginViewController()) : UINavigationController(rootViewController: HomeTabBarController())
+        
+        // 알림 이벤트로 앱 시작 시
+        if let userInfo = connectionOptions.notificationResponse?.notification.request.content.userInfo,
+           let body = connectionOptions.notificationResponse?.notification.request.content.body,
+           let count = userInfo[NotificationManager.count] as? Int,
+           let gifticonId = userInfo[NotificationManager.gifticonId] as? String,
+           let expireDate = userInfo[NotificationManager.expireDate] as? String {
+            LocalNotificationDataManager.shared.insertNotification(
+                NotificationModel(
+                    count: count,
+                    date: expireDate,
+                    message: body,
+                    gifticonId: gifticonId,
+                    isRead: false
+                )
+            )
+            
+            let navigationController = UINavigationController(rootViewController: HomeTabBarController())
+            if count > 1 {
+                // 다중 기프티콘 알림
+                
+                let notificationDataVC = NotificationViewController()
+                navigationController.pushViewController(notificationDataVC, animated: false)
             } else {
-                rootViewController = UINavigationController(rootViewController: LoginViewController())
+                // 단일 기프티콘 알림
+                
+                let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
+                navigationController.pushViewController(detailVC, animated: false)
             }
+            rootViewController = navigationController
         } else {
-            rootViewController = WalkThroughViewController()
+            if UserPreferences.isShouldEntryLogin() {
+                if UserPreferences.isSignUp() {
+                    let currentUser = Auth.auth().currentUser
+                    rootViewController = currentUser == nil ? UINavigationController(rootViewController: LoginViewController()) : UINavigationController(rootViewController: HomeTabBarController())
+                } else {
+                    rootViewController = UINavigationController(rootViewController: LoginViewController())
+                }
+            } else {
+                rootViewController = WalkThroughViewController()
+            }
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in

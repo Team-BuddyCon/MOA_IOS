@@ -12,4 +12,5 @@ struct NotificationModel {
     let date: String
     let message: String
     let gifticonId: String
+    let isRead: Bool
 }
