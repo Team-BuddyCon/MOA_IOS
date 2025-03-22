@@ -29,6 +29,18 @@ class LocalNotificationDataManager {
     
     func insertNotification(_ notification: NotificationModel) -> Bool{
         MOALogger.logd("\(notification)")
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>.init(entityName: "NotificationInfo")
+        fetchRequest.predicate = NSPredicate(format: "gifticonId = %@ AND date = %@", notification.gifticonId, notification.date)
+        
+        do {
+            if let _ = try context.fetch(fetchRequest)[0] as? NotificationInfo {
+                return false
+            }
+        } catch {
+            MOALogger.loge(error.localizedDescription)
+            return false
+        }
+        
         if let entity = NSEntityDescription.entity(forEntityName: "NotificationInfo", in: context) {
             let info = NSManagedObject(entity: entity, insertInto: context)
             info.setValue(notification.count, forKey: "count")
