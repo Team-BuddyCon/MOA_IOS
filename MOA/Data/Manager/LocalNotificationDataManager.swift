@@ -33,8 +33,10 @@ class LocalNotificationDataManager {
         fetchRequest.predicate = NSPredicate(format: "gifticonId = %@ AND date = %@", notification.gifticonId, notification.date)
         
         do {
-            if let _ = try context.fetch(fetchRequest)[0] as? NotificationInfo {
-                return false
+            if let infos = try context.fetch(fetchRequest) as? [NotificationInfo] {
+                if !infos.isEmpty {
+                    return false
+                }
             }
         } catch {
             MOALogger.loge(error.localizedDescription)
@@ -65,15 +67,18 @@ class LocalNotificationDataManager {
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>.init(entityName: "NotificationInfo")
         fetchRequest.predicate = NSPredicate(format: "gifticonId = %@ AND date = %@", notification.gifticonId, notification.date)
         do {
-            if let info = try context.fetch(fetchRequest)[0] as? NotificationInfo {
-                info.setValue(true, forKey: "isRead")
-                
-                do {
-                    try context.save()
-                    return true
-                } catch {
-                    MOALogger.loge(error.localizedDescription)
-                    return false
+            if let infos = try context.fetch(fetchRequest) as? [NotificationInfo] {
+                if !infos.isEmpty {
+                    let info = infos[0]
+                    info.setValue(true, forKey: "isRead")
+                    
+                    do {
+                        try context.save()
+                        return true
+                    } catch {
+                        MOALogger.loge(error.localizedDescription)
+                        return false
+                    }
                 }
             }
         } catch {

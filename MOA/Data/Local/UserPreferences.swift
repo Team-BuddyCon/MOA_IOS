@@ -129,8 +129,8 @@ final class UserPreferences {
         return isCheck
     }
     
-    static func setCheckNotificationAuthorization() {
+    static func setCheckNotificationAuthorization(_ isCheck: Bool) {
         MOALogger.logd()
-        UserDefaults.standard.set(true, forKey: NOTIFICATION_AUTHORIZATION_CHECK)
+        UserDefaults.standard.set(isCheck, forKey: NOTIFICATION_AUTHORIZATION_CHECK)
     }
 }

@@ -177,6 +177,9 @@ let NOTIFICATION_1_SINGLE_TITLE_FORMAT = "'%@' 기프티콘이 내일 만료되�
 let NOTIFICATION_1_MULTI_TITLE_FORMAT = "'%@' 외에 %d개 기프티콘이 내일 만료되어요.근처에 사용 가능한 매장을 찾아서 꼭 사용해보아요."
 let NOTIFICATION_SINGLE_TITLE_FORMAT = "'%@' 기프티콘이 오늘 만료되어요.지금 바로 사용하러 가볼까요?"
 let NOTIFICATION_MULTI_TITLE_FORMAT = "'%@' 외에 %d개 기프티콘이 오늘 만료되어요.지금 바로 사용하러 가볼까요?"
+let NOTIFICATION_AUTHORIZATION_POPUP_TITLE = "알림을 받으려면\n시스템 권한이 필요해요"
+let NOTIFICATION_AUTHORIZATION_POPUP_SUBTITLE = "설정에서 시스템 알림을 허용해주세요."
+let NOTIFICATION_AUTHORIZATION_POPUP_CONFIRM = "이동하기"
 
 // MARK: ImageSet
 let LOGIN_ICON = "LoginIcon"

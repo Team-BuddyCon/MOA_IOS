@@ -33,6 +33,18 @@ final class NotificationManager: NSObject {
     private override init() {
         super.init()
         UNUserNotificationCenter.current().delegate = self
+        addObserver()
+        
+        notificationCenter.getNotificationSettings(completionHandler: { settings in
+            UserPreferences.setNotificationOn(isOn: settings.authorizationStatus == .authorized)
+            if settings.authorizationStatus == .authorized {
+                UserPreferences.setCheckNotificationAuthorization(true)
+                UserPreferences.setNotificationTriggerDay(NotificationDday.day14)
+            } else {
+                UserPreferences.setCheckNotificationAuthorization(false)
+                UserPreferences.removeAllNotificationTriggerDays()
+            }
+        })
     }
     
     func requestAuhthorization() {
@@ -40,8 +52,6 @@ final class NotificationManager: NSObject {
         
         let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
         notificationCenter.requestAuthorization(options: authOptions) { isGranted, error in
-            UserPreferences.setCheckNotificationAuthorization()
-            
             if let error = error {
                 MOALogger.loge(error.localizedDescription)
                 return
@@ -50,7 +60,11 @@ final class NotificationManager: NSObject {
             MOALogger.logd("\(isGranted)")
             UserPreferences.setNotificationOn(isOn: isGranted)
             if isGranted {
+                UserPreferences.setCheckNotificationAuthorization(true)
                 UserPreferences.setNotificationTriggerDay(NotificationDday.day14)
+            } else {
+                UserPreferences.setCheckNotificationAuthorization(false)
+                UserPreferences.removeAllNotificationTriggerDays()
             }
         }
     }
@@ -290,6 +304,20 @@ final class NotificationManager: NSObject {
         
         return content
     }
+    
+    func checkNotificationAuthorization(completion: @escaping () -> Void) {
+        notificationCenter.getNotificationSettings(completionHandler: { settings in
+            UserPreferences.setNotificationOn(isOn: settings.authorizationStatus == .authorized)
+            if settings.authorizationStatus == .authorized {
+                UserPreferences.setCheckNotificationAuthorization(true)
+                UserPreferences.setNotificationTriggerDay(NotificationDday.day14)
+            } else {
+                UserPreferences.setCheckNotificationAuthorization(false)
+                UserPreferences.removeAllNotificationTriggerDays()
+            }
+            completion()
+        })
+    }
 }
 
 extension NotificationManager: UNUserNotificationCenterDelegate {
@@ -326,5 +354,31 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         }
         
         completionHandler()
+    }
+}
+
+extension NotificationManager {
+    
+    func addObserver() {
+        MOALogger.logd()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(didBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+    }
+    
+    @objc func didBecomeActive() {
+        notificationCenter.getNotificationSettings(completionHandler: { settings in
+            UserPreferences.setNotificationOn(isOn: settings.authorizationStatus == .authorized)
+            if settings.authorizationStatus == .authorized {
+                UserPreferences.setCheckNotificationAuthorization(true)
+                UserPreferences.setNotificationTriggerDay(NotificationDday.day14)
+            } else {
+                UserPreferences.setCheckNotificationAuthorization(false)
+                UserPreferences.removeAllNotificationTriggerDays()
+            }
+        })
     }
 }
