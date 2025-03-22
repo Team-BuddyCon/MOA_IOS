@@ -52,6 +52,7 @@ final class GifticonViewModel: BaseViewModel {
                 if self.isFirstFetch {
                     registerNotifications()
                     removeLocalNotifications()
+                    insertLocatlNotificiations()
                     self.isFirstFetch = false
                 }
             },
@@ -109,5 +110,37 @@ final class GifticonViewModel: BaseViewModel {
             }.forEach {
                 LocalNotificationDataManager.shared.deleteNotification($0)
             }
+    }
+    
+    // 알림은 보내졌지만 내부 저장소에 저장이 안된 알림 저장 로직 (서버리스 문제)
+    func insertLocatlNotificiations() {
+        MOALogger.logd()
+        guard UserPreferences.isNotificationOn() else { return }
+        
+        let expireDateGroup = gifticons.value.grouped(by: { $0.expireDate })
+        UserPreferences.getNotificationTriggerDays().forEach { triggerDay in
+            Array(expireDateGroup.keys).forEach { (expireDate: String) in
+                if let date = expireDate.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT),
+                   let triggerDate = triggerDay.getNotificationDate(target: date),
+                   triggerDate < Date() && Date() <= date {
+                    guard let models = expireDateGroup[expireDate] else { return }
+                    guard let firstModel = models.first else { return }
+                    let isMaxLenght = firstModel.name.count > 10
+                    let title = isMaxLenght ? String(firstModel.name.prefix(10)) + "..." : firstModel.name
+                    let message = triggerDay.getBody(name: title, count: models.count)
+                    let gifticonId = firstModel.gifticonId
+                    
+                    LocalNotificationDataManager.shared.insertNotification(
+                        NotificationModel(
+                            count: models.count,
+                            date: triggerDate.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT),
+                            message: message,
+                            gifticonId: gifticonId,
+                            isRead: false
+                        )
+                    )
+                }
+            }
+        }
     }
 }
