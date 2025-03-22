@@ -92,16 +92,30 @@ class LocalNotificationDataManager {
         }
     }
     
-    func deleteNotification(_ notification: NotificationInfo) -> Bool {
+    func deleteNotification(_ notification: NotificationModel) -> Bool {
         MOALogger.logd()
-        context.delete(notification)
+        
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>.init(entityName: "NotificationInfo")
+        fetchRequest.predicate = NSPredicate(format: "gifticonId = %@ AND date = %@", notification.gifticonId, notification.date)
+        
         do {
-            try context.save()
-            return true
+            if let infos = try context.fetch(fetchRequest) as? [NotificationInfo] {
+                infos.forEach {
+                    context.delete($0)
+                }
+                
+                do {
+                    try context.save()
+                    return true
+                } catch {
+                    MOALogger.loge(error.localizedDescription)
+                }
+            }
         } catch {
             MOALogger.loge(error.localizedDescription)
-            return false
         }
+        
+        return false
     }
     
     func deleteAll() -> Bool {

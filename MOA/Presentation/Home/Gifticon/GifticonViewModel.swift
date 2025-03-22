@@ -51,6 +51,7 @@ final class GifticonViewModel: BaseViewModel {
                 
                 if self.isFirstFetch {
                     registerNotifications()
+                    removeLocalNotifications()
                     self.isFirstFetch = false
                 }
             },
@@ -92,5 +93,21 @@ final class GifticonViewModel: BaseViewModel {
             count: 3,
             gifticonId: "5E64F632-7EB3-4ED5-8E28-318223244346"
         )
+    }
+    
+    // 30일이 지난 알림 삭제
+    func removeLocalNotifications() {
+        MOALogger.logd()
+        
+        LocalNotificationDataManager.shared.fetchNotification()
+            .filter {
+                if let expireDate = $0.date.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT),
+                   let removeDate = Calendar.current.date(byAdding: .day, value: 30, to: expireDate) {
+                    return removeDate < Date()
+                }
+                return false
+            }.forEach {
+                LocalNotificationDataManager.shared.deleteNotification($0)
+            }
     }
 }
