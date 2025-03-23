@@ -93,7 +93,7 @@ class LocalNotificationDataManager {
         MOALogger.logd()
         do {
             if let notifications = try context.fetch(NotificationInfo.fetchRequest()) as? [NotificationInfo] {
-                return notifications.reversed().map {
+                return notifications.sorted(by: { $0.date > $1.date }) .map {
                     NotificationModel(
                         count: Int($0.count),
                         date: $0.date,
