@@ -33,7 +33,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
            let body = connectionOptions.notificationResponse?.notification.request.content.body,
            let count = userInfo[NotificationManager.count] as? Int,
            let gifticonId = userInfo[NotificationManager.gifticonId] as? String,
-           let expireDate = userInfo[NotificationManager.expireDate] as? String {
+           let expireDate = userInfo[NotificationManager.notificationDate] as? String {
             LocalNotificationDataManager.shared.insertNotification(
                 NotificationModel(
                     count: count,

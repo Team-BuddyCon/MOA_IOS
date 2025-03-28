@@ -18,7 +18,8 @@ final class NotificationViewModel: BaseViewModel {
     }
     
     override init() {
-        notificationsRelay.accept(LocalNotificationDataManager.shared.fetchNotification())
+        let notifications = LocalNotificationDataManager.shared.fetchNotification()
+        notificationsRelay.accept(notifications)
     }
     
     func readNotifications() {
