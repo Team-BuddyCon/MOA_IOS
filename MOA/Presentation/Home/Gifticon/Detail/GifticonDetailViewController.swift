@@ -210,7 +210,7 @@ final class GifticonDetailViewController: BaseViewController {
             // Edit 변경으로 새 알림 등록
             NotificationManager.shared.register(
                 gifticonDetailViewModel.gifticon.expireDate,
-                name: gifticonDetailViewModel.gifticon.expireDate,
+                name: gifticonDetailViewModel.gifticon.name,
                 gifticonId: gifticonDetailViewModel.gifticon.gifticonId
             )
         }

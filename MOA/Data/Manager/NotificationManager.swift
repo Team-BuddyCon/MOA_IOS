@@ -11,7 +11,7 @@ import UIKit
 final class NotificationManager: NSObject {
     static let shared = NotificationManager()
     static let gifticonId = "gifticonId"
-    static let expireDate = "expireDate"
+    static let notificationDate = "notificationDate"
     static let count = "count"
     
     private let notificationCenter = UNUserNotificationCenter.current()
@@ -217,7 +217,7 @@ final class NotificationManager: NSObject {
            let future = Calendar.current.date(byAdding: .day, value: 90, to: current),
            notificationDate > current && expireDate < future {  // 알림 시간이 현재 시간보다 미래이고, 현재+90일 내에 만료되는 경우에만 등록
             let content = makeNotificationContent(
-                expireDate: expireDate,
+                notificationDate: notificationDate,
                 triggerDay: triggerDay,
                 name: name,
                 count: count,
@@ -260,7 +260,7 @@ final class NotificationManager: NSObject {
         if let gifticonId = gifticonId {
             content.userInfo = [
                 NotificationManager.gifticonId : gifticonId,
-                NotificationManager.expireDate : expireDate.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT),
+                NotificationManager.notificationDate : expireDate.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT),
                 NotificationManager.count : count
             ]
         }
@@ -284,7 +284,7 @@ final class NotificationManager: NSObject {
     }
     
     private func makeNotificationContent(
-        expireDate: Date,
+        notificationDate: Date,
         triggerDay: NotificationDday,
         name: String,
         count: Int,
@@ -293,12 +293,13 @@ final class NotificationManager: NSObject {
         let isMaxLenght = name.count > 10
         let title = isMaxLenght ? String(name.prefix(10)) + "..." : name
         let body = triggerDay.getBody(name: title, count: count)
+        
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
         content.userInfo = [
             NotificationManager.gifticonId : gifticonId,
-            NotificationManager.expireDate : expireDate.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT),
+            NotificationManager.notificationDate : notificationDate.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT),
             NotificationManager.count : count
         ]
         
@@ -334,7 +335,7 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         let body = response.notification.request.content.body
         let userInfo = response.notification.request.content.userInfo
         if let gifticonId = userInfo[NotificationManager.gifticonId] as? String,
-           let expireDate = userInfo[NotificationManager.expireDate] as? String,
+           let expireDate = userInfo[NotificationManager.notificationDate] as? String,
            let count = userInfo[NotificationManager.count] as? Int {
             let _ = LocalNotificationDataManager.shared.insertNotification(
                 NotificationModel(
