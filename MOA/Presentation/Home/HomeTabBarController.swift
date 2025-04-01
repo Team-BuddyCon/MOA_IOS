@@ -10,12 +10,27 @@ import SnapKit
 
 final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate {
     
+    private lazy var coachMarkView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .black.withAlphaComponent(0.4)
+        return view
+    }()
+    
+    private lazy var coachMarkImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: COACH_MARK_ICON)
+        imageView.isUserInteractionEnabled = true
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tapCoachMark))
+        imageView.addGestureRecognizer(tapGesture)
+        return imageView
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
         setupAppearance()
         setupViewControllers()
-        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -27,6 +42,7 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         }
         
         NotificationManager.shared.requestAuhthorization()
+        UserPreferences.hideCoachMark()
     }
     
     private func setupAppearance() {
@@ -35,6 +51,19 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         tabBar.layer.shadowColor = UIColor.black.cgColor
         tabBar.layer.shadowOpacity = 0.1
         delegate = self
+        
+        if !UserPreferences.isHideCoachMark() {
+            self.view.addSubview(coachMarkView)
+            self.view.addSubview(coachMarkImageView)
+            coachMarkView.snp.makeConstraints {
+                $0.edges.equalToSuperview()
+            }
+        
+            coachMarkImageView.snp.makeConstraints {
+                $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(tabBar.layer.frame.height + 80)
+                $0.trailing.equalToSuperview().inset(20)
+            }
+        }
     }
     
     private func setupViewControllers() {
@@ -80,4 +109,9 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         return true
     }
 
+    @objc func tapCoachMark() {
+        MOALogger.logd()
+        coachMarkView.isHidden = true
+        coachMarkImageView.isHidden = true
+    }
 }
