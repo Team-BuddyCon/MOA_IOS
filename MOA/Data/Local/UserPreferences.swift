@@ -17,6 +17,7 @@ private let OAUTH_SERVICE = "OAUTH_SERVICE"
 private let NOTIFICATION_ISON = "NOTIFICATION_ISON"
 private let NOTIFICATION_TRIGGER_DAYS = "NOTIFICATION_TRIGGER_DAYS"
 private let NOTIFICATION_AUTHORIZATION_CHECK = "NOTIFICATION_AUTHORIZATION_CHECK"
+private let HIDE_COACH_MARK = "HIDE_COACH_MARK"
 
 enum OAuthService: String {
     case Google = "Google"
@@ -132,5 +133,15 @@ final class UserPreferences {
     static func setCheckNotificationAuthorization(_ isCheck: Bool) {
         MOALogger.logd()
         UserDefaults.standard.set(isCheck, forKey: NOTIFICATION_AUTHORIZATION_CHECK)
+    }
+    
+    static func isHideCoachMark() -> Bool {
+        let isHide = UserDefaults.standard.bool(forKey: HIDE_COACH_MARK)
+        return isHide
+    }
+    
+    static func hideCoachMark() {
+        MOALogger.logd()
+        UserDefaults.standard.set(true, forKey: HIDE_COACH_MARK)
     }
 }
