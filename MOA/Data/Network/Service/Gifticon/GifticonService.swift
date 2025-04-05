@@ -81,7 +81,7 @@ final class GifticonService: GifticonServiceProtocol {
                 .collection(FirebaseStoreID.USER.rawValue)
                 .document(self.userID)
                 .collection(FirebaseStoreID.GIFTICON.rawValue)
-                .order(by: sortType.field, descending: false)
+                .order(by: sortType.field, descending: sortType == SortType.NAME)
                 .whereField(HttpKeys.Gifticon.gifticonStoreCategory, in: category.categoryField)
                 .whereField(HttpKeys.Gifticon.used, isEqualTo: false)
                 .getDocuments(completion: { snapshot, error in
