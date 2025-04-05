@@ -94,6 +94,15 @@ private extension BottomSheetViewController {
             $0.edges.equalToSuperview()
         }
         
+        let tapGesture = UITapGestureRecognizer()
+        sheetView.addGestureRecognizer(tapGesture)
+        
+        tapGesture.rx.event
+            .subscribe(onNext: { [weak self] _ in
+                let date = sheetView.datePicker.date
+                self?.delegate?.selectDate(date: date)
+            }).disposed(by: disposeBag)
+        
         sheetView.closeButton.rx.tap
             .subscribe(onNext: { [weak self] in
                 let date = sheetView.datePicker.date
