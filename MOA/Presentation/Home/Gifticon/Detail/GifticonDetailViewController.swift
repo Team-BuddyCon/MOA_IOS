@@ -150,11 +150,16 @@ final class GifticonDetailViewController: BaseViewController {
     )
     
     let gifticonId: String
+    var isRegistered: Bool  // 이미 등록된 기프티콘의 상세인지, 등록 후 이동된 상세화면인지 구분
     
     var isActive: Bool = true
     
-    init(gifticonId: String) {
+    init(
+        gifticonId: String,
+        isRegistered: Bool = true
+    ) {
         self.gifticonId = gifticonId
+        self.isRegistered = isRegistered
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -173,6 +178,12 @@ final class GifticonDetailViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         MOALogger.logd()
+        
+        if !isRegistered {
+            Toast.shared.show(message: GIFTICON_REGISTER_SUCCESS)
+            isRegistered = true
+        }
+        
         mapManager?.addObserver()
         gifticonDetailViewModel.fetchGifticon(gifticonId: gifticonId)
     }
