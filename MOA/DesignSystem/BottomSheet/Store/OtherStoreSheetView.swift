@@ -19,6 +19,7 @@ final class OtherStoreSheetView: UIView {
         label.font = UIFont(name: pretendard_bold, size: 16.0)
         label.text = OTHER_STORE
         label.textColor = .grey90
+        label.numberOfLines = 1
         return label
     }()
     
@@ -172,5 +173,12 @@ extension OtherStoreSheetView: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textInput.resignFirstResponder()
         return true
+    }
+    
+    // 글자수 제한
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let currentText = textField.text ?? ""
+        let text = (currentText as NSString).replacingCharacters(in: range, with: string)
+        return text.count <= 23
     }
 }
