@@ -176,6 +176,10 @@ final class GifticonService: GifticonServiceProtocol {
             
             if let gifticonStore = gifticonStore {
                 updateFields.updateValue(gifticonStore, forKey: HttpKeys.Gifticon.gifticonStore)
+                
+                if let gifticonCategory = StoreCategory.from(typeCode: gifticonStore)?.code {
+                    updateFields.updateValue(gifticonCategory, forKey: HttpKeys.Gifticon.gifticonStoreCategory)
+                }
             }
             
             if let memo = memo {
