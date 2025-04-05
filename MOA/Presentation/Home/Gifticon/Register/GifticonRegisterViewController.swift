@@ -288,7 +288,10 @@ private extension Reactive where Base: GifticonRegisterViewController {
                 },
                 onSucess: { gifticonId in
                     viewController.dismiss(animated: false)
-                    let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
+                    let detailVC = GifticonDetailViewController(
+                        gifticonId: gifticonId,
+                        isRegistered: false
+                    )
                     viewController.navigationController?.pushViewController(detailVC, animated: true)
                 },
                 onError: {
