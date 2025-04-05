@@ -289,8 +289,10 @@ extension RegisterInputView: BottomSheetDelegate {
     
     func selectOtherStore(store: String) {
         MOALogger.logd("기타 - \(store)")
+        let input = "기타" + (store.isEmpty ? "" : "- \(store)")
+        
         hasInput = true
-        inputLabel.text = "기타 - \(store)"
+        inputLabel.text = input
         requestInput = StoreType.OTHERS.code
         
         UIApplication.shared.topViewController?.dismiss(animated: false)
