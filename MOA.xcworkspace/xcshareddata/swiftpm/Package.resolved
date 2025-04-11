@@ -1,5 +1,5 @@
 {
-  "originHash" : "927f59c7b25ab245370ce549b1c594feb6aab84dd64d56132f8d1294091a60ab",
+  "originHash" : "856ffe0aabb515e91d84b64be7c385cd74f3b5a33ed08864afcdd51c5be5ad06",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -197,6 +197,15 @@
       "state" : {
         "revision" : "9535b58695b91fb67f56d58d6fd0c76462d7743a",
         "version" : "6.1.2"
+      }
+    },
+    {
+      "identity" : "rxdatasources",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/RxSwiftCommunity/RxDataSources.git",
+      "state" : {
+        "revision" : "90c29b48b628479097fe775ed1966d75ac374518",
+        "version" : "5.0.2"
       }
     },
     {
