@@ -17,7 +17,9 @@ enum NotificationDday: Int {
     
     func getNotificationDate(target: Date?) -> Date? {
         guard let target = target else { return nil }
-        return target.addingTimeInterval(-Double((self.rawValue * 24 * 3600)))
+        
+        // 10시 기준으로 알림 보내기
+        return target.addingTimeInterval(-Double((self.rawValue * 24 * 3600 + 10 * 3600)))
     }
     
     func getBody(name: String, count: Int) -> String {
