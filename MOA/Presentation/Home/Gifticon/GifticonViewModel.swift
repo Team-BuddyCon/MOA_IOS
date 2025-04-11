@@ -38,6 +38,7 @@ final class GifticonViewModel: BaseViewModel {
             categoryRelay,
             sortTypeRelay
         ).flatMap { [unowned self] category, sortType in
+            // 있는 만큼만 스켈레톤 UI 보여줘야 안어색함
             let count = self.gifticons.value.count
             self.gifticons.accept([GifticonModel](repeating: GifticonModel(), count: count))
             return gifticonService.fetchGifticons(
