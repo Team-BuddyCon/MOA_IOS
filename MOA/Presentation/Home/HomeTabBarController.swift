@@ -31,6 +31,7 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         MOALogger.logd()
         setupAppearance()
         setupViewControllers()
+        setupTopBarWithLargeTitleAndNotification(title: GIFTICON_MENU_TITLE)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -46,10 +47,8 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
     }
     
     private func setupAppearance() {
-        UITabBar.appearance().shadowImage = UIImage()
-        UITabBar.appearance().backgroundColor = UIColor.white
-        tabBar.layer.shadowColor = UIColor.black.cgColor
-        tabBar.layer.shadowOpacity = 0.1
+        setupTapBar()
+        setupNavigationBar()
         delegate = self
         
         if !UserPreferences.isHideCoachMark() {
@@ -66,10 +65,26 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         }
     }
     
+    private func setupTapBar() {
+        view.backgroundColor = .white
+        UITabBar.appearance().shadowImage = UIImage()
+        UITabBar.appearance().backgroundColor = UIColor.white
+        tabBar.layer.shadowColor = UIColor.black.cgColor
+        tabBar.layer.shadowOpacity = 0.1
+    }
+    
+    private func setupNavigationBar() {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = .white
+        appearance.shadowColor = .clear
+
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        UINavigationBar.appearance().isTranslucent = false
+    }
+    
     private func setupViewControllers() {
-        UITabBarItem.appearance().setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.grey60], for: .normal)
-        UITabBarItem.appearance().setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.grey90], for: .normal)
-        
         let gifticonViewController = GifticonViewController()
         let mapViewController = MapViewController()
         let mypageViewController = MypageViewController()
@@ -88,12 +103,10 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
             items[2].selectedImage = UIImage(named: MYPAGE_SELECTED_MENU)?.withRenderingMode(.alwaysOriginal)
             items[2].title = MYPAGE_MENU_TITLE
         }
-        
-        setupTopBarWithLargeTitleAndNotification(title: GIFTICON_MENU_TITLE)
+        UITabBarItem.appearance().setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.grey90], for: .normal)
     }
     
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
-
         if viewController is GifticonViewController {
             setupTopBarWithLargeTitleAndNotification(title: GIFTICON_MENU_TITLE)
         }
