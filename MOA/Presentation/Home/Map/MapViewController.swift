@@ -45,10 +45,10 @@ final class MapViewController: BaseViewController {
         view.addSubview(guideToastLabel)
         view.layer.cornerRadius = 21
         view.backgroundColor = .white
-        view.clipsToBounds = true
+        view.clipsToBounds = false
         view.applyShadow(
-            color: UIColor.black.withAlphaComponent(0.1).cgColor,
-            opacity: 1,
+            color: UIColor.black.cgColor,
+            opacity: 0.4,
             blur: 10,
             x: 0.0,
             y: 2.0
