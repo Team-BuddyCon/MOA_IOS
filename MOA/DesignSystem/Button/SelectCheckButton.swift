@@ -16,8 +16,7 @@ final class SelectCheckButton: UIView {
     
     private let checkImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(named: CHECK_BUTTON_IMAGE_ASSET)?.withRenderingMode(.alwaysTemplate)
-        imageView.tintColor = .pink100
+        imageView.image = UIImage(named: CHECK_RED_BUTTON_IMAGE_ASSET)
         imageView.isHidden = true
         return imageView
     }()
