@@ -62,6 +62,28 @@ class LocalNotificationDataManager {
         return false
     }
     
+    func updateAllNotification() -> Bool {
+        MOALogger.logd()
+        do {
+            if let infos = try context.fetch(NotificationInfo.fetchRequest()) as? [NotificationInfo] {
+                infos.forEach { info in
+                    info.setValue(true, forKey: "isRead")
+                }
+                
+                do {
+                    try context.save()
+                    return true
+                } catch {
+                    MOALogger.loge(error.localizedDescription)
+                    return false
+                }
+            }
+        } catch {
+            MOALogger.loge(error.localizedDescription)
+        }
+        return false
+    }
+    
     func updateNotification(_ notification: NotificationModel) -> Bool {
         MOALogger.logd("\(notification)")
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>.init(entityName: "NotificationInfo")

@@ -17,7 +17,9 @@ private let OAUTH_SERVICE = "OAUTH_SERVICE"
 private let NOTIFICATION_ISON = "NOTIFICATION_ISON"
 private let NOTIFICATION_TRIGGER_DAYS = "NOTIFICATION_TRIGGER_DAYS"
 private let NOTIFICATION_AUTHORIZATION_CHECK = "NOTIFICATION_AUTHORIZATION_CHECK"
+private let NOTIFICATION_UPDATE_DATE = "NOTIFICATION_UPDATE_DATE"
 private let HIDE_COACH_MARK = "HIDE_COACH_MARK"
+
 
 enum OAuthService: String {
     case Google = "Google"
@@ -111,6 +113,17 @@ final class UserPreferences {
         let days = getNotificationTriggerDays().map { $0.rawValue } + [day].map { $0.rawValue }
         let uniqueDays = Array(Set(days)).sorted(by: >)
         UserDefaults.standard.set(uniqueDays, forKey: NOTIFICATION_TRIGGER_DAYS)
+    }
+    
+    static func getNotifcationUpdateDate() -> String {
+        let date = UserDefaults.standard.string(forKey: NOTIFICATION_UPDATE_DATE) ?? ""
+        return date
+    }
+    
+    static func setNotificationUpdateDate() {
+        let current = Date().toString(format: AVAILABLE_GIFTICON_TIME_FORMAT)
+        MOALogger.logd(current)
+        UserDefaults.standard.set(current, forKey: NOTIFICATION_UPDATE_DATE)
     }
     
     static func removeNotificationTriggerDay(_ day: NotificationDday) {

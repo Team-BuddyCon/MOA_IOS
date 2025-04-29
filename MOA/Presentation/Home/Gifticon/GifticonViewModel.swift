@@ -118,13 +118,21 @@ final class GifticonViewModel: BaseViewModel {
         MOALogger.logd()
         guard UserPreferences.isNotificationOn() else { return }
         
+        let current = Date()
         let expireDateGroup = gifticons.value.grouped(by: { $0.expireDate })
+        
         UserPreferences.getNotificationTriggerDays().forEach { triggerDay in
-            Array(expireDateGroup.keys).forEach { (expireDate: String) in
-                if let date = expireDate.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT),
-                   let triggerDate = triggerDay.getNotificationDate(target: date),
-                   triggerDate < Date() && Date() <= date {
-                    guard let models = expireDateGroup[expireDate] else { return }
+            Array(expireDateGroup.keys).forEach { (date: String) in
+                if let expireDate = date.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT),
+                   let triggerDate = triggerDay.getNotificationDate(target: expireDate),
+                   triggerDate < current && current <= expireDate {
+                    
+                    // triggerDate 보다 더 나중에 알림 주기 업데이트 시에는 알림에 표시되지 않음
+                    let triggerDateString = triggerDate.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT)
+                    guard UserPreferences.getNotifcationUpdateDate() < triggerDateString else { return }
+                    
+                    // 알림이 업로드 시점보다 더 이전이라면 알림 데이터 화면에는 보여지면 안됨
+                    guard let models = expireDateGroup[date]?.filter({ $0.uploadDate < triggerDateString }) else { return }
                     guard let firstModel = models.first else { return }
                     let isMaxLenght = firstModel.name.count > 10
                     let title = isMaxLenght ? String(firstModel.name.prefix(10)) + "..." : firstModel.name

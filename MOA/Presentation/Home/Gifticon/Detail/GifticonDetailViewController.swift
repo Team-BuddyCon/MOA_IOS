@@ -489,36 +489,39 @@ extension Reactive where Base: GifticonDetailViewController {
             viewController.useButton.status.accept(gifticon.used ? .used : .active)
             viewController.useButton.setTitle(gifticon.used ? GIFTICON_USED_BUTTON_TITLE : GIFTICON_USE_BUTTON_TITLE, for: .normal)
             
-            let storeType = viewController.gifticonDetailViewModel.gifticon.gifticonStore
-            if storeType == .OTHERS {
-                viewController.mapDimView.isHidden = false
-                viewController.mapGuideToastView.isHidden = false
-                viewController.mapGuideLabel.setRangeFontColor(
-                    text: MAP_NOT_PROVIDED_GUIDE_MESSAGE,
-                    startIndex: 13,
-                    endIndex: 18,
-                    color: .pink100
-                )
-                
-                viewController.mapGuideToastView.snp.remakeConstraints {
-                    $0.center.equalTo(viewController.mapDimView)
-                    $0.width.equalTo(283)
-                    $0.height.equalTo(42)
-                }
-            } else {
-                viewController.mapDimView.isHidden = true
-                viewController.mapGuideToastView.isHidden = true
-                viewController.mapGuideLabel.setRangeFontColor(
-                    text: MAP_PERMISSION_GUIDE_MESSAGE,
-                    startIndex: 0,
-                    endIndex: 8,
-                    color: .pink100
-                )
-                
-                viewController.mapGuideToastView.snp.remakeConstraints {
-                    $0.center.equalTo(viewController.mapDimView)
-                    $0.width.equalTo(242)
-                    $0.height.equalTo(42)
+            
+            if LocationManager.shared.isGranted.value {
+                let storeType = viewController.gifticonDetailViewModel.gifticon.gifticonStore
+                if storeType == .OTHERS {
+                    viewController.mapDimView.isHidden = false
+                    viewController.mapGuideToastView.isHidden = false
+                    viewController.mapGuideLabel.setRangeFontColor(
+                        text: MAP_NOT_PROVIDED_GUIDE_MESSAGE,
+                        startIndex: 13,
+                        endIndex: 18,
+                        color: .pink100
+                    )
+                    
+                    viewController.mapGuideToastView.snp.remakeConstraints {
+                        $0.center.equalTo(viewController.mapDimView)
+                        $0.width.equalTo(283)
+                        $0.height.equalTo(42)
+                    }
+                } else {
+                    viewController.mapDimView.isHidden = true
+                    viewController.mapGuideToastView.isHidden = true
+                    viewController.mapGuideLabel.setRangeFontColor(
+                        text: MAP_PERMISSION_GUIDE_MESSAGE,
+                        startIndex: 0,
+                        endIndex: 8,
+                        color: .pink100
+                    )
+                    
+                    viewController.mapGuideToastView.snp.remakeConstraints {
+                        $0.center.equalTo(viewController.mapDimView)
+                        $0.width.equalTo(242)
+                        $0.height.equalTo(42)
+                    }
                 }
             }
         }
@@ -542,7 +545,7 @@ extension Reactive where Base: GifticonDetailViewController {
     
     var bindToLocationPermission: Binder<Bool> {
         return Binder<Bool>(self.base) { viewController, isGranted in
-            MOALogger.logd()
+            MOALogger.logd("\(isGranted)")
             let storeType = viewController.gifticonDetailViewModel.gifticon.gifticonStore
             viewController.mapDimView.isHidden = storeType != .OTHERS && isGranted
             viewController.mapGuideToastView.isHidden = storeType != .OTHERS && isGranted

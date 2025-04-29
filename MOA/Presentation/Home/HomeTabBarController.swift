@@ -62,6 +62,9 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
                 $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(tabBar.layer.frame.height + 80)
                 $0.trailing.equalToSuperview().inset(20)
             }
+            
+            // 최초 진입 시(코치마크) 일정 저장
+            UserPreferences.setNotificationUpdateDate()
         }
     }
     
@@ -69,6 +72,7 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         view.backgroundColor = .white
         UITabBar.appearance().shadowImage = UIImage()
         UITabBar.appearance().backgroundColor = UIColor.white
+        tabBar.isTranslucent = false
         tabBar.layer.shadowColor = UIColor.black.cgColor
         tabBar.layer.shadowOpacity = 0.1
     }
