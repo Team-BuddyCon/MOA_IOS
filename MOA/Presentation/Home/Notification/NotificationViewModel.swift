@@ -21,12 +21,4 @@ final class NotificationViewModel: BaseViewModel {
         let notifications = LocalNotificationDataManager.shared.fetchNotification()
         notificationsRelay.accept(notifications)
     }
-    
-    func readNotifications() {
-        notifcationModels
-            .filter { $0.isRead == false }
-            .forEach {
-                LocalNotificationDataManager.shared.updateNotification($0)
-            }
-    }
 }

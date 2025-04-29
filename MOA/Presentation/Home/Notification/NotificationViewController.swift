@@ -54,8 +54,8 @@ private extension NotificationViewController {
     
     func bind() {
         viewModel.notificationsRelay.subscribe(
-            onNext: { [unowned self] notifications in
-                viewModel.readNotifications()
+            onNext: { _ in
+                let _ = LocalNotificationDataManager.shared.updateAllNotification()
             }
         ).disposed(by: disposeBag)
     }

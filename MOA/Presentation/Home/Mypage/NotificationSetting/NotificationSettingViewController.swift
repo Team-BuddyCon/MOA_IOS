@@ -150,6 +150,7 @@ final class NotificationSettingViewController: BaseViewController {
         
         UserPreferences.setNotificationOn(isOn: isOnNotification)
         UserPreferences.removeAllNotificationTriggerDays()
+        UserPreferences.setNotificationUpdateDate()
         if isOnNotification {
             triggerDays.forEach { triggerDay in
                 UserPreferences.setNotificationTriggerDay(triggerDay)
