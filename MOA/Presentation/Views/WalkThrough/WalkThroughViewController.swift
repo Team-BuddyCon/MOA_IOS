@@ -8,6 +8,10 @@
 import UIKit
 import SnapKit
 
+protocol WalkThroughViewControllerDelegate: AnyObject {
+    func login()
+}
+
 private struct WalkThroughPageItem {
     let imgRes: String
     let title: String
@@ -30,6 +34,8 @@ final class WalkThroughViewController: UIViewController {
     ]
     
     var currentPage: Int = 0
+    
+    weak var delegate: WalkThroughViewControllerDelegate?
     
     private lazy var pagerCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -135,6 +141,7 @@ private extension WalkThroughViewController {
     }
 }
 
+// MARK: UICollectionViewDataSource
 extension WalkThroughViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         pageItems.count
@@ -161,6 +168,7 @@ extension WalkThroughViewController: UICollectionViewDataSource {
     }
 }
 
+// MARK: UICollectionViewDelegateFlowLayout
 extension WalkThroughViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = UIScreen.main.bounds.width
@@ -193,10 +201,12 @@ extension WalkThroughViewController: UICollectionViewDelegateFlowLayout {
     }
 }
 
+// MARK: objc
 private extension WalkThroughViewController {
     @objc func tapSkipButton() {
         MOALogger.logd()
-        UIApplication.shared.setRootViewController(viewController: LoginViewController())
+        self.delegate?.login()
+        //UIApplication.shared.setRootViewController(viewController: LoginViewController())
     }
     
     @objc func tapNextButton() {
@@ -207,6 +217,7 @@ private extension WalkThroughViewController {
     
     @objc func tapStartButton() {
         MOALogger.logd()
-        UIApplication.shared.setRootViewController(viewController: LoginViewController())
+        self.delegate?.login()
+        //UIApplication.shared.setRootViewController(viewController: LoginViewController())
     }
 }

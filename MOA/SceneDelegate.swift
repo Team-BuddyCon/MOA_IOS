@@ -18,24 +18,29 @@ import FirebaseCore
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     var window: UIWindow?
+    var coordinator: AppCoordinator?
     
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         MOALogger.logd()
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = SplashViewController()
+        
+        let navigationController = UINavigationController()
+        window?.rootViewController = navigationController
         window?.backgroundColor = .white
+        
+        coordinator = AppCoordinator(navigationController: navigationController)
+        coordinator?.start()
+        
         window?.makeKeyAndVisible()
-        
-        var rootViewController = UIViewController()
-        
+
         // 알림 이벤트로 앱 시작 시
         if let userInfo = connectionOptions.notificationResponse?.notification.request.content.userInfo,
            let body = connectionOptions.notificationResponse?.notification.request.content.body,
            let count = userInfo[NotificationManager.count] as? Int,
            let gifticonId = userInfo[NotificationManager.gifticonId] as? String,
            let expireDate = userInfo[NotificationManager.notificationDate] as? String {
-            LocalNotificationDataManager.shared.insertNotification(
+            let _ = LocalNotificationDataManager.shared.insertNotification(
                 NotificationModel(
                     count: count,
                     date: expireDate,
@@ -57,31 +62,21 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
                 navigationController.pushViewController(detailVC, animated: false)
             }
-            rootViewController = navigationController
         } else {
-            if UserPreferences.isShouldEntryLogin() {
-                if UserPreferences.isSignUp() {
-                    let currentUser = Auth.auth().currentUser
-                    rootViewController = currentUser == nil ? UINavigationController(rootViewController: LoginViewController()) : UINavigationController(rootViewController: HomeTabBarController())
-                } else {
-                    rootViewController = UINavigationController(rootViewController: LoginViewController())
-                }
-            } else {
-                rootViewController = WalkThroughViewController()
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+                self?.coordinator?.navigateToAuth()
             }
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
-            guard let self = self else { return }
-            guard let window = self.window else { return }
-            UIView.transition(
-                with: window,
-                duration: 0.5,
-                options: [.transitionCrossDissolve],
-                animations: {
-                    window.rootViewController = rootViewController
-                }
-            )
+//            if UserPreferences.isShouldEntryLogin() {
+//                if UserPreferences.isSignUp() {
+//                    let currentUser = Auth.auth().currentUser
+//                    rootViewController = currentUser == nil ? UINavigationController(rootViewController: LoginViewController()) : UINavigationController(rootViewController: HomeTabBarController())
+//                } else {
+//                    rootViewController = UINavigationController(rootViewController: LoginViewController())
+//                }
+//            } else {
+//                rootViewController = WalkThroughViewController()
+//            }
         }
     }
     
