@@ -7,7 +7,7 @@
 
 import UIKit
 
-class AppCoordinator: Coordinator {
+class AppCoordinator: Coordinator, AuthCoordinatorDelegate {
     var childs: [Coordinator] = []
     
     private var navigationController: UINavigationController
@@ -22,7 +22,17 @@ class AppCoordinator: Coordinator {
     
     func navigateToAuth() {
         let authCoordinator = AuthCoordinator(navigationController: navigationController)
+        authCoordinator.delegate = self
         childs.append(authCoordinator)
         authCoordinator.start()
+    }
+    
+    func navigateToHome() {
+        //재로그인
+        //childs.removeAll(where: { $0 is AuthCoordinator })
+        
+        let homeCoordinator = HomeCoordinator(navigationController: navigationController)
+        childs.append(homeCoordinator)
+        homeCoordinator.start()
     }
 }

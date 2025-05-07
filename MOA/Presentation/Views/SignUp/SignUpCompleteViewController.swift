@@ -8,6 +8,10 @@
 import UIKit
 import SnapKit
 
+protocol SignUpCompleteViewControllerDelegate: AnyObject {
+    func navigateToHome()
+}
+
 final class SignUpCompleteViewController: BaseViewController {
     
     private let imageView: UIImageView = {
@@ -46,6 +50,8 @@ final class SignUpCompleteViewController: BaseViewController {
         let view = UIView()
         return view
     }()
+    
+    weak var delegate: SignUpCompleteViewControllerDelegate?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -87,6 +93,6 @@ final class SignUpCompleteViewController: BaseViewController {
     @objc func tapStartButton() {
         MOALogger.logd()
         UserPreferences.setSignUp(sign: true)
-        UIApplication.shared.navigateHome()
+        self.delegate?.navigateToHome()
     }
 }

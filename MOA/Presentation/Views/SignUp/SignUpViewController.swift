@@ -9,6 +9,12 @@ import UIKit
 import SnapKit
 import RxSwift
 
+protocol SignUpViewControllerDelegate: AnyObject {
+    func navigateToTermsOfUse()
+    func navigateToPrivacyPolicy()
+    func navigateToSignUpComplete()
+}
+
 final class SignUpViewController: BaseViewController {
     
     private let titleLable: UILabel = {
@@ -31,16 +37,16 @@ final class SignUpViewController: BaseViewController {
     
     private lazy var termsOfUseSignUpCheckBox: SignUpCheckBox = {
         let checkBox = SignUpCheckBox(frame: .zero,text: SIGNUP_AGREE_TO_TERMS_OF_USE, hasMore: true) {
-            let vc = SignUpWebViewController(title: SIGNUP_MOA_TERMS_OF_USE_TITLE, url: SERVICE_TERMS_URL)
-            self.navigationController?.pushViewController(vc, animated: true)
+            self.delegate?.navigateToTermsOfUse()
+           
         }
         return checkBox
     }()
     
     private lazy var privacyPolicySignUpCheckBox: SignUpCheckBox = {
         let checkBox = SignUpCheckBox(frame: .zero,text: SIGNUP_AGREE_TO_PRIVACY_POLICY, hasMore: true) {
-            let vc = SignUpWebViewController(title: SIGNUP_PRIVACY_POLICY_TITLE, url: PRIVACY_INFORMATION_URL)
-            self.navigationController?.pushViewController(vc, animated: true)
+            self.delegate?.navigateToPrivacyPolicy()
+            
         }
         return checkBox
     }()
@@ -56,6 +62,8 @@ final class SignUpViewController: BaseViewController {
         button.addTarget(self, action: #selector(tapCompletButton), for: .touchUpInside)
         return button
     }()
+    
+    weak var delegate: SignUpViewControllerDelegate?
     
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -181,9 +189,6 @@ private extension SignUpViewController {
 
 private extension SignUpViewController {
     @objc func tapCompletButton() {
-        let viewController = SignUpCompleteViewController()
-        viewController.modalPresentationStyle = .fullScreen
-        viewController.modalTransitionStyle = .crossDissolve
-        present(viewController, animated: true)
+        self.delegate?.navigateToSignUpComplete()
     }
 }

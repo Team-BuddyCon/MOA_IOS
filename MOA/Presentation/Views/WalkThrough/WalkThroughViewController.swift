@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 
 protocol WalkThroughViewControllerDelegate: AnyObject {
-    func login()
+    func navigateToLogin()
 }
 
 private struct WalkThroughPageItem {
@@ -205,8 +205,7 @@ extension WalkThroughViewController: UICollectionViewDelegateFlowLayout {
 private extension WalkThroughViewController {
     @objc func tapSkipButton() {
         MOALogger.logd()
-        self.delegate?.login()
-        //UIApplication.shared.setRootViewController(viewController: LoginViewController())
+        self.delegate?.navigateToLogin()
     }
     
     @objc func tapNextButton() {
@@ -217,7 +216,6 @@ private extension WalkThroughViewController {
     
     @objc func tapStartButton() {
         MOALogger.logd()
-        self.delegate?.login()
-        //UIApplication.shared.setRootViewController(viewController: LoginViewController())
+        self.delegate?.navigateToLogin()
     }
 }

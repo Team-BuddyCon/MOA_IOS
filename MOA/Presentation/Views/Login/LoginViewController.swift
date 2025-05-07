@@ -14,6 +14,10 @@ import FirebaseAuth
 import GoogleSignIn
 import AuthenticationServices
 
+protocol LoginViewControllerDelegate: AnyObject {
+    func loginInSuccess(isNewUser: Bool)
+}
+
 final class LoginViewController: BaseViewController {
     
     private var isLogout: Bool = false
@@ -40,6 +44,8 @@ final class LoginViewController: BaseViewController {
     }()
     
     fileprivate var currentNonce: String?
+    
+    weak var delegate: LoginViewControllerDelegate?
     
     init(
         isLogout: Bool = false,
@@ -159,16 +165,8 @@ private extension LoginViewController {
                             UserPreferences.setOAuthService(service: OAuthService.Google.rawValue)
                             UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
                             UserPreferences.setUserID(userID: result.user.uid)
-                            if result.additionalUserInfo?.newUser() == true {
-                                if UserPreferences.isSignUp() {
-                                    UIApplication.shared.navigateHome()
-                                } else {
-                                    self.navigationController?.pushViewController(SignUpViewController(), animated: true)
-                                }
-                            } else {
-                                UserPreferences.setSignUp(sign: true)
-                                UIApplication.shared.navigateHome()
-                            }
+                            
+                            self.delegate?.loginInSuccess(isNewUser: result.additionalUserInfo?.newUser() == true)
                         }
                     }
                 }
@@ -200,16 +198,8 @@ private extension LoginViewController {
                         UserPreferences.setOAuthService(service: OAuthService.Google.rawValue)
                         UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
                         UserPreferences.setUserID(userID: result.user.uid)
-                        if result.additionalUserInfo?.newUser() == true {
-                            if UserPreferences.isSignUp() {
-                                UIApplication.shared.navigateHome()
-                            } else {
-                                self.navigationController?.pushViewController(SignUpViewController(), animated: true)
-                            }
-                        } else {
-                            UserPreferences.setSignUp(sign: true)
-                            UIApplication.shared.navigateHome()
-                        }
+                        
+                        self.delegate?.loginInSuccess(isNewUser: result.additionalUserInfo?.newUser() == true)
                     }
                 }
             }
@@ -288,16 +278,18 @@ extension LoginViewController: ASAuthorizationControllerDelegate {
                     UserPreferences.setOAuthService(service: OAuthService.Apple.rawValue)
                     UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
                     UserPreferences.setUserID(userID: result.user.uid)
-                    if result.additionalUserInfo?.newUser() == true {
-                        if UserPreferences.isSignUp() {
-                            UIApplication.shared.navigateHome()
-                        } else {
-                            self.navigationController?.pushViewController(SignUpViewController(), animated: true)
-                        }
-                    } else {
-                        UserPreferences.setSignUp(sign: true)
-                        UIApplication.shared.navigateHome()
-                    }
+                    
+                    self.delegate?.loginInSuccess(isNewUser: result.additionalUserInfo?.newUser() == true)
+//                    if result.additionalUserInfo?.newUser() == true {
+//                        if UserPreferences.isSignUp() {
+//                            UIApplication.shared.navigateHome()
+//                        } else {
+//                            self.navigationController?.pushViewController(SignUpViewController(), animated: true)
+//                        }
+//                    } else {
+//                        UserPreferences.setSignUp(sign: true)
+//                        UIApplication.shared.navigateHome()
+//                    }
                 }
             }
         }

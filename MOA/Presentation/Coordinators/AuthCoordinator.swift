@@ -7,10 +7,16 @@
 
 import UIKit
 
-class AuthCoordinator: Coordinator, WalkThroughViewControllerDelegate {
+protocol AuthCoordinatorDelegate: AnyObject {
+    func navigateToHome()
+}
+
+class AuthCoordinator: Coordinator, WalkThroughViewControllerDelegate, LoginViewControllerDelegate, SignUpCoordinatorDelegate {
     var childs: [Coordinator] = []
     
     private var navigationController: UINavigationController
+    
+    weak var delegate: AuthCoordinatorDelegate?
     
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
@@ -20,6 +26,8 @@ class AuthCoordinator: Coordinator, WalkThroughViewControllerDelegate {
         if UserPreferences.isShouldEntryLogin() {
             if UserPreferences.isSignUp() {
                 
+            } else {
+                navigateToLogin()
             }
         } else {
             navigateToWalkThrough()
@@ -32,10 +40,39 @@ class AuthCoordinator: Coordinator, WalkThroughViewControllerDelegate {
         walkThroughVC.delegate = self
         self.navigationController.viewControllers = [walkThroughVC]
     }
-    
-    func login() {
+        
+    // MARK: WalkThroughViewControllerDelegate
+    func navigateToLogin() {
         MOALogger.logd()
         let loginVC = LoginViewController()
+        loginVC.delegate = self
         self.navigationController.viewControllers = [loginVC]
+    }
+    
+    // MARK: LoginViewControllerDelegate
+    func loginInSuccess(isNewUser: Bool) {
+        if isNewUser {
+            if UserPreferences.isSignUp() {
+                navigateToHome()
+            } else {
+                navigateToSignUp()
+            }
+        } else {
+            UserPreferences.setSignUp(sign: true)
+            navigateToHome()
+        }
+    }
+    
+    func navigateToSignUp() {
+        let signUpCoordinator = SignUpCoordinator(navigationController: navigationController)
+        signUpCoordinator.delegate = self
+        childs.append(signUpCoordinator)
+        signUpCoordinator.start()
+    }
+    
+    // MARK: SignUpCoordinatorDelegate
+    func navigateToHome() {
+        childs.removeAll(where: { $0 is SignUpCoordinator })
+        self.delegate?.navigateToHome()
     }
 }
