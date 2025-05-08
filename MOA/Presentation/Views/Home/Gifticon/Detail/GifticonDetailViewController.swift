@@ -12,6 +12,13 @@ import RxCocoa
 import RxRelay
 import KakaoMapsSDK
 
+protocol GifticonDetailViewControllerDelegate: AnyObject {
+    func navigateToFullGifticonImage(image: UIImage?)
+    func navigateToGifticonDetailMap(searchPlaces: [SearchPlace], storeType: StoreType)
+    func navigateToHomeTab()
+    func navigateToGifticonEdit(gifticon: GifticonModel, image: UIImage?)
+}
+
 final class GifticonDetailViewController: BaseViewController {
     
     private let scrollView: UIScrollView = {
@@ -142,6 +149,7 @@ final class GifticonDetailViewController: BaseViewController {
         return view
     }()
     
+    weak var delegate: GifticonDetailViewControllerDelegate?
     var mapManager: KakaoMapManager?
     
     let gifticonDetailViewModel = GifticonDetailViewModel(
@@ -430,8 +438,7 @@ extension Reactive where Base: GifticonDetailViewController {
     var tapZoomInImage: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            let fullImageVC = FullGifticonImageViewController(image: viewController.imageView.image)
-            viewController.present(fullImageVC, animated: true)
+            viewController.delegate?.navigateToFullGifticonImage(image: viewController.imageView.image)
         }
     }
     
@@ -445,11 +452,10 @@ extension Reactive where Base: GifticonDetailViewController {
     var tapZoomInMap: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            let gifticonMapVC = GifticonDetailMapViewController(
+            viewController.delegate?.navigateToGifticonDetailMap(
                 searchPlaces: viewController.gifticonDetailViewModel.searchPlaceRelay.value,
                 storeType: viewController.gifticonDetailViewModel.gifticon.gifticonStore
             )
-            viewController.navigationController?.pushViewController(gifticonMapVC, animated: true)
         }
     }
     
@@ -571,16 +577,15 @@ extension GifticonDetailViewController {
     }
     
     @objc func tapBackBarButton() {
-        navigatePopUpTo(type: HomeTabBarController.self)
+        self.delegate?.navigateToHomeTab()
     }
     
     @objc func tapEditButton() {
         MOALogger.logd()
-        let editVC = GifticonEditViewController(
+        self.delegate?.navigateToGifticonEdit(
             gifticon: gifticonDetailViewModel.gifticon,
-            gifticonImage: imageView.image
+            image: imageView.image
         )
-        navigationController?.pushViewController(editVC, animated: false)
     }
     
     @objc func didBecomeActive() {

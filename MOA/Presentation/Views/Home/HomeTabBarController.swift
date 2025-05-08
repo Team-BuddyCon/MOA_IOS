@@ -26,6 +26,17 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         return imageView
     }()
     
+    weak var gifticonDelegate: GifticonViewControllerDelegate?
+    
+    init(gifticonDelegate: GifticonViewControllerDelegate? = nil) {
+        self.gifticonDelegate = gifticonDelegate
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
@@ -90,6 +101,8 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
     
     private func setupViewControllers() {
         let gifticonViewController = GifticonViewController()
+        gifticonViewController.delegate = gifticonDelegate
+        
         let mapViewController = MapViewController()
         let mypageViewController = MypageViewController()
         setViewControllers([gifticonViewController, mapViewController, mypageViewController], animated: true)

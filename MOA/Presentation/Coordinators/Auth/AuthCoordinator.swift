@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import FirebaseAuth
+import FirebaseCore
 
 protocol AuthCoordinatorDelegate: AnyObject {
     func navigateToHome()
@@ -25,7 +27,11 @@ class AuthCoordinator: Coordinator, WalkThroughViewControllerDelegate, LoginView
     func start() {
         if UserPreferences.isShouldEntryLogin() {
             if UserPreferences.isSignUp() {
-                
+                if let currentUser = Auth.auth().currentUser {
+                    navigateToHome()
+                } else {
+                    navigateToLogin()
+                }
             } else {
                 navigateToLogin()
             }

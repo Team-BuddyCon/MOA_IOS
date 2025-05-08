@@ -11,6 +11,12 @@ import RxSwift
 import RxCocoa
 import RxRelay
 
+protocol GifticonEditViewControllerDelegate: AnyObject {
+    func navigateToFullGifticonImage(image: UIImage?)
+    func navigateToHomeTab()
+    func navigateBack()
+}
+
 enum EditResult {
     case update
     case delete
@@ -103,6 +109,8 @@ final class GifticonEditViewController: BaseViewController {
     let gifticon: GifticonModel
     let gifticonImage: UIImage?
     let gifticonEditViewModel = GifticonEditViewModel(gifticonService: GifticonService.shared)
+    
+    weak var delegate: GifticonEditViewControllerDelegate?
     
     init(
         gifticon: GifticonModel,
@@ -241,8 +249,7 @@ private extension Reactive where Base: GifticonEditViewController {
     var tapZoomInImage: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            let fullImageVC = FullGifticonImageViewController(image: viewController.gifticonImage)
-            viewController.present(fullImageVC, animated: true)
+            viewController.delegate?.navigateToFullGifticonImage(image: viewController.gifticonImage)
         }
     }
     
@@ -305,7 +312,7 @@ private extension Reactive where Base: GifticonEditViewController {
                     title: GIFTICON_DELETE_SUCCESS_MODAL_TITLE,
                     confirmText: GIFTICON_DELETE_NAVIGATION_HOME_MODAL_TITLE
                 ) {
-                    viewController.navigatePopUpTo(type: HomeTabBarController.self)
+                    viewController.delegate?.navigateToHomeTab()
                 }
                 viewController.present(modalVC, animated: true)
             case .update:
@@ -314,7 +321,7 @@ private extension Reactive where Base: GifticonEditViewController {
                     title: GIFTICON_UPDATE_SUCCESS_MODAL_TITLE,
                     confirmText: CONFIRM
                 ) {
-                    viewController.navigatePopUpTo(type: GifticonDetailViewController.self)
+                    viewController.delegate?.navigateBack()
                 }
                 viewController.present(modalVC, animated: true)
             }

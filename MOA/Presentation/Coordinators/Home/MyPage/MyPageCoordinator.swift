@@ -1,5 +1,5 @@
 //
-//  HomeCoordinator.swift
+//  MyPageCoordinator.swift
 //  MOA
 //
 //  Created by 오원석 on 5/8/25.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class HomeCoordinator: Coordinator {
+class MyPageCoordinator: Coordinator {
     var childs: [Coordinator] = []
     
     private var navigationController: UINavigationController
@@ -17,7 +17,6 @@ class HomeCoordinator: Coordinator {
     }
     
     func start() {
-        let homeTabBarController = HomeTabBarController()
-        self.navigationController.viewControllers = [homeTabBarController]
+        
     }
 }

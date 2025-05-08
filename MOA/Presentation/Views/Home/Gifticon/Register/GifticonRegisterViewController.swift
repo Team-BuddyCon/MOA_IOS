@@ -13,6 +13,13 @@ import RxRelay
 import FirebaseStorage
 import FirebaseFirestore
 
+protocol GifticonRegisterViewControllerDelegate: AnyObject {
+    func navigateToFullGifticonImage(image: UIImage?)
+    func navigateBack()
+    func navigateRegisterLoading()
+    func navigateToGifticonDetail(gifticonId: String, isRegistered: Bool)
+}
+
 final class GifticonRegisterViewController: BaseViewController {
     
     private let scrollView: UIScrollView = {
@@ -76,6 +83,8 @@ final class GifticonRegisterViewController: BaseViewController {
     
     let storage = Storage.storage()
     let store = Firestore.firestore()
+    
+    weak var delegate: GifticonRegisterViewControllerDelegate?
     
     init(image: UIImage) {
         self.image = image
@@ -217,7 +226,7 @@ private extension Reactive where Base: GifticonRegisterViewController {
                 confirmText: GIFTICON_REGISTER_STOP_CONFIRM_TEXT,
                 cancelText: GIFTICON_REGISTER_STOP_CONTINUE_TEXT
             ) {
-                viewController.navigationController?.popViewController(animated: true)
+                viewController.delegate?.navigateBack()
             }
         }
     }
@@ -225,8 +234,7 @@ private extension Reactive where Base: GifticonRegisterViewController {
     var tapZoomInImage: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            let fullImageVC = FullGifticonImageViewController(image: viewController.image)
-            viewController.present(fullImageVC, animated: true)
+            viewController.delegate?.navigateToFullGifticonImage(image: viewController.image)
         }
     }
     
@@ -283,16 +291,14 @@ private extension Reactive where Base: GifticonRegisterViewController {
                 gifticonStore: gifticonStore,
                 memo: memo,
                 onLoading: {
-                    let loadingVC = RegisterLoadingViewController()
-                    viewController.present(loadingVC, animated: false)
+                    viewController.delegate?.navigateRegisterLoading()
                 },
                 onSucess: { gifticonId in
                     viewController.dismiss(animated: false)
-                    let detailVC = GifticonDetailViewController(
+                    viewController.delegate?.navigateToGifticonDetail(
                         gifticonId: gifticonId,
                         isRegistered: false
                     )
-                    viewController.navigationController?.pushViewController(detailVC, animated: true)
                 },
                 onError: {
                     viewController.dismiss(animated: false)

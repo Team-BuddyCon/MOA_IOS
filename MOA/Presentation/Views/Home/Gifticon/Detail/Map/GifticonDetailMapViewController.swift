@@ -12,6 +12,10 @@ import RxCocoa
 import RxRelay
 import KakaoMapsSDK
 
+protocol GifticonDetailMapViewControllerDelegate: AnyObject {
+    func navigateBack()
+}
+
 final class GifticonDetailMapViewController: BaseViewController {
 
     let confirmButton: CommonButton = {
@@ -22,6 +26,8 @@ final class GifticonDetailMapViewController: BaseViewController {
     var mapManager: KakaoMapManager?
     let searchPlaces: [SearchPlace]
     let storeType: StoreType
+    
+    weak var delegate: GifticonDetailMapViewControllerDelegate?
     
     init(
         searchPlaces: [SearchPlace],
@@ -102,7 +108,7 @@ private extension GifticonDetailMapViewController {
         confirmButton.rx.tap
             .subscribe(onNext: { [weak self] in
                 guard let self = self else { return }
-                navigationController?.popViewController(animated: false)
+                self.delegate?.navigateBack()
             }).disposed(by: disposeBag)
     }
     

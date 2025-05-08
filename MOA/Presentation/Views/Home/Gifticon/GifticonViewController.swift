@@ -15,6 +15,11 @@ import PhotosUI
 import MLKitBarcodeScanning
 import MLKitVision
 
+protocol GifticonViewControllerDelegate: AnyObject {
+    func navigateToGifticonDetail(gifticonId: String)
+    func navigateToGifticonRegister()
+}
+
 final class GifticonViewController: BaseViewController {
     lazy var gifticonCollectionView: UICollectionView = {
         let width = UIScreen.getWidthByDivision(division: 2, exclude: 20 + 16 + 20) // left + middle + right
@@ -69,6 +74,8 @@ final class GifticonViewController: BaseViewController {
 
     private var isFirstEntry = true
     let gifticonViewModel = GifticonViewModel(gifticonService: GifticonService.shared)
+    
+    weak var delegate: GifticonViewControllerDelegate?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -215,8 +222,7 @@ extension GifticonViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let gifticon = gifticonViewModel.gifticons.value[indexPath.row]
         MOALogger.logd("\(gifticon.gifticonId)")
-        let detailVC = GifticonDetailViewController(gifticonId: gifticon.gifticonId)
-        navigationController?.pushViewController(detailVC, animated: true)
+        self.delegate?.navigateToGifticonDetail(gifticonId: gifticon.gifticonId)
     }
 }
 
@@ -225,13 +231,7 @@ extension Reactive where Base: GifticonViewController {
     var tapFloating: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
-            var configuration = PHPickerConfiguration(photoLibrary: .shared())
-            configuration.selectionLimit = 1
-            configuration.filter = .images
-            
-            let pickerVC = PHPickerViewController(configuration: configuration)
-            pickerVC.delegate = viewController
-            viewController.present(pickerVC, animated: true)
+            viewController.delegate?.navigateToGifticonRegister()
         }
     }
     
@@ -239,81 +239,6 @@ extension Reactive where Base: GifticonViewController {
         return Binder<Bool>(self.base) { viewController, isEmpty in
             MOALogger.logd("\(isEmpty)")
             viewController.emptyView.isHidden = !isEmpty
-        }
-    }
-}
-
-// MARK: PHPickerViewControllerDelegate
-extension GifticonViewController: PHPickerViewControllerDelegate {
-    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        MOALogger.logd()
-        picker.dismiss(animated: true)
-        
-        let itemProvider = results.first?.itemProvider
-        if let itemProvider = itemProvider,
-           itemProvider.canLoadObject(ofClass: UIImage.self) {
-            itemProvider.loadObject(ofClass: UIImage.self) { [weak self] (image, error) in
-                guard let self = self else {
-                    MOALogger.loge()
-                    return
-                }
-                
-                if error != nil {
-                    MOALogger.loge("PHPicker load Image error: \(String(describing: error?.localizedDescription))")
-                    let modalVC = ModalViewController(
-                        modalType: .alertDetail,
-                        title: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_TITLE,
-                        subTitle: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_SUBTITLE,
-                        confirmText: CONFIRM
-                    )
-                    present(modalVC, animated: true)
-                    return
-                }
-                
-                checkBarcodeImage(image: image as? UIImage)
-            }
-        }
-    }
-    
-    private func checkBarcodeImage(image: UIImage?) {
-        guard let image = image else {
-            MOALogger.loge("PHPicker load Image is nil")
-            let modalVC = ModalViewController(
-                modalType: .alertDetail,
-                title: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_TITLE,
-                subTitle: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_SUBTITLE,
-                confirmText: CONFIRM
-            )
-            present(modalVC, animated: true)
-            return
-        }
-        
-        let barcodeOptions = BarcodeScannerOptions()
-        let visionImage = VisionImage(image: image)
-        visionImage.orientation = image.imageOrientation
-        
-        let barcodeScanner = BarcodeScanner.barcodeScanner(options: barcodeOptions)
-        barcodeScanner.process(visionImage) { [weak self] features, error in
-            guard let self = self else {
-                MOALogger.loge()
-                return
-            }
-            
-            guard error == nil, let features = features, !features.isEmpty else {
-                MOALogger.loge("PHPicker image is not contained barcode")
-                let modalVC = ModalViewController(
-                    modalType: .alertDetail,
-                    title: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_TITLE,
-                    subTitle: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_SUBTITLE,
-                    confirmText: CONFIRM
-                )
-                present(modalVC, animated: true)
-                return
-            }
-            
-            MOALogger.logd()
-            let registerVC = GifticonRegisterViewController(image: image)
-            navigationController?.pushViewController(registerVC, animated: true)
         }
     }
 }
