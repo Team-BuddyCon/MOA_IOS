@@ -11,7 +11,7 @@ protocol HomeCoordinatorDelegate: AnyObject {
     func navigateToHomeTab()
 }
 
-class HomeCoordinator: Coordinator, HomeCoordinatorDelegate {
+class HomeCoordinator: Coordinator, HomeCoordinatorDelegate, MapCoordinatorDelegate {
     var childs: [Coordinator] = []
     
     private var navigationController: UINavigationController
@@ -27,6 +27,7 @@ class HomeCoordinator: Coordinator, HomeCoordinatorDelegate {
         gifticonCoordinator.start()
         
         let mapCoordinator = MapCoordinator(navigationController: navigationController)
+        mapCoordinator.delegate = self
         childs.append(mapCoordinator)
         mapCoordinator.start()
         
@@ -35,7 +36,8 @@ class HomeCoordinator: Coordinator, HomeCoordinatorDelegate {
         mypageCoordinator.start()
         
         let homeTabBarController = HomeTabBarController(
-            gifticonDelegate: gifticonCoordinator
+            gifticonDelegate: gifticonCoordinator,
+            mapDelegate: mapCoordinator
         )
         self.navigationController.viewControllers = [homeTabBarController]
     }
@@ -44,6 +46,12 @@ class HomeCoordinator: Coordinator, HomeCoordinatorDelegate {
     func navigateToHomeTab() {
         if let homeTabBarController = navigationController.viewControllers.first as? HomeTabBarController {
             self.navigationController.popToViewController(homeTabBarController, animated: true)
+        }
+    }
+    
+    func navigateToGifticonDetail(gifticonId: String) {
+        if let gifticonCoordinator = childs.first(where: { $0 is GifticonCoordinator }) as? GifticonCoordinator {
+            gifticonCoordinator.navigateToGifticonDetail(gifticonId: gifticonId)
         }
     }
 }

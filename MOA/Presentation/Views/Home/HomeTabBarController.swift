@@ -27,9 +27,14 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
     }()
     
     weak var gifticonDelegate: GifticonViewControllerDelegate?
+    weak var mapDelegate: MapViewControllerDelegate?
     
-    init(gifticonDelegate: GifticonViewControllerDelegate? = nil) {
+    init(
+        gifticonDelegate: GifticonViewControllerDelegate? = nil,
+        mapDelegate: MapViewControllerDelegate? = nil
+    ) {
         self.gifticonDelegate = gifticonDelegate
+        self.mapDelegate = mapDelegate
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -104,6 +109,8 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         gifticonViewController.delegate = gifticonDelegate
         
         let mapViewController = MapViewController()
+        mapViewController.delegate = mapDelegate
+        
         let mypageViewController = MypageViewController()
         setViewControllers([gifticonViewController, mapViewController, mypageViewController], animated: true)
         

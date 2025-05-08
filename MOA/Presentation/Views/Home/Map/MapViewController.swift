@@ -12,6 +12,11 @@ import RxCocoa
 import RxRelay
 import KakaoMapsSDK
 
+protocol MapViewControllerDelegate: AnyObject {
+    func navigateToGifticonDetail(gifticonId: String)
+    func navigateTpMapStoreBottomSheet(searchPlace: SearchPlace, delegate: MapStoreBottomSheetDelegate)
+}
+
 final class MapViewController: BaseViewController {
     
     let storeTypes: [StoreType] = StoreType.allCases
@@ -124,6 +129,8 @@ final class MapViewController: BaseViewController {
     
     var isActive: Bool = true
     
+    weak var delegate: MapViewControllerDelegate?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
@@ -230,8 +237,7 @@ private extension MapViewController {
         // mapBottomSheet 초기화
         mapBottomSheet.mapViewModel = mapViewModel
         mapBottomSheet.onTapGifticon = { gifticonId in
-            let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
-            self.navigationController?.pushViewController(detailVC, animated: true)
+            self.delegate?.navigateToGifticonDetail(gifticonId: gifticonId)
         }
         
         // storeTypeCollectionView 초기화
@@ -308,10 +314,7 @@ extension MapViewController: KakaoMapEventDelegate {
         }
         
         if let searchPlace = searchPlace {
-            let storeBottomSheetVC = MapStoreBottomSheetViewController()
-            storeBottomSheetVC.searchPlace = searchPlace
-            storeBottomSheetVC.delegate = self
-            self.present(storeBottomSheetVC, animated: true)
+            self.delegate?.navigateTpMapStoreBottomSheet(searchPlace: searchPlace, delegate: self)
         }
         
         let manager = kakaoMap.getLabelManager()

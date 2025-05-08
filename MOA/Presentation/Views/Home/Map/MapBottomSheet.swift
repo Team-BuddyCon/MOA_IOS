@@ -23,7 +23,7 @@ enum BottomSheetState {
         case .PartiallyExpanded:
             return Double(UIScreen.main.bounds.height) / 852.0 * 201.0
         case .Expanded:
-            return Double(UIScreen.main.bounds.height) - UIApplication.shared.topBarHeight - UIApplication.shared.safeAreaTopHeight - 64.0
+            return Double(UIScreen.main.bounds.height) / 852.0 * 623.0 - 16.0
         }
     }
 }
