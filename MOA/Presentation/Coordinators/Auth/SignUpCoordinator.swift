@@ -22,6 +22,10 @@ class SignUpCoordinator: Coordinator, SignUpViewControllerDelegate, SignUpComple
         self.navigationController = navigationController
     }
     
+    deinit {
+        MOALogger.logd()
+    }
+    
     func start() {
         let signUpVC = SignUpViewController()
         signUpVC.delegate = self
@@ -41,6 +45,7 @@ class SignUpCoordinator: Coordinator, SignUpViewControllerDelegate, SignUpComple
     
     func navigateToSignUpComplete() {
         let signUpCompleteVC = SignUpCompleteViewController()
+        signUpCompleteVC.delegate = self
         signUpCompleteVC.modalPresentationStyle = .fullScreen
         signUpCompleteVC.modalTransitionStyle = .crossDissolve
         self.navigationController.present(signUpCompleteVC, animated: true)
@@ -48,6 +53,7 @@ class SignUpCoordinator: Coordinator, SignUpViewControllerDelegate, SignUpComple
     
     // MARK: SignUpCompleteViewControllerDelegate
     func navigateToHome() {
+        self.navigationController.dismiss(animated: true)
         self.delegate?.navigateToHome()
     }
 }

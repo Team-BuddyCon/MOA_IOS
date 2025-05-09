@@ -31,6 +31,11 @@ enum WithDrawReason: String, CaseIterable {
     case Etc = "기타"
 }
 
+protocol WithDrawViewControllerDelegate: AnyObject {
+    func navigateToLoginFromWithDraw()
+    func navigateBack()
+}
+
 final class WithDrawViewController: BaseViewController {
     let titleLabel: UILabel = {
         let label = UILabel()
@@ -138,6 +143,8 @@ final class WithDrawViewController: BaseViewController {
     let store = Firestore.firestore()
     fileprivate var currentNonce: String?
     let withDrawViewModel = WithDrawViewModel(gifticonService: GifticonService.shared)
+    
+    weak var delegate: WithDrawViewControllerDelegate?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -331,7 +338,7 @@ extension Reactive where Base: WithDrawViewController {
                     UserPreferences.setSignUp(sign: false)
                     let auth = Auth.auth()
                     try auth.signOut()
-                    UIApplication.shared.setRootViewController(viewController: LoginViewController(isWithDraw: true))
+                    viewController.delegate?.navigateToLoginFromWithDraw()
                 } catch {
                     viewController.logoutFail()
                 }
@@ -479,7 +486,7 @@ extension WithDrawViewController {
         
         switch phrase {
         case .Reason:
-            navigationController?.popViewController(animated: true)
+            self.delegate?.navigateBack()
         case .ReasonDetail:
             withDrawViewModel.phrase.accept(.Reason)
             reasonTextField.resignFirstResponder()

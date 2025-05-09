@@ -14,8 +14,17 @@ import FirebaseAuth
 import FirebaseCore
 import MessageUI
 
+protocol MypageViewControllerDelegate: AnyObject {
+    func navigateToUnavailableGifticon()
+    func navigateToNotificationSetting()
+    func navigateToMailCompose()
+    func navigateToVersion()
+    func navigateToPolicy()
+    func navigateToLoginFromLogout()
+    func navigateToWithDraw()
+}
+
 final class MypageViewController: BaseViewController {
-    
     let menus = MenuType.allCases
     private let titleLabel: UILabel = {
         let label = UILabel()
@@ -47,6 +56,8 @@ final class MypageViewController: BaseViewController {
     }()
     
     let mypageViewModel = MypageViewModel(gifticonService: GifticonService.shared)
+    
+    weak var delegate: MypageViewControllerDelegate?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -105,8 +116,7 @@ extension Reactive where Base: MypageViewController {
     var bindUnavailableBox: Binder<Void> {
         return Binder(base) { viewController, _ in
             MOALogger.logd()
-            let unavailableVC = UnAvailableGifticonViewController()
-            viewController.navigationController?.pushViewController(unavailableVC, animated: true)
+            viewController.delegate?.navigateToUnavailableGifticon()
         }
     }
 }
@@ -134,16 +144,10 @@ extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
         if let cell = tableView.cellForRow(at: indexPath) as? MypageMenuCell {
             switch cell.menuType {
             case .Notification:
-                let notificationVC = NotificationSettingViewController()
-                navigationController?.pushViewController(notificationVC, animated: true)
+                self.delegate?.navigateToNotificationSetting()
             case .Inquery:
                 if MFMailComposeViewController.canSendMail() {
-                    MOALogger.logd()
-                    let mailVC = MFMailComposeViewController()
-                    mailVC.mailComposeDelegate = self
-                    mailVC.setToRecipients([MOA_INQUERY_MAIL])
-                    mailVC.setSubject(MOA_INQUERY_SUBJECT)
-                    present(mailVC, animated: true)
+                    self.delegate?.navigateToMailCompose()
                 } else {
                     showAlertModal(
                         title: MOA_CANT_INQUERY_TITLE,
@@ -152,14 +156,9 @@ extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
                     )
                 }
             case .Version:
-                let versionVC = VersionViewController()
-                navigationController?.pushViewController(versionVC, animated: true)
+                self.delegate?.navigateToVersion()
             case .Policy:
-                let termsVC = PolicyWebViewController(
-                    policyUrl: SERVICE_TERMS_URL,
-                    privacyUrl: PRIVACY_INFORMATION_URL
-                )
-                navigationController?.pushViewController(termsVC, animated: true)
+                self.delegate?.navigateToPolicy()
             case .OpenSourceLicense:
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
@@ -175,22 +174,15 @@ extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
                     do {
                         NotificationManager.shared.removeAll()
                         try auth.signOut()
-                        UIApplication.shared.setRootViewController(viewController: LoginViewController(isLogout: true))
+                        self.delegate?.navigateToLoginFromLogout()
                     } catch let error as NSError {
                         MOALogger.loge("\(error.localizedDescription)")
                     }
                 }
             case .SignOut:
                 NotificationManager.shared.removeAll()
-                let withDrawVC = WithDrawViewController()
-                navigationController?.pushViewController(withDrawVC, animated: true)
+                self.delegate?.navigateToWithDraw()
             }
         }
-    }
-}
-
-extension MypageViewController: MFMailComposeViewControllerDelegate {
-    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: (any Error)?) {
-        dismiss(animated: true)
     }
 }

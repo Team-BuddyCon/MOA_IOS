@@ -24,10 +24,14 @@ class AuthCoordinator: Coordinator, WalkThroughViewControllerDelegate, LoginView
         self.navigationController = navigationController
     }
     
+    deinit {
+        MOALogger.logd()
+    }
+    
     func start() {
         if UserPreferences.isShouldEntryLogin() {
             if UserPreferences.isSignUp() {
-                if let currentUser = Auth.auth().currentUser {
+                if Auth.auth().currentUser != nil {
                     navigateToHome()
                 } else {
                     navigateToLogin()
@@ -80,5 +84,17 @@ class AuthCoordinator: Coordinator, WalkThroughViewControllerDelegate, LoginView
     func navigateToHome() {
         childs.removeAll(where: { $0 is SignUpCoordinator })
         self.delegate?.navigateToHome()
+    }
+    
+    func navigateToLoginFromWithLogout() {
+        let loginVC = LoginViewController(isLogout: true)
+        loginVC.delegate = self
+        self.navigationController.viewControllers = [loginVC]
+    }
+    
+    func navigateToLoginFromWithDraw() {
+        let loginVC = LoginViewController(isWithDraw: true)
+        loginVC.delegate = self
+        self.navigationController.viewControllers = [loginVC]
     }
 }

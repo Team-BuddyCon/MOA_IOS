@@ -8,16 +8,23 @@
 import UIKit
 
 protocol HomeCoordinatorDelegate: AnyObject {
-    func navigateToHomeTab()
+    func navigateToLoginFromLogout()
+    func navigateToLoginFromWithDraw()
 }
 
-class HomeCoordinator: Coordinator, HomeCoordinatorDelegate, MapCoordinatorDelegate {
+class HomeCoordinator: Coordinator, GifticonCoordinatorDelegate, MapCoordinatorDelegate, MyPageCoordinatorDelegate {
     var childs: [Coordinator] = []
     
     private var navigationController: UINavigationController
     
+    weak var delegate: HomeCoordinatorDelegate?
+    
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
+    }
+    
+    deinit {
+        MOALogger.logd()
     }
     
     func start() {
@@ -32,12 +39,14 @@ class HomeCoordinator: Coordinator, HomeCoordinatorDelegate, MapCoordinatorDeleg
         mapCoordinator.start()
         
         let mypageCoordinator = MyPageCoordinator(navigationController: navigationController)
+        mypageCoordinator.delegate = self
         childs.append(mypageCoordinator)
         mypageCoordinator.start()
         
         let homeTabBarController = HomeTabBarController(
             gifticonDelegate: gifticonCoordinator,
-            mapDelegate: mapCoordinator
+            mapDelegate: mapCoordinator,
+            mypageDelegate: mypageCoordinator
         )
         self.navigationController.viewControllers = [homeTabBarController]
     }
@@ -49,9 +58,21 @@ class HomeCoordinator: Coordinator, HomeCoordinatorDelegate, MapCoordinatorDeleg
         }
     }
     
+    // MARK: MapCoordinatorDelegate
     func navigateToGifticonDetail(gifticonId: String) {
         if let gifticonCoordinator = childs.first(where: { $0 is GifticonCoordinator }) as? GifticonCoordinator {
             gifticonCoordinator.navigateToGifticonDetail(gifticonId: gifticonId)
         }
+    }
+
+    // MARK: MyPageCoordinatorDelegate
+    func navigateToLoginFromLogout() {
+        childs.removeAll()
+        self.delegate?.navigateToLoginFromLogout()
+    }
+    
+    func navigateToLoginFromWithDraw() {
+        childs.removeAll()
+        self.delegate?.navigateToLoginFromWithDraw()
     }
 }

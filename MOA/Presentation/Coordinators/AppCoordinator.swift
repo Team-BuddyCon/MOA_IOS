@@ -7,13 +7,17 @@
 
 import UIKit
 
-class AppCoordinator: Coordinator, AuthCoordinatorDelegate {
+class AppCoordinator: Coordinator, AuthCoordinatorDelegate, HomeCoordinatorDelegate {
     var childs: [Coordinator] = []
     
     private var navigationController: UINavigationController
     
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
+    }
+    
+    deinit {
+        MOALogger.logd()
     }
     
     func start() {
@@ -28,11 +32,25 @@ class AppCoordinator: Coordinator, AuthCoordinatorDelegate {
     }
     
     func navigateToHome() {
-        //재로그인
-        //childs.removeAll(where: { $0 is AuthCoordinator })
-        
-        let homeCoordinator = HomeCoordinator(navigationController: navigationController)
-        childs.append(homeCoordinator)
-        homeCoordinator.start()
+        if let homeCoordinator = childs.first(where: { $0 is HomeCoordinator }) as? HomeCoordinator {
+            homeCoordinator.start()
+        } else {
+            let homeCoordinator = HomeCoordinator(navigationController: navigationController)
+            homeCoordinator.delegate = self
+            childs.append(homeCoordinator)
+            homeCoordinator.start()
+        }
+    }
+    
+    func navigateToLoginFromLogout() {
+        if let authCoordinator = childs.first(where: { $0 is AuthCoordinator }) as? AuthCoordinator {
+            authCoordinator.navigateToLoginFromWithLogout()
+        }
+    }
+    
+    func navigateToLoginFromWithDraw() {
+        if let authCoordinator = childs.first(where: { $0 is AuthCoordinator }) as? AuthCoordinator {
+            authCoordinator.navigateToLoginFromWithDraw()
+        }
     }
 }

@@ -23,7 +23,7 @@ final class VersionViewController: BaseViewController {
         label.textColor = .grey90
         
         if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
-            label.text = "v\(version) (2025.01.01)"
+            label.text = "v\(version) (2025.06.01)"
         }
         return label
     }()

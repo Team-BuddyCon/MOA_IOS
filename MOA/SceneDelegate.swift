@@ -63,20 +63,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 navigationController.pushViewController(detailVC, animated: false)
             }
         } else {
-            
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
                 self?.coordinator?.navigateToAuth()
             }
-//            if UserPreferences.isShouldEntryLogin() {
-//                if UserPreferences.isSignUp() {
-//                    let currentUser = Auth.auth().currentUser
-//                    rootViewController = currentUser == nil ? UINavigationController(rootViewController: LoginViewController()) : UINavigationController(rootViewController: HomeTabBarController())
-//                } else {
-//                    rootViewController = UINavigationController(rootViewController: LoginViewController())
-//                }
-//            } else {
-//                rootViewController = WalkThroughViewController()
-//            }
         }
     }
     

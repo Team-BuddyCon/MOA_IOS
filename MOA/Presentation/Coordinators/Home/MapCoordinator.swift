@@ -22,6 +22,10 @@ class MapCoordinator: Coordinator, MapViewControllerDelegate {
         self.navigationController = navigationController
     }
     
+    deinit {
+        MOALogger.logd()
+    }
+    
     func start() {
         MOALogger.logd()
     }

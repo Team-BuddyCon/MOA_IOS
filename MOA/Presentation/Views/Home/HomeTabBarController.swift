@@ -28,13 +28,16 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
     
     weak var gifticonDelegate: GifticonViewControllerDelegate?
     weak var mapDelegate: MapViewControllerDelegate?
+    weak var mypageDelegate: MypageViewControllerDelegate?
     
     init(
         gifticonDelegate: GifticonViewControllerDelegate? = nil,
-        mapDelegate: MapViewControllerDelegate? = nil
+        mapDelegate: MapViewControllerDelegate? = nil,
+        mypageDelegate: MypageViewControllerDelegate? = nil
     ) {
         self.gifticonDelegate = gifticonDelegate
         self.mapDelegate = mapDelegate
+        self.mypageDelegate = mypageDelegate
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -52,6 +55,8 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        setupTapBar()
+        setupNavigationBar()
         
         if UserPreferences.isShowLoginPopup() {
             Toast.shared.show(message: LOGIN_SUCCESS_TOAST_TITLE)
@@ -63,9 +68,7 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
     }
     
     private func setupAppearance() {
-        setupTapBar()
-        setupNavigationBar()
-        delegate = self
+        self.delegate = self
         
         if !UserPreferences.isHideCoachMark() {
             self.view.addSubview(coachMarkView)
@@ -95,13 +98,11 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
     
     private func setupNavigationBar() {
         let appearance = UINavigationBarAppearance()
-        appearance.configureWithOpaqueBackground()
+        appearance.configureWithTransparentBackground()
         appearance.backgroundColor = .white
-        appearance.shadowColor = .clear
 
-        UINavigationBar.appearance().standardAppearance = appearance
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
-        UINavigationBar.appearance().isTranslucent = false
+        navigationController?.navigationBar.standardAppearance = appearance
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance
     }
     
     private func setupViewControllers() {
@@ -112,6 +113,8 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         mapViewController.delegate = mapDelegate
         
         let mypageViewController = MypageViewController()
+        mypageViewController.delegate = mypageDelegate
+        
         setViewControllers([gifticonViewController, mapViewController, mypageViewController], animated: true)
         
         if let items = tabBar.items {

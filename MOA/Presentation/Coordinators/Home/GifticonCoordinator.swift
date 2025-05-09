@@ -10,15 +10,23 @@ import PhotosUI
 import MLKitBarcodeScanning
 import MLKitVision
 
+protocol GifticonCoordinatorDelegate: AnyObject {
+    func navigateToHomeTab()
+}
+
 class GifticonCoordinator: Coordinator, GifticonViewControllerDelegate, GifticonDetailViewControllerDelegate, GifticonDetailMapViewControllerDelegate, GifticonEditViewControllerDelegate, GifticonRegisterViewControllerDelegate {
     var childs: [Coordinator] = []
     
     private var navigationController: UINavigationController
     
-    weak var delegate: HomeCoordinatorDelegate?
+    weak var delegate: GifticonCoordinatorDelegate?
     
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
+    }
+    
+    deinit {
+        MOALogger.logd()
     }
     
     func start() {
