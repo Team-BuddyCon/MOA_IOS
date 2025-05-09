@@ -11,6 +11,10 @@ import RxSwift
 import RxCocoa
 import RxRelay
 
+protocol UnAvailableGifticonViewControllerDelegate: AnyObject {
+    func navigateToGifticonDetail(gifticonId: String)
+}
+
 final class UnAvailableGifticonViewController: BaseViewController {
     
     let titleLabel: UILabel = {
@@ -38,6 +42,8 @@ final class UnAvailableGifticonViewController: BaseViewController {
     
     private var isFirstEntry = true
     let viewModel = UnAvailableGifticonViewModel(gifticonService: GifticonService.shared)
+    
+    weak var delegate: UnAvailableGifticonViewControllerDelegate?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -114,9 +120,7 @@ private extension UnAvailableGifticonViewController {
             .subscribe(onNext: { [weak self] gifticon in
                 guard let self = self else { return }
                 MOALogger.logd("\(gifticon.gifticonId)")
-                
-                let detailVC = GifticonDetailViewController(gifticonId: gifticon.gifticonId)
-                navigationController?.pushViewController(detailVC, animated: true)
+                self.delegate?.navigateToGifticonDetail(gifticonId: gifticon.gifticonId)
             }).disposed(by: disposeBag)
         
         viewModel.gifticonRelay

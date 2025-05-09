@@ -15,7 +15,7 @@ import KakaoMapsSDK
 protocol GifticonDetailViewControllerDelegate: AnyObject {
     func navigateToFullGifticonImage(image: UIImage?)
     func navigateToGifticonDetailMap(searchPlaces: [SearchPlace], storeType: StoreType)
-    func navigateToHomeTab()
+    func navigateBackFromGifticonDetail()
     func navigateToGifticonEdit(gifticon: GifticonModel, image: UIImage?)
 }
 
@@ -577,7 +577,7 @@ extension GifticonDetailViewController {
     }
     
     @objc func tapBackBarButton() {
-        self.delegate?.navigateToHomeTab()
+        self.delegate?.navigateBackFromGifticonDetail()
     }
     
     @objc func tapEditButton() {

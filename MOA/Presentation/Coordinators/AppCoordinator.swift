@@ -55,13 +55,13 @@ class AppCoordinator: Coordinator, AuthCoordinatorDelegate, HomeCoordinatorDeleg
         if isSingle {
             navigateToGifticonDetail(gifticonId: gifticonId)
         } else {
-            navigateToHomeTab()
+            navigateToHomeGifticonTab()
         }
     }
     
-    func navigateToHomeTab() {
+    func navigateToHomeGifticonTab() {
         if let homeCoordinator = childs.first(where: { $0 is HomeCoordinator }) as? HomeCoordinator {
-            homeCoordinator.navigateToHomeTab()
+            homeCoordinator.navigateToHomeGifticonTab()
         }
     }
     

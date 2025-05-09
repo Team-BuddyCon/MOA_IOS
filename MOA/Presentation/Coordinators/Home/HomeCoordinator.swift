@@ -58,7 +58,14 @@ class HomeCoordinator: Coordinator, HomeTabBarControllerDelegate, GifticonCoordi
     func navigateToHomeTab() {
         if let homeTabBarController = navigationController.viewControllers.first as? HomeTabBarController {
             self.navigationController.popToViewController(homeTabBarController, animated: true)
+        }
+    }
+    
+    func navigateToHomeGifticonTab() {
+        if let homeTabBarController = navigationController.viewControllers.first as? HomeTabBarController {
+            self.navigationController.popToViewController(homeTabBarController, animated: true)
             homeTabBarController.selectedViewController = homeTabBarController.viewControllers?.first
+            homeTabBarController.setupTopBarWithLargeTitleAndNotification(title: GIFTICON_MENU_TITLE)
         }
     }
     

@@ -65,6 +65,14 @@ class GifticonCoordinator: Coordinator, GifticonViewControllerDelegate, Gifticon
         self.navigationController.pushViewController(gifticonMapVC, animated: true)
     }
     
+    func navigateBackFromGifticonDetail() {
+        if let viewController = self.navigationController.viewControllers.first(where: { $0 is UnAvailableGifticonViewController }) {
+            navigateBack()
+        } else {
+            navigateToHomeTab()
+        }
+    }
+    
     func navigateToHomeTab() {
         self.delegate?.navigateToHomeTab()
     }

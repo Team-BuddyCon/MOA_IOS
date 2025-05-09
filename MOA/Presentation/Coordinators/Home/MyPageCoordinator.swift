@@ -11,9 +11,10 @@ import MessageUI
 protocol MyPageCoordinatorDelegate: AnyObject {
     func navigateToLoginFromLogout()
     func navigateToLoginFromWithDraw()
+    func navigateToGifticonDetail(gifticonId: String)
 }
 
-class MyPageCoordinator: NSObject, Coordinator, MypageViewControllerDelegate, WithDrawViewControllerDelegate {
+class MyPageCoordinator: NSObject, Coordinator, MypageViewControllerDelegate, WithDrawViewControllerDelegate, UnAvailableGifticonViewControllerDelegate {
     var childs: [Coordinator] = []
     
     private var navigationController: UINavigationController
@@ -35,6 +36,7 @@ class MyPageCoordinator: NSObject, Coordinator, MypageViewControllerDelegate, Wi
     // MARK: MypageViewControllerDelegate
     func navigateToUnavailableGifticon() {
         let unavailableVC = UnAvailableGifticonViewController()
+        unavailableVC.delegate = self
         self.navigationController.pushViewController(unavailableVC, animated: true)
     }
     
@@ -81,6 +83,11 @@ class MyPageCoordinator: NSObject, Coordinator, MypageViewControllerDelegate, Wi
     
     func navigateBack() {
         self.navigationController.popViewController(animated: true)
+    }
+    
+    // MARK: UnAvailableGifticonViewControllerDelegate
+    func navigateToGifticonDetail(gifticonId: String) {
+        self.delegate?.navigateToGifticonDetail(gifticonId: gifticonId)
     }
 }
 
