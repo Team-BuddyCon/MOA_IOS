@@ -10,9 +10,11 @@ import UIKit
 protocol HomeCoordinatorDelegate: AnyObject {
     func navigateToLoginFromLogout()
     func navigateToLoginFromWithDraw()
+    func navigateFromNotification(isSingle: Bool, gifticonId: String)
+    func navigateToNotificationDetail(isSingle: Bool, gifticonId: String)
 }
 
-class HomeCoordinator: Coordinator, GifticonCoordinatorDelegate, MapCoordinatorDelegate, MyPageCoordinatorDelegate {
+class HomeCoordinator: Coordinator, HomeTabBarControllerDelegate, GifticonCoordinatorDelegate, MapCoordinatorDelegate, MyPageCoordinatorDelegate, NotificationViewControllerDelegate {
     var childs: [Coordinator] = []
     
     private var navigationController: UINavigationController
@@ -48,6 +50,7 @@ class HomeCoordinator: Coordinator, GifticonCoordinatorDelegate, MapCoordinatorD
             mapDelegate: mapCoordinator,
             mypageDelegate: mypageCoordinator
         )
+        homeTabBarController.homeTabDelegate = self
         self.navigationController.viewControllers = [homeTabBarController]
     }
     
@@ -55,6 +58,7 @@ class HomeCoordinator: Coordinator, GifticonCoordinatorDelegate, MapCoordinatorD
     func navigateToHomeTab() {
         if let homeTabBarController = navigationController.viewControllers.first as? HomeTabBarController {
             self.navigationController.popToViewController(homeTabBarController, animated: true)
+            homeTabBarController.selectedViewController = homeTabBarController.viewControllers?.first
         }
     }
     
@@ -74,5 +78,19 @@ class HomeCoordinator: Coordinator, GifticonCoordinatorDelegate, MapCoordinatorD
     func navigateToLoginFromWithDraw() {
         childs.removeAll()
         self.delegate?.navigateToLoginFromWithDraw()
+    }
+    
+    func navigateToNotification() {
+        let notificationVC = NotificationViewController()
+        notificationVC.delegate = self
+        self.navigationController.pushViewController(notificationVC, animated: true)
+    }
+    
+    func navigateFromNotification(isSingle: Bool, gifticonId: String) {
+        self.delegate?.navigateFromNotification(isSingle: isSingle, gifticonId: gifticonId)
+    }
+    
+    func navigateToNotificationDetail(isSingle: Bool, gifticonId: String) {
+        self.delegate?.navigateToNotificationDetail(isSingle: isSingle, gifticonId: gifticonId)
     }
 }

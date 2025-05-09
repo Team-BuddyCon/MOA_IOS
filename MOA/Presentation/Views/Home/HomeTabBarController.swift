@@ -8,6 +8,10 @@
 import UIKit
 import SnapKit
 
+protocol HomeTabBarControllerDelegate: AnyObject {
+    func navigateToNotification()
+}
+
 final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate {
     
     private lazy var coachMarkView: UIView = {
@@ -29,6 +33,7 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
     weak var gifticonDelegate: GifticonViewControllerDelegate?
     weak var mapDelegate: MapViewControllerDelegate?
     weak var mypageDelegate: MypageViewControllerDelegate?
+    weak var homeTabDelegate: HomeTabBarControllerDelegate?
     
     init(
         gifticonDelegate: GifticonViewControllerDelegate? = nil,
@@ -94,6 +99,20 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         tabBar.isTranslucent = false
         tabBar.layer.shadowColor = UIColor.black.cgColor
         tabBar.layer.shadowOpacity = 0.1
+        
+        let appearance = UITabBarAppearance()
+        appearance.configureWithTransparentBackground()
+        
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
+            .foregroundColor: UIColor.grey60
+        ]
+        
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
+            .foregroundColor: UIColor.grey90
+        ]
+        
+        tabBar.standardAppearance = appearance
+        tabBar.scrollEdgeAppearance = appearance
     }
     
     private func setupNavigationBar() {
@@ -130,7 +149,6 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
             items[2].selectedImage = UIImage(named: MYPAGE_SELECTED_MENU)?.withRenderingMode(.alwaysOriginal)
             items[2].title = MYPAGE_MENU_TITLE
         }
-        UITabBarItem.appearance().setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.grey90], for: .normal)
     }
     
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
@@ -153,5 +171,31 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
         MOALogger.logd()
         coachMarkView.isHidden = true
         coachMarkImageView.isHidden = true
+    }
+}
+
+extension HomeTabBarController {
+    func setupTopBarWithNotification() {
+        navigationItem.leftBarButtonItem = nil
+        navigationItem.rightBarButtonItem = makeNotificationButton()
+    }
+    
+    func setupTopBarWithLargeTitleAndNotification(title: String) {
+        navigationItem.leftBarButtonItem = makeLeftLargeTitle(title: title)
+        navigationItem.rightBarButtonItem = makeNotificationButton()
+    }
+    
+    @objc private func makeNotificationButton() -> UIBarButtonItem {
+        let button = UIButton()
+        button.setImage(UIImage(named: NOTIFICATION_ICON), for: .normal)
+        button.setImage(UIImage(named: NOTIFICATION_ICON), for: .highlighted)
+        button.tintColor = .grey90
+        button.clipsToBounds = true
+        button.addTarget(self, action: #selector(tapNotification), for: .touchUpInside)
+        return UIBarButtonItem(customView: button)
+    }
+    
+    @objc private func tapNotification() {
+        self.homeTabDelegate?.navigateToNotification()
     }
 }

@@ -45,25 +45,6 @@ extension UIApplication {
         }
         return nil
     }
-
-    
-    func setRootViewController(viewController: UIViewController) {
-        MOALogger.logd("\(viewController)")
-        if let windowScene = connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first(where: { $0.isKeyWindow }) {
-            window.rootViewController = UINavigationController(rootViewController: viewController)
-            window.makeKeyAndVisible()
-        }
-    }
-    
-    func navigateHome() {
-        MOALogger.logd()
-        if let windowScene = connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first(where: { $0.isKeyWindow }) {
-            window.rootViewController = UINavigationController(rootViewController: HomeTabBarController())
-            window.makeKeyAndVisible()
-        }
-    }
     
     func navigateGifticonDetail(gifticonId: String) {
         MOALogger.logd()

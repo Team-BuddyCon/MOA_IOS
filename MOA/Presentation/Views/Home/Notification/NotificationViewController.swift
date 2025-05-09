@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol NotificationViewControllerDelegate: AnyObject {
+    func navigateToNotificationDetail(isSingle: Bool, gifticonId: String)
+}
+
 final class NotificationViewController: BaseViewController {
     
     private lazy var notificationTableView: UITableView = {
@@ -23,6 +27,8 @@ final class NotificationViewController: BaseViewController {
     private let viewModel = NotificationViewModel()
     
     private var eventID: String?
+    
+    weak var delegate: NotificationViewControllerDelegate?
     
     init(eventID: String? = nil) {
         self.eventID = eventID
@@ -80,11 +86,6 @@ extension NotificationViewController: UITableViewDataSource {
 
 extension NotificationViewController: NotificationInfoViewCellDelegate {
     func tapInfoView(notificationModel: NotificationModel) {
-        // 단일
-        if notificationModel.count == 1 {
-            UIApplication.shared.navigateGifticonDetail(gifticonId: notificationModel.gifticonId)
-        } else {
-            UIApplication.shared.navigateHome()
-        }
+        self.delegate?.navigateToNotificationDetail(isSingle: notificationModel.count == 1, gifticonId: notificationModel.gifticonId)
     }
 }

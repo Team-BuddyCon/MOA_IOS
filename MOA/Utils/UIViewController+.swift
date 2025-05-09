@@ -15,24 +15,22 @@ extension UIViewController {
         }
     }
     
-    func setupTopBarWithNotification() {
-        navigationItem.leftBarButtonItem = nil
-        navigationItem.rightBarButtonItem = makeNotificationButton()
-    }
-    
     func setupTopBarWithLargeTitle(title: String) {
         navigationItem.leftBarButtonItem = makeLeftLargeTitle(title: title)
         navigationItem.rightBarButtonItem = nil
     }
     
-    func setupTopBarWithLargeTitleAndNotification(title: String) {
-        navigationItem.leftBarButtonItem = makeLeftLargeTitle(title: title)
-        navigationItem.rightBarButtonItem = makeNotificationButton()
-    }
-    
     func setupTopBarWithBackButton(title: String){
         navigationItem.leftBarButtonItem = makeBackButton()
         navigationItem.titleView = makeTitle(title: title)
+    }
+    
+    @objc func makeLeftLargeTitle(title: String) -> UIBarButtonItem {
+        let label = UILabel()
+        label.text = title
+        label.font = UIFont(name: pretendard_bold, size: 22)
+        label.textColor = .grey90
+        return UIBarButtonItem(customView: label)
     }
 
     @objc private func makeBackButton() -> UIBarButtonItem {
@@ -57,28 +55,5 @@ extension UIViewController {
         label.font = UIFont(name: pretendard_bold, size: 15.0)
         label.textColor = .grey90
         return label
-    }
-    
-    @objc private func makeLeftLargeTitle(title: String) -> UIBarButtonItem {
-        let label = UILabel()
-        label.text = title
-        label.font = UIFont(name: pretendard_bold, size: 22)
-        label.textColor = .grey90
-        return UIBarButtonItem(customView: label)
-    }
-    
-    @objc private func makeNotificationButton() -> UIBarButtonItem {
-        let button = UIButton()
-        button.setImage(UIImage(named: NOTIFICATION_ICON), for: .normal)
-        button.setImage(UIImage(named: NOTIFICATION_ICON), for: .highlighted)
-        button.tintColor = .grey90
-        button.clipsToBounds = true
-        button.addTarget(self, action: #selector(tapNotification), for: .touchUpInside)
-        return UIBarButtonItem(customView: button)
-    }
-    
-    @objc private func tapNotification() {
-        let notificationDataVC = NotificationViewController()
-        navigationController?.pushViewController(notificationDataVC, animated: false)
     }
 }

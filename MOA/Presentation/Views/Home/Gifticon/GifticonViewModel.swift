@@ -92,7 +92,7 @@ final class GifticonViewModel: BaseViewModel {
 //            "test",
 //            expireDate: dummy,
 //            name: "테스트",
-//            count: 3,
+//            count: 1,
 //            gifticonId: "5E64F632-7EB3-4ED5-8E28-318223244346"
 //        )
     }

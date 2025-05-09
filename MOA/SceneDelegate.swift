@@ -50,17 +50,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 )
             )
             
-            let navigationController = UINavigationController(rootViewController: HomeTabBarController())
-            if count > 1 {
-                // 다중 기프티콘 알림
-                
-                let notificationDataVC = NotificationViewController()
-                navigationController.pushViewController(notificationDataVC, animated: false)
-            } else {
-                // 단일 기프티콘 알림
-                
-                let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
-                navigationController.pushViewController(detailVC, animated: false)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+                self?.coordinator?.navigateFromNotification(isSingle: count == 1, gifticonId: gifticonId)
             }
         } else {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in

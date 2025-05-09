@@ -278,18 +278,7 @@ extension LoginViewController: ASAuthorizationControllerDelegate {
                     UserPreferences.setOAuthService(service: OAuthService.Apple.rawValue)
                     UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
                     UserPreferences.setUserID(userID: result.user.uid)
-                    
                     self.delegate?.loginInSuccess(isNewUser: result.additionalUserInfo?.newUser() == true)
-//                    if result.additionalUserInfo?.newUser() == true {
-//                        if UserPreferences.isSignUp() {
-//                            UIApplication.shared.navigateHome()
-//                        } else {
-//                            self.navigationController?.pushViewController(SignUpViewController(), animated: true)
-//                        }
-//                    } else {
-//                        UserPreferences.setSignUp(sign: true)
-//                        UIApplication.shared.navigateHome()
-//                    }
                 }
             }
         }

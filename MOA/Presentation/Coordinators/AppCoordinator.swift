@@ -7,7 +7,7 @@
 
 import UIKit
 
-class AppCoordinator: Coordinator, AuthCoordinatorDelegate, HomeCoordinatorDelegate {
+class AppCoordinator: Coordinator, AuthCoordinatorDelegate, HomeCoordinatorDelegate, NotificationManagerDelegate {
     var childs: [Coordinator] = []
     
     private var navigationController: UINavigationController
@@ -22,6 +22,7 @@ class AppCoordinator: Coordinator, AuthCoordinatorDelegate, HomeCoordinatorDeleg
     
     func start() {
         self.navigationController.pushViewController(SplashViewController(), animated: true)
+        NotificationManager.shared.delegate = self
     }
     
     func navigateToAuth() {
@@ -40,6 +41,44 @@ class AppCoordinator: Coordinator, AuthCoordinatorDelegate, HomeCoordinatorDeleg
             childs.append(homeCoordinator)
             homeCoordinator.start()
         }
+    }
+    
+    func navigateFromNotification(isSingle: Bool, gifticonId: String) {
+        if isSingle {
+            navigateToGifticonDetail(gifticonId: gifticonId)
+        } else {
+            navigateToNotification()
+        }
+    }
+    
+    func navigateToNotificationDetail(isSingle: Bool, gifticonId: String) {
+        if isSingle {
+            navigateToGifticonDetail(gifticonId: gifticonId)
+        } else {
+            navigateToHomeTab()
+        }
+    }
+    
+    func navigateToHomeTab() {
+        if let homeCoordinator = childs.first(where: { $0 is HomeCoordinator }) as? HomeCoordinator {
+            homeCoordinator.navigateToHomeTab()
+        }
+    }
+    
+    func navigateToNotification() {
+        let homeCoordinator = HomeCoordinator(navigationController: navigationController)
+        homeCoordinator.delegate = self
+        childs.append(homeCoordinator)
+        homeCoordinator.start()
+        homeCoordinator.navigateToNotification()
+    }
+    
+    func navigateToGifticonDetail(gifticonId: String) {
+        let homeCoordinator = HomeCoordinator(navigationController: navigationController)
+        homeCoordinator.delegate = self
+        childs.append(homeCoordinator)
+        homeCoordinator.start()
+        homeCoordinator.navigateToGifticonDetail(gifticonId: gifticonId)
     }
     
     func navigateToLoginFromLogout() {
