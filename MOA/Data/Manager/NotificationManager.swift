@@ -8,6 +8,10 @@
 import UserNotifications
 import UIKit
 
+protocol NotificationManagerDelegate: AnyObject {
+    func navigateFromNotification(isSingle: Bool, gifticonId: String)
+}
+
 final class NotificationManager: NSObject {
     static let shared = NotificationManager()
     static let gifticonId = "gifticonId"
@@ -15,6 +19,8 @@ final class NotificationManager: NSObject {
     static let count = "count"
     
     private let notificationCenter = UNUserNotificationCenter.current()
+    
+    weak var delegate: NotificationManagerDelegate?
     
     // [expireDate : [gifticonId]]
     private var identifierDic: [String: [String]] = [:] {
@@ -347,11 +353,7 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                 )
             )
             
-            if count > 1 {
-                UIApplication.shared.navigateNotification()
-            } else {
-                UIApplication.shared.navigateGifticonDetail(gifticonId: gifticonId)
-            }
+            self.delegate?.navigateFromNotification(isSingle: count == 1, gifticonId: gifticonId)
         }
         
         completionHandler()
