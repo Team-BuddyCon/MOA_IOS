@@ -9,9 +9,9 @@
 <br>
 
 ## Information
-MOA Email: buddycon2022@gmail.com
-Planer: voidtheart@gmail.com
-Developer: ows3090@gmail.com
+MOA : buddycon2022@gmail.com <br>
+Planer: voidtheart@gmail.com <br>
+Developer: ows3090@gmail.com <br>
 
 
 <br>
