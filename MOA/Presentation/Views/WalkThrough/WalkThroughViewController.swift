@@ -7,6 +7,9 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
+import RxRelay
 
 protocol WalkThroughViewControllerDelegate: AnyObject {
     func navigateToLogin()
@@ -18,7 +21,7 @@ private struct WalkThroughPageItem {
     let description: String
 }
 
-final class WalkThroughViewController: UIViewController {
+final class WalkThroughViewController: BaseViewController {
     
     private let pageItems: [WalkThroughPageItem] = [
         WalkThroughPageItem(
@@ -32,10 +35,6 @@ final class WalkThroughViewController: UIViewController {
             description: WALKTHROUGH_BANNER2_DESCRIPTION
         )
     ]
-    
-    var currentPage: Int = 0
-    
-    weak var delegate: WalkThroughViewControllerDelegate?
     
     private lazy var pagerCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -82,10 +81,16 @@ final class WalkThroughViewController: UIViewController {
         return button
     }()
     
+    let currentPage = BehaviorRelay<Int>(value: 0)
+    let walkThroughViewModel = WalkThroughViewModel()
+
+    weak var delegate: WalkThroughViewControllerDelegate?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
         setupAppearance()
+        bind()
     }
     
 }
@@ -128,16 +133,23 @@ private extension WalkThroughViewController {
         }
     }
     
-    func updateWalkThrough() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            pageIndicator.index = currentPage
-            pagerCollectionView.scrollToItem(at: IndexPath(row: self.currentPage, section: 0), at: .centeredHorizontally, animated: true)
-        }
+    func bind() {
+        let input = WalkThroughViewModel.Input(changeWalkThroughPage: currentPage)
+        let output = walkThroughViewModel.transform(input: input)
         
-        skipButton.isHidden = currentPage == pageItems.endIndex-1
-        nextButton.isHidden = currentPage == pageItems.endIndex-1
-        startButton.isHidden = currentPage != pageItems.endIndex-1
+        output.updateWalkThrough
+            .drive(onNext: { [weak self] page in
+                self?.updateWalkThrough(page: page)
+            }).disposed(by: disposeBag)
+    }
+    
+    func updateWalkThrough(page: Int) {
+        pageIndicator.index = page
+        pagerCollectionView.scrollToItem(at: IndexPath(row: page, section: 0), at: .centeredHorizontally, animated: true)
+        
+        skipButton.isHidden = page == pageItems.endIndex-1
+        nextButton.isHidden = page == pageItems.endIndex-1
+        startButton.isHidden = page != pageItems.endIndex-1
     }
 }
 
@@ -183,21 +195,20 @@ extension WalkThroughViewController: UICollectionViewDelegateFlowLayout {
      */
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         let width = Int(UIScreen.main.bounds.width)
+        let page = currentPage.value
         let contentOffset = Int(scrollView.contentOffset.x)
-        let currentOffset = currentPage * width
+        let currentOffset = page * width
         let diff = contentOffset - currentOffset
         
         if diff < 0 {
             if abs(diff) > width / 30 {
-                currentPage = currentPage - 1 < 0 ? 0 : currentPage - 1
+                currentPage.accept(page - 1 < 0 ? 0 : page - 1)
             }
         } else {
             if diff > width / 30 {
-                currentPage = currentPage + 1 > pageItems.endIndex - 1 ? pageItems.endIndex - 1 : currentPage + 1
+                currentPage.accept(page + 1 > pageItems.endIndex - 1 ? pageItems.endIndex - 1 : page + 1)
             }
         }
-        
-        updateWalkThrough()
     }
 }
 
@@ -210,8 +221,7 @@ private extension WalkThroughViewController {
     
     @objc func tapNextButton() {
         MOALogger.logd()
-        currentPage += 1
-        updateWalkThrough()
+        currentPage.accept(currentPage.value + 1)
     }
     
     @objc func tapStartButton() {
