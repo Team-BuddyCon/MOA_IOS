@@ -10,75 +10,113 @@ import RxSwift
 import RxRelay
 import RxCocoa
 
-final class GifticonViewModel: BaseViewModel {
+final class GifticonViewModel: BaseViewModel, ViewModelType {
     
-    var isFirstFetch: Bool = true
+    struct Input {
+        let changeCategory: BehaviorRelay<StoreCategory>
+        let changeSort: BehaviorRelay<SortType>
+    }
+    
+    struct Output {
+        let updateGifticons: Driver<[GifticonModel]>
+    }
     
     private let gifticonService: GifticonServiceProtocol
     
-    private let categoryRelay: BehaviorRelay<StoreCategory> = BehaviorRelay(value: .ALL)
-    private let sortTypeRelay: BehaviorRelay<SortType> = BehaviorRelay(value: .EXPIRE_DATE)
-    var sortType: SortType { sortTypeRelay.value }
-    var sortTitle: Driver<String> {
-        sortTypeRelay
-            .map { $0.rawValue }
-            .asDriver(onErrorJustReturn: SortType.EXPIRE_DATE.rawValue)
+    private var isFirstFetch: Bool = true
+    
+    var gifticonCount: Int {
+        return gifticonModelsRelay.value.count
     }
     
-    let gifticons = BehaviorRelay<[GifticonModel]>(value: [])
+    var gifticons: [GifticonModel] {
+        return gifticonModelsRelay.value
+    }
+    
+    private let gifticonModelsRelay = BehaviorRelay<[GifticonModel]>(value: [])
+//    private let categoryRelay: BehaviorRelay<StoreCategory> = BehaviorRelay(value: .ALL)
+//    private let sortTypeRelay: BehaviorRelay<SortType> = BehaviorRelay(value: .EXPIRE_DATE)
+//    var sortType: SortType { sortTypeRelay.value }
+//    var sortTitle: Driver<String> {
+//        sortTypeRelay
+//            .map { $0.rawValue }
+//            .asDriver(onErrorJustReturn: SortType.EXPIRE_DATE.rawValue)
+//    }
     
     init(gifticonService: GifticonServiceProtocol) {
         self.gifticonService = gifticonService
     }
     
-    func fetchAllGifticons() {
-        MOALogger.logd()
-        
+    func transform(input: Input) -> Output {
         Observable.combineLatest(
-            categoryRelay,
-            sortTypeRelay
+            input.changeCategory,
+            input.changeSort
         ).flatMap { [unowned self] category, sortType in
-            // 있는 만큼만 스켈레톤 UI 보여줘야 안어색함
-            let count = self.gifticons.value.count
-            self.gifticons.accept([GifticonModel](repeating: GifticonModel(), count: count))
-            return gifticonService.fetchGifticons(
-                category: category,
-                sortType: sortType
-            )
-        }.subscribe(
-            onNext: { [unowned self] gifticons in
-                let models = gifticons.map { $0.toModel() }
-                self.gifticons.accept(models)
-                
-                if self.isFirstFetch {
-                    registerNotifications()
-                    insertLocatlNotificiations()
-                    removeLocalNotifications()
-                    self.isFirstFetch = false
-                }
-            },
-            onError: { error in
-                MOALogger.loge(error.localizedDescription)
+            // 페이징 처리는 하지 않고 category, sort 변경 시에 기프티콘 조회
+            // 스켈레톤 UI는 현재 기프티콘만큼 스켈레콘 UI 처리하고 조회 완료되면 변경
+            gifticonModelsRelay.accept([GifticonModel](repeating: GifticonModel(), count: gifticonCount > 0 ? gifticonCount : 6))
+            return gifticonService.fetchGifticons(category: category, sortType: sortType)
+        }.subscribe(onNext: { [unowned self] gifticons in
+            gifticonModelsRelay.accept(gifticons.map { $0.toModel() })
+            
+            if isFirstFetch {
+                registerNotifications()
+                insertLocatlNotificiations()
+                removeLocalNotifications()
+                isFirstFetch = false
             }
-        ).disposed(by: disposeBag)
+        }).disposed(by: disposeBag)
+        
+        return Output(
+            updateGifticons: gifticonModelsRelay.asDriver()
+        )
     }
     
-    func changeCategory(category: StoreCategory) {
-        MOALogger.logd()
-        categoryRelay.accept(category)
-    }
+//    func fetchAllGifticons() {
+//        Observable.combineLatest(
+//            categoryRelay,
+//            sortTypeRelay
+//        ).flatMap { [unowned self] category, sortType in
+//
+//            self.gifticonModelsRelay.accept([GifticonModel](repeating: GifticonModel(), count: gifticonCount))
+//            return gifticonService.fetchGifticons(
+//                category: category,
+//                sortType: sortType
+//            )
+//        }.subscribe(
+//            onNext: { [unowned self] gifticons in
+//                let models = gifticons.map { $0.toModel() }
+//                self.gifticonModelsRelay.accept(models)
+//                
+//                if self.isFirstFetch {
+//                    registerNotifications()
+//                    insertLocatlNotificiations()
+//                    removeLocalNotifications()
+//                    self.isFirstFetch = false
+//                }
+//            },
+//            onError: { error in
+//                MOALogger.loge(error.localizedDescription)
+//            }
+//        ).disposed(by: disposeBag)
+//    }
     
-    func changeSort(type: SortType) {
-        MOALogger.logd()
-        sortTypeRelay.accept(type)
-    }
+//    func changeCategory(category: StoreCategory) {
+//        MOALogger.logd()
+//        categoryRelay.accept(category)
+//    }
+//    
+//    func changeSort(type: SortType) {
+//        MOALogger.logd()
+//        sortTypeRelay.accept(type)
+//    }
     
     // 최초 기프티콘 화면 진입 시에 기프티콘 알림 등록
     func registerNotifications() {
         MOALogger.logd()
         
         NotificationManager.shared.removeAll()
-        gifticons.value.forEach { gifticon in
+        gifticons.forEach { gifticon in
             NotificationManager.shared.register(
                 gifticon.expireDate,
                 name: gifticon.name,
@@ -109,7 +147,7 @@ final class GifticonViewModel: BaseViewModel {
                 }
                 return false
             }.forEach {
-                LocalNotificationDataManager.shared.deleteNotification($0)
+                let _ = LocalNotificationDataManager.shared.deleteNotification($0)
             }
     }
     
@@ -119,7 +157,7 @@ final class GifticonViewModel: BaseViewModel {
         guard UserPreferences.isNotificationOn() else { return }
         
         let current = Date()
-        let expireDateGroup = gifticons.value.grouped(by: { $0.expireDate })
+        let expireDateGroup = gifticons.grouped(by: { $0.expireDate })
         
         UserPreferences.getNotificationTriggerDays().forEach { triggerDay in
             Array(expireDateGroup.keys).forEach { (date: String) in
@@ -138,8 +176,7 @@ final class GifticonViewModel: BaseViewModel {
                     let title = isMaxLenght ? String(firstModel.name.prefix(10)) + "..." : firstModel.name
                     let message = triggerDay.getBody(name: title, count: models.count)
                     let gifticonId = firstModel.gifticonId
-                    
-                    LocalNotificationDataManager.shared.insertNotification(
+                    let _ = LocalNotificationDataManager.shared.insertNotification(
                         NotificationModel(
                             count: models.count,
                             date: triggerDate.toString(format: AVAILABLE_GIFTICON_TIME_FORMAT),

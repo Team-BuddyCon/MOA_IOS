@@ -11,19 +11,17 @@ import RxRelay
 import RxCocoa
 
 final class CategoryButton: UIButton {
-    
     private let disposeBag = DisposeBag()
     let category: StoreCategory
     let isClicked = BehaviorRelay(value: false)
     
-    init(
-        frame: CGRect,
-        category: StoreCategory
-    ) {
+    init(category: StoreCategory, isClick: Bool = false) {
         self.category = category
-        super.init(frame: frame)
-        setUp()
+        super.init(frame: .zero)
+        setup()
         bind()
+        
+        isClicked.accept(isClick)
     }
     
     required init?(coder: NSCoder) {
@@ -35,23 +33,24 @@ final class CategoryButton: UIButton {
         layer.cornerRadius = frame.height / 2
     }
     
-    private func setUp() {
+    private func setup() {
         setTitle(category.rawValue, for: .normal)
         setTitleColor(.grey60, for: .normal)
         setTitleColor(.white, for: .selected)
     }
     
     private func bind() {
-        isClicked.asDriver()
-            .drive { [weak self] isClicked in
-                guard let self = self else {
-                    MOALogger.loge()
-                    return
-                }
-                
-                MOALogger.logd("\(String(describing: category.rawValue)) \(isClicked)")
-                backgroundColor = isClicked ? .pink100 : .white
-                isSelected = isClicked
-            }.disposed(by: disposeBag)
+        isClicked
+            .bind(to: self.rx.isClicked)
+            .disposed(by: disposeBag)
+    }
+}
+
+extension Reactive where Base: CategoryButton {
+    var isClicked: Binder<Bool> {
+        return Binder(self.base) { button, isClicked in
+            button.backgroundColor = isClicked ? .pink100 : .white
+            button.isSelected = isClicked
+        }
     }
 }

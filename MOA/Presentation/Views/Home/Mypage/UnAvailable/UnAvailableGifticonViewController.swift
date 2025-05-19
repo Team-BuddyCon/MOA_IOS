@@ -104,7 +104,7 @@ private extension UnAvailableGifticonViewController {
                     return UICollectionViewCell()
                 }
                 
-                cell.setData(gifticon: gifticon)
+                cell.gifticon = gifticon
                 return cell
             }.disposed(by: disposeBag)
         

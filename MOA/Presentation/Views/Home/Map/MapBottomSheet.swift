@@ -201,7 +201,7 @@ final class MapBottomSheet: UIView {
                     return UICollectionViewCell()
                 }
                 
-                cell.setData(gifticon: gifticon)
+                cell.gifticon = gifticon
                 return cell
             }.disposed(by: disposeBag)
         
