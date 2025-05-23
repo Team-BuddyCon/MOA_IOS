@@ -13,6 +13,7 @@ import RxCocoa
 final class GifticonViewModel: BaseViewModel, ViewModelType {
     
     struct Input {
+        let viewWillAppear: PublishRelay<Void>
         let changeCategory: BehaviorRelay<StoreCategory>
         let changeSort: BehaviorRelay<SortType>
     }
@@ -34,9 +35,10 @@ final class GifticonViewModel: BaseViewModel, ViewModelType {
     
     func transform(input: Input) -> Output {
         Observable.combineLatest(
+            input.viewWillAppear,
             input.changeCategory,
             input.changeSort
-        ).flatMap { [unowned self] category, sortType in
+        ).flatMap { [unowned self] _, category, sortType in
             // 페이징 처리는 하지 않고 category, sort 변경 시에 기프티콘 조회
             // 스켈레톤 UI는 현재 기프티콘만큼 스켈레콘 UI 처리하고 조회 완료되면 변경
             gifticonModelsRelay.accept([GifticonModel](repeating: GifticonModel(), count: gifticonCount > 0 ? gifticonCount : 6))

@@ -72,6 +72,7 @@ final class GifticonViewController: BaseViewController {
         return view
     }()
 
+    private let viewWillAppear = PublishRelay<Void>()
     private let categoryRelay: BehaviorRelay<StoreCategory> = BehaviorRelay(value: .ALL)
     private let sortTypeRelay: BehaviorRelay<SortType> = BehaviorRelay(value: .EXPIRE_DATE)
     
@@ -84,6 +85,12 @@ final class GifticonViewController: BaseViewController {
         MOALogger.logd()
         setupLayout()
         bind()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        MOALogger.logd()
+        viewWillAppear.accept(())
     }
 }
 
@@ -135,6 +142,7 @@ private extension GifticonViewController {
     
     func bind() {
         let input = GifticonViewModel.Input(
+            viewWillAppear: viewWillAppear,
             changeCategory: categoryRelay,
             changeSort: sortTypeRelay
         )
