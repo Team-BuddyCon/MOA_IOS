@@ -297,7 +297,7 @@ private extension Reactive where Base: GifticonRegisterViewController {
                     viewController.dismiss(animated: false)
                     viewController.delegate?.navigateToGifticonDetail(
                         gifticonId: gifticonId,
-                        isRegistered: false
+                        isRegistered: true
                     )
                 },
                 onError: {

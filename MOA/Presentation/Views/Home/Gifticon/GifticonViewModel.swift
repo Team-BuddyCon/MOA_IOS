@@ -22,26 +22,11 @@ final class GifticonViewModel: BaseViewModel, ViewModelType {
     }
     
     private let gifticonService: GifticonServiceProtocol
-    
     private var isFirstFetch: Bool = true
     
-    var gifticonCount: Int {
-        return gifticonModelsRelay.value.count
-    }
-    
-    var gifticons: [GifticonModel] {
-        return gifticonModelsRelay.value
-    }
-    
     private let gifticonModelsRelay = BehaviorRelay<[GifticonModel]>(value: [])
-//    private let categoryRelay: BehaviorRelay<StoreCategory> = BehaviorRelay(value: .ALL)
-//    private let sortTypeRelay: BehaviorRelay<SortType> = BehaviorRelay(value: .EXPIRE_DATE)
-//    var sortType: SortType { sortTypeRelay.value }
-//    var sortTitle: Driver<String> {
-//        sortTypeRelay
-//            .map { $0.rawValue }
-//            .asDriver(onErrorJustReturn: SortType.EXPIRE_DATE.rawValue)
-//    }
+    var gifticons: [GifticonModel] { gifticonModelsRelay.value }
+    var gifticonCount: Int { gifticonModelsRelay.value.count }
     
     init(gifticonService: GifticonServiceProtocol) {
         self.gifticonService = gifticonService
@@ -72,47 +57,8 @@ final class GifticonViewModel: BaseViewModel, ViewModelType {
         )
     }
     
-//    func fetchAllGifticons() {
-//        Observable.combineLatest(
-//            categoryRelay,
-//            sortTypeRelay
-//        ).flatMap { [unowned self] category, sortType in
-//
-//            self.gifticonModelsRelay.accept([GifticonModel](repeating: GifticonModel(), count: gifticonCount))
-//            return gifticonService.fetchGifticons(
-//                category: category,
-//                sortType: sortType
-//            )
-//        }.subscribe(
-//            onNext: { [unowned self] gifticons in
-//                let models = gifticons.map { $0.toModel() }
-//                self.gifticonModelsRelay.accept(models)
-//                
-//                if self.isFirstFetch {
-//                    registerNotifications()
-//                    insertLocatlNotificiations()
-//                    removeLocalNotifications()
-//                    self.isFirstFetch = false
-//                }
-//            },
-//            onError: { error in
-//                MOALogger.loge(error.localizedDescription)
-//            }
-//        ).disposed(by: disposeBag)
-//    }
-    
-//    func changeCategory(category: StoreCategory) {
-//        MOALogger.logd()
-//        categoryRelay.accept(category)
-//    }
-//    
-//    func changeSort(type: SortType) {
-//        MOALogger.logd()
-//        sortTypeRelay.accept(type)
-//    }
-    
     // 최초 기프티콘 화면 진입 시에 기프티콘 알림 등록
-    func registerNotifications() {
+    private func registerNotifications() {
         MOALogger.logd()
         
         NotificationManager.shared.removeAll()
@@ -136,7 +82,7 @@ final class GifticonViewModel: BaseViewModel, ViewModelType {
     }
     
     // 30일이 지난 알림 삭제
-    func removeLocalNotifications() {
+    private func removeLocalNotifications() {
         MOALogger.logd()
         
         LocalNotificationDataManager.shared.fetchNotification()
@@ -152,7 +98,7 @@ final class GifticonViewModel: BaseViewModel, ViewModelType {
     }
     
     // 알림은 보내졌지만 내부 저장소에 저장이 안된 알림 저장 로직 (서버리스 문제)
-    func insertLocatlNotificiations() {
+    private func insertLocatlNotificiations() {
         MOALogger.logd()
         guard UserPreferences.isNotificationOn() else { return }
         

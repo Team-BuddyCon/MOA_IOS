@@ -27,7 +27,7 @@ final class GifticonDetailViewController: BaseViewController {
         return scrollView
     }()
     
-    let useButton: CommonButton = {
+    fileprivate let useButton: CommonButton = {
         let button = CommonButton(
             status: .active,
             title: GIFTICON_USE_BUTTON_TITLE
@@ -40,7 +40,7 @@ final class GifticonDetailViewController: BaseViewController {
         return contentView
     }()
     
-    let imageView: UIImageView = {
+    fileprivate let imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
@@ -49,7 +49,7 @@ final class GifticonDetailViewController: BaseViewController {
         return imageView
     }()
     
-    let imageDimView: UIImageView = {
+    fileprivate let imageDimView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: USED_GIFTICON)
         imageView.contentMode = .center
@@ -59,18 +59,18 @@ final class GifticonDetailViewController: BaseViewController {
         return imageView
     }()
     
-    let ddayButton: DDayButton = {
+    fileprivate let ddayButton: DDayButton = {
         let button = DDayButton(fontSize: 12.0)
         return button
     }()
     
-    let imageZoomInButton: UIButton = {
+    fileprivate let imageZoomInButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: ZOOM_IN_BUTTON), for: .normal)
         return button
     }()
     
-    let titleLabel: UILabel = {
+    fileprivate let titleLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 1
         label.lineBreakMode = .byTruncatingTail
@@ -79,22 +79,22 @@ final class GifticonDetailViewController: BaseViewController {
         return label
     }()
     
-    let expireDateInfoView: DetailInfoView = {
+    fileprivate let expireDateInfoView: DetailInfoView = {
         let view = DetailInfoView(title: GIFTICON_DETAIL_EXPIRE_DATE_TITLE)
         return view
     }()
     
-    let storeInfoView: DetailInfoView = {
+    fileprivate let storeInfoView: DetailInfoView = {
         let view = DetailInfoView(title: GIFTICON_DETAIL_STORE_TITLE)
         return view
     }()
     
-    let memoInfoView: DetailInfoView = {
+    fileprivate let memoInfoView: DetailInfoView = {
         let view = DetailInfoView(title: GIFTICON_DETAIL_MEMO_TITLE)
         return view
     }()
     
-    let kmZoomInButton: UIButton = {
+    fileprivate let kmZoomInButton: UIButton = {
         let button = UIButton()
         button.setTitle(GIFTICON_DETAIL_MAP_ZOOM_IN_BUTTON_TITLE, for: .normal)
         button.setTitleColor(.pink100, for: .normal)
@@ -104,14 +104,14 @@ final class GifticonDetailViewController: BaseViewController {
         return button
     }()
     
-    lazy var mapDimView: UIView = {
+    fileprivate lazy var mapDimView: UIView = {
         let view = UIView()
         view.backgroundColor = .black.withAlphaComponent(0.4)
         view.layer.cornerRadius = 20
         return view
     }()
     
-    lazy var mapGuideLabel: UILabel = {
+    fileprivate  lazy var mapGuideLabel: UILabel = {
         let label = UILabel()
         label.textColor = .grey70
         label.setRangeFontColor(
@@ -124,7 +124,7 @@ final class GifticonDetailViewController: BaseViewController {
         return label
     }()
     
-    lazy var mapGuideToastView: UIView = {
+    fileprivate lazy var mapGuideToastView: UIView = {
         let view = UIView()
         view.addSubview(mapGuideLabel)
         view.layer.cornerRadius = 21
@@ -142,32 +142,34 @@ final class GifticonDetailViewController: BaseViewController {
             $0.center.equalToSuperview()
         }
         
-        
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(openSetting))
         view.addGestureRecognizer(tapGesture)
-        
         return view
     }()
     
     weak var delegate: GifticonDetailViewControllerDelegate?
+    
     var mapManager: KakaoMapManager?
+
+    let gifticonId: String
+    
+    private var isActive: Bool = true
     
     let gifticonDetailViewModel = GifticonDetailViewModel(
         gifticonService: GifticonService.shared,
         kakaoService: KakaoService.shared
     )
-    
-    let gifticonId: String
-    var isRegistered: Bool  // 이미 등록된 기프티콘의 상세인지, 등록 후 이동된 상세화면인지 구분
-    
-    var isActive: Bool = true
+
+    let viewWillAppear = PublishRelay<String>()
+    let navigateFromRegister = BehaviorRelay(value: false)
+    let searchGifticonPlaces = PublishRelay<Void>()
     
     init(
         gifticonId: String,
-        isRegistered: Bool = true
+        isRegistered: Bool = false
     ) {
         self.gifticonId = gifticonId
-        self.isRegistered = isRegistered
+        self.navigateFromRegister.accept(isRegistered)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -187,13 +189,8 @@ final class GifticonDetailViewController: BaseViewController {
         super.viewWillAppear(animated)
         MOALogger.logd()
         
-        if !isRegistered {
-            Toast.shared.show(message: GIFTICON_REGISTER_SUCCESS)
-            isRegistered = true
-        }
-        
         mapManager?.addObserver()
-        gifticonDetailViewModel.fetchGifticon(gifticonId: gifticonId)
+        viewWillAppear.accept(gifticonId)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -204,7 +201,7 @@ final class GifticonDetailViewController: BaseViewController {
             if mapManager?.isEngineActive == false {
                 mapManager?.activateEngine()
             }
-            gifticonDetailViewModel.searchPlaceByKeyword()
+            searchGifticonPlaces.accept(())
         }
     }
     
@@ -407,24 +404,35 @@ private extension GifticonDetailViewController {
             object: nil
         )
         
-        useButton.rx.tap
-            .bind(to: self.rx.tapUse)
+        let input = GifticonDetailViewModel.Input(
+            viewWillAppear: viewWillAppear,
+            navigateFromRegister: navigateFromRegister,
+            searchGifticonPlaces: searchGifticonPlaces,
+            tapGifticonUse: useButton.rx.tap,
+            tapImageZoomIn: imageZoomInButton.rx.tap,
+            tapMapZoomIn: kmZoomInButton.rx.tap
+        )
+        
+        let output = gifticonDetailViewModel.transform(input: input)
+        
+        output.showGifticon
+            .drive(self.rx.bindToGifticon)
             .disposed(by: disposeBag)
         
-        imageZoomInButton.rx.tap
-            .bind(to: self.rx.tapZoomInImage)
+        output.showRegisterSuccessAlert
+            .emit(to: self.rx.showRegisterAlert)
             .disposed(by: disposeBag)
         
-        gifticonDetailViewModel.gifticonRelay
-            .bind(to: self.rx.bindToGifticon)
+        output.showFullGifticonImage
+            .emit(to: self.rx.tapZoomInImage)
             .disposed(by: disposeBag)
         
-        kmZoomInButton.rx.tap
-            .bind(to: self.rx.tapZoomInMap)
+        output.showFullMap
+            .emit(to: self.rx.tapZoomInMap)
             .disposed(by: disposeBag)
         
-        gifticonDetailViewModel.searchPlaceRelay
-            .bind(to: self.rx.bindSearchPlaces)
+        output.markSearchPlaces
+            .drive(self.rx.bindSearchPlaces)
             .disposed(by: disposeBag)
         
         LocationManager.shared.isGranted
@@ -435,6 +443,13 @@ private extension GifticonDetailViewController {
 
 // TODO: tapZoomInImage 와 같은 공통 extension은 ImageView 확장하여 함수로 정의
 extension Reactive where Base: GifticonDetailViewController {
+    var showRegisterAlert: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            Toast.shared.show(message: GIFTICON_REGISTER_SUCCESS)
+            viewController.navigateFromRegister.accept(false)
+        }
+    }
+    
     var tapZoomInImage: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
@@ -442,18 +457,11 @@ extension Reactive where Base: GifticonDetailViewController {
         }
     }
     
-    var tapUse: Binder<Void> {
-        return Binder<Void>(self.base) { viewController, _ in
-            MOALogger.logd()
-            viewController.gifticonDetailViewModel.updateGifticonUsed(gifticonId: viewController.gifticonId)
-        }
-    }
-    
     var tapZoomInMap: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
             viewController.delegate?.navigateToGifticonDetailMap(
-                searchPlaces: viewController.gifticonDetailViewModel.searchPlaceRelay.value,
+                searchPlaces: viewController.gifticonDetailViewModel.places,
                 storeType: viewController.gifticonDetailViewModel.gifticon.gifticonStore
             )
         }
@@ -461,17 +469,18 @@ extension Reactive where Base: GifticonDetailViewController {
     
     var bindToGifticon: Binder<GifticonModel> {
         return Binder<GifticonModel>(self.base) { (viewController: GifticonDetailViewController, gifticon) in
+            
             ImageLoadManager.shared.load(
                 url: gifticon.imageUrl,
                 identifier: gifticon.gifticonId,
                 expireDate: gifticon.expireDate
             )
-                .observe(on: MainScheduler())
-                .subscribe(onNext: { image in
-                    if let image = image {
-                        viewController.imageView.image = image
-                    }
-                }).disposed(by: viewController.disposeBag)
+            .observe(on: MainScheduler())
+            .subscribe(onNext: { image in
+                if let image = image {
+                    viewController.imageView.image = image
+                }
+            }).disposed(by: viewController.disposeBag)
             
             let dday = gifticon.expireDate.toDday()
             viewController.ddayButton.dday = dday
@@ -557,7 +566,7 @@ extension Reactive where Base: GifticonDetailViewController {
             viewController.mapGuideToastView.isHidden = storeType != .OTHERS && isGranted
             
             if storeType != .OTHERS && isGranted && viewController.mapManager?.isEngineActive == true {
-                viewController.gifticonDetailViewModel.searchPlaceByKeyword()
+                viewController.searchGifticonPlaces.accept(())
             } else {
                 viewController.mapManager?.removePois()
             }
@@ -594,7 +603,7 @@ extension GifticonDetailViewController {
         
         if mapManager?.isEngineActive == false {
             mapManager?.activateEngine()
-            gifticonDetailViewModel.searchPlaceByKeyword()
+            searchGifticonPlaces.accept(())
         }
     }
     

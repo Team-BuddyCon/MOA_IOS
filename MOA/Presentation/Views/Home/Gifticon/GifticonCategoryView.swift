@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 import RxSwift
 
-protocol GifticonCategoryViewDelegate {
+protocol GifticonCategoryViewDelegate: AnyObject {
     func didSelectCategory(category: StoreCategory)
     func showSortTypePopup()
 }
@@ -43,7 +43,7 @@ final class GifticonCategoryView: UICollectionReusableView {
         return button
     }()
     
-    var delegate: GifticonCategoryViewDelegate?
+    weak var delegate: GifticonCategoryViewDelegate?
     var sortTitle: String = SortType.EXPIRE_DATE.rawValue {
         didSet {
             sortButton.setTitle(sortTitle, for: .normal)
@@ -109,21 +109,6 @@ extension Reactive where Base: GifticonCategoryView {
         return Binder<Void>(self.base) { view, _ in
             MOALogger.logd()
             view.delegate?.showSortTypePopup()
-//            guard let sortType = view.gifticonViewModel?.sortType else { return }
-//            let bottomSheetVC = BottomSheetViewController(
-//                sheetType: .Sort,
-//                sortType: sortType
-//            )
-//            bottomSheetVC.delegate = view
-//            UIApplication.shared.topViewController?.present(bottomSheetVC, animated: true)
         }
-    }
-}
-
-// MARK: BottomSheetDelegate
-extension GifticonCategoryView: BottomSheetDelegate {
-    func selectSortType(type: SortType) {
-        MOALogger.logd(type.rawValue)
-        //gifticonViewModel?.changeSort(type: type)
     }
 }
