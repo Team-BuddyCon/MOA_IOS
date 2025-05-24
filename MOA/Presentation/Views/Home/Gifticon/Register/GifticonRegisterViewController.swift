@@ -10,8 +10,6 @@ import SnapKit
 import RxSwift
 import RxCocoa
 import RxRelay
-import FirebaseStorage
-import FirebaseFirestore
 
 protocol GifticonRegisterViewControllerDelegate: AnyObject {
     func navigateToFullGifticonImage(image: UIImage?)
@@ -78,11 +76,12 @@ final class GifticonRegisterViewController: BaseViewController {
         return inputView
     }()
     
-    let viewModel: GifticonRegisterViewModel = GifticonRegisterViewModel(gifticonService: GifticonService.shared)
     var image: UIImage?
     
-    let storage = Storage.storage()
-    let store = Firestore.firestore()
+    let registerGifticon = PublishRelay<(UIImage, String, String, String, String?)>()
+    let viewModel: GifticonRegisterViewModel = GifticonRegisterViewModel(
+        gifticonService: GifticonService.shared
+    )
     
     weak var delegate: GifticonRegisterViewControllerDelegate?
     
@@ -203,16 +202,37 @@ private extension GifticonRegisterViewController {
             object: nil
         )
         
-        cancelButton.rx.tap
-            .bind(to: self.rx.tapCancel)
+        let input = GifticonRegisterViewModel.Input(
+            tapCancel: cancelButton.rx.tap,
+            tapImageZoomIn: imageZoomInButton.rx.tap,
+            tapSave: saveButton.rx.tap,
+            registerGifticon: registerGifticon
+        )
+        
+        let output = viewModel.transform(input: input)
+        
+        output.showCancelAlert
+            .emit(to: self.rx.tapCancel)
+            .disposed(by: disposeBag)
+
+        output.showFullGifticonImage
+            .emit(to: self.rx.tapZoomInImage)
             .disposed(by: disposeBag)
         
-        saveButton.rx.tap
-            .bind(to: self.rx.tapSave)
+        output.isCheckRegister
+            .emit(to: self.rx.tapSave)
             .disposed(by: disposeBag)
         
-        imageZoomInButton.rx.tap
-            .bind(to: self.rx.tapZoomInImage)
+        output.loadingRegister
+            .emit(to: self.rx.showLoadingRegister)
+            .disposed(by: disposeBag)
+        
+        output.registerSuccess
+            .emit(to: self.rx.navigateGifticonDetail)
+            .disposed(by: disposeBag)
+        
+        output.registerFail
+            .emit(to: self.rx.showRegisterFailAlert)
             .disposed(by: disposeBag)
     }
 }
@@ -235,6 +255,33 @@ private extension Reactive where Base: GifticonRegisterViewController {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
             viewController.delegate?.navigateToFullGifticonImage(image: viewController.image)
+        }
+    }
+    
+    var showLoadingRegister: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            viewController.delegate?.navigateRegisterLoading()
+        }
+    }
+    
+    var navigateGifticonDetail: Binder<String> {
+        return Binder<String>(self.base) { viewController, gifticonId in
+            viewController.dismiss(animated: false)
+            viewController.delegate?.navigateToGifticonDetail(
+                gifticonId: gifticonId,
+                isRegistered: true
+            )
+        }
+    }
+    
+    var showRegisterFailAlert: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            viewController.dismiss(animated: false)
+            viewController.showAlertModal(
+                title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+                subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+                confirmText: CONFIRM
+            )
         }
     }
     
@@ -283,32 +330,8 @@ private extension Reactive where Base: GifticonRegisterViewController {
                 )
                 return
             }
-        
-            viewController.viewModel.createGifticon(
-                image: image,
-                name: name,
-                expireDate: expireDate,
-                gifticonStore: gifticonStore,
-                memo: memo,
-                onLoading: {
-                    viewController.delegate?.navigateRegisterLoading()
-                },
-                onSucess: { gifticonId in
-                    viewController.dismiss(animated: false)
-                    viewController.delegate?.navigateToGifticonDetail(
-                        gifticonId: gifticonId,
-                        isRegistered: true
-                    )
-                },
-                onError: {
-                    viewController.dismiss(animated: false)
-                    viewController.showAlertModal(
-                        title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                        subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                        confirmText: CONFIRM
-                    )
-                }
-            )
+            
+            viewController.registerGifticon.accept((image, name, expireDate, gifticonStore, memo))
         }
     }
 }
