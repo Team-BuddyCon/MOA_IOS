@@ -55,6 +55,15 @@ final class MypageViewController: BaseViewController {
         return tableView
     }()
     
+    let viewWillAppear = PublishRelay<Void>()
+    let tapNotification = PublishRelay<Void>()
+    let tapInquery = PublishRelay<Void>()
+    let tapVersion = PublishRelay<Void>()
+    let tapPolicy = PublishRelay<Void>()
+    let tapOpenSourceLicense = PublishRelay<Void>()
+    let tapLogout = PublishRelay<Void>()
+    let tapSignOut = PublishRelay<Void>()
+    
     let mypageViewModel = MypageViewModel(gifticonService: GifticonService.shared)
     
     weak var delegate: MypageViewControllerDelegate?
@@ -68,7 +77,7 @@ final class MypageViewController: BaseViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        mypageViewModel.fetchUsedGifticons()
+        viewWillAppear.accept(())
     }
 }
 
@@ -100,23 +109,135 @@ private extension MypageViewController {
         let tapGesture = UITapGestureRecognizer()
         unavailableBox.addGestureRecognizer(tapGesture)
         
-        tapGesture.rx.event
-            .map({ _ in })
-            .bind(to: self.rx.bindUnavailableBox)
+        let input = MypageViewModel.Input(
+            viewWillAppear: viewWillAppear,
+            tapUnavilableBox: tapGesture.rx.event,
+            tapNotification: tapNotification,
+            tapInquery: tapInquery,
+            tapVersion: tapVersion,
+            tapPolicy: tapPolicy,
+            tapOpenSourceLicense: tapOpenSourceLicense,
+            tapLogout: tapLogout,
+            tapSignOut: tapSignOut
+        )
+        let output = mypageViewModel.transform(input: input)
+        
+        output.showUsedGifticonCount
+            .drive(self.unavailableBox.countLabel.rx.text)
             .disposed(by: disposeBag)
         
-        mypageViewModel.gifticonRelay
-            .map { String(format: UNAVAILABLE_GIFTICON_COUNT_FORMAT, $0.count) }
-            .bind(to: self.unavailableBox.countLabel.rx.text)
+        output.tapUnavilableBox
+            .emit(to: self.rx.showUnavailableGifticon)
+            .disposed(by: disposeBag)
+        
+        output.showNotificationSetting
+            .emit(to: self.rx.showNotificationSetting)
+            .disposed(by: disposeBag)
+        
+        output.showInqueryAlert
+            .emit(to: self.rx.showInqueryAlert)
+            .disposed(by: disposeBag)
+        
+        output.showVersion
+            .emit(to: self.rx.showVersion)
+            .disposed(by: disposeBag)
+        
+        output.showPolicy
+            .emit(to: self.rx.showPolicy)
+            .disposed(by: disposeBag)
+        
+        output.showOpenSourceLicense
+            .emit(to: self.rx.showOpenSOurceLicense)
+            .disposed(by: disposeBag)
+        
+        output.showLogoutAlert
+            .emit(to: self.rx.showLogougAlert)
+            .disposed(by: disposeBag)
+        
+        output.showSignOut
+            .emit(to: self.rx.showSignOut)
             .disposed(by: disposeBag)
     }
 }
 
 extension Reactive where Base: MypageViewController {
-    var bindUnavailableBox: Binder<Void> {
+    var showUnavailableGifticon: Binder<Void> {
         return Binder(base) { viewController, _ in
             MOALogger.logd()
             viewController.delegate?.navigateToUnavailableGifticon()
+        }
+    }
+    
+    var showNotificationSetting: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            MOALogger.logd()
+            viewController.delegate?.navigateToNotificationSetting()
+        }
+    }
+    
+    var showInqueryAlert: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            MOALogger.logd()
+            if MFMailComposeViewController.canSendMail() {
+                viewController.delegate?.navigateToMailCompose()
+            } else {
+                viewController.showAlertModal(
+                    title: MOA_CANT_INQUERY_TITLE,
+                    subTitle: MOA_CANT_INQUERY_SUBTITLE,
+                    confirmText: CONFIRM
+                )
+            }
+        }
+    }
+    
+    var showVersion: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            MOALogger.logd()
+            viewController.delegate?.navigateToVersion()
+        }
+    }
+    
+    var showPolicy: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            MOALogger.logd()
+            viewController.delegate?.navigateToPolicy()
+        }
+    }
+    
+    var showOpenSOurceLicense: Binder<Void> {
+        return Binder<Void>(self.base) { viewContoller, _ in
+            MOALogger.logd()
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(url)
+            }
+        }
+    }
+    
+    var showLogougAlert: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            MOALogger.logd()
+            viewController.showSelectModal(
+                title: LOGOUT_ALERT_TITLE,
+                subTitle: LOGOUT_ALERT_SUBTITLE,
+                confirmText: LOGOUT_CONFIRM_BUTTON_TITLE,
+                cancelText: LOGOUT_CANCEL_BUTTON_TITLE
+            ) {
+                let auth = Auth.auth()
+                do {
+                    NotificationManager.shared.removeAll()
+                    try auth.signOut()
+                    viewController.delegate?.navigateToLoginFromLogout()
+                } catch let error as NSError {
+                    MOALogger.loge("\(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+    var showSignOut: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            NotificationManager.shared.removeAll()
+            viewController.delegate?.navigateToWithDraw()
         }
     }
 }
@@ -144,44 +265,19 @@ extension MypageViewController: UITableViewDataSource, UITableViewDelegate {
         if let cell = tableView.cellForRow(at: indexPath) as? MypageMenuCell {
             switch cell.menuType {
             case .Notification:
-                self.delegate?.navigateToNotificationSetting()
+                tapNotification.accept(())
             case .Inquery:
-                if MFMailComposeViewController.canSendMail() {
-                    self.delegate?.navigateToMailCompose()
-                } else {
-                    showAlertModal(
-                        title: MOA_CANT_INQUERY_TITLE,
-                        subTitle: MOA_CANT_INQUERY_SUBTITLE,
-                        confirmText: CONFIRM
-                    )
-                }
+                tapInquery.accept(())
             case .Version:
-                self.delegate?.navigateToVersion()
+                tapVersion.accept(())
             case .Policy:
-                self.delegate?.navigateToPolicy()
+                tapPolicy.accept(())
             case .OpenSourceLicense:
-                if let url = URL(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(url)
-                }
+                tapOpenSourceLicense.accept(())
             case .Logout:
-                showSelectModal(
-                    title: LOGOUT_ALERT_TITLE,
-                    subTitle: LOGOUT_ALERT_SUBTITLE,
-                    confirmText: LOGOUT_CONFIRM_BUTTON_TITLE,
-                    cancelText: LOGOUT_CANCEL_BUTTON_TITLE
-                ) {
-                    let auth = Auth.auth()
-                    do {
-                        NotificationManager.shared.removeAll()
-                        try auth.signOut()
-                        self.delegate?.navigateToLoginFromLogout()
-                    } catch let error as NSError {
-                        MOALogger.loge("\(error.localizedDescription)")
-                    }
-                }
+                tapLogout.accept(())
             case .SignOut:
-                NotificationManager.shared.removeAll()
-                self.delegate?.navigateToWithDraw()
+                tapSignOut.accept(())
             }
         }
     }
