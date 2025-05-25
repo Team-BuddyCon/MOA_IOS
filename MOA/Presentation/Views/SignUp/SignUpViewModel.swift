@@ -10,7 +10,7 @@ import RxSwift
 import RxCocoa
 import RxRelay
 
-final class SignUpViewModel: BaseViewModel, ViewModelType {
+final class SignUpViewModel: BaseViewModel {
     struct Input {
         let allSignUpCheckBoxTapped: ControlEvent<Void>
         let termsOfUseSignUpCheckBoxTapped: ControlEvent<Void>
@@ -29,6 +29,8 @@ final class SignUpViewModel: BaseViewModel, ViewModelType {
         let changeCompleteStatus: Driver<Bool>
         let navigateSignUpComplete: Signal<Void>
     }
+    
+    var disposeBag: DisposeBag = DisposeBag()
     
     private let allSignUpCheckBoxRelay = BehaviorRelay(value: false)
     private let termsOfUseCheckBoxRelay = BehaviorRelay(value: false)

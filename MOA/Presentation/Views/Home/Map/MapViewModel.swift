@@ -11,7 +11,7 @@ import RxCocoa
 import RxRelay
 import KakaoMapsSDK
 
-final class MapViewModel: BaseViewModel, ViewModelType {
+final class MapViewModel: BaseViewModel {
     
     struct Input {
         let selectStoreType: BehaviorRelay<StoreType>
@@ -31,6 +31,8 @@ final class MapViewModel: BaseViewModel, ViewModelType {
         let changeBottomSheetState: Driver<BottomSheetState>
         let changeBottomSheetHeight: Driver<Double>
     }
+    
+    var disposeBag: DisposeBag = DisposeBag()
     
     let gifticonService: GifticonServiceProtocol
     let kakaoService: KakaoServiceProtocol

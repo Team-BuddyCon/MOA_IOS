@@ -417,8 +417,6 @@ extension WithDrawViewController {
             }
             
             self.withDrawViewModel.deleteGifticons()
-//            let loadingVC = RegisterLoadingViewController()
-//            self.present(loadingVC, animated: false)
         }
     }
     

@@ -10,7 +10,7 @@ import RxSwift
 import RxRelay
 import RxCocoa
 
-final class GifticonDetailViewModel: BaseViewModel, ViewModelType {
+final class GifticonDetailViewModel: BaseViewModel {
     
     struct Input {
         let viewWillAppear: PublishRelay<String>
@@ -28,6 +28,8 @@ final class GifticonDetailViewModel: BaseViewModel, ViewModelType {
         let showFullGifticonImage: Signal<Void>
         let showFullMap: Signal<Void>
     }
+    
+    var disposeBag: DisposeBag = DisposeBag()
     
     private let gifticonService: GifticonServiceProtocol
     private let kakaoService: KakaoServiceProtocol

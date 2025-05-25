@@ -10,7 +10,7 @@ import RxSwift
 import RxCocoa
 import RxRelay
 
-final class UnAvailableGifticonViewModel: BaseViewModel, ViewModelType {
+final class UnAvailableGifticonViewModel: BaseViewModel {
     
     struct Input {
         let viewWillAppear: PublishRelay<Void>
@@ -21,6 +21,8 @@ final class UnAvailableGifticonViewModel: BaseViewModel, ViewModelType {
         let showUsedGifticons: Driver<[GifticonModel]>
         let showGifticonDetail: Signal<String>
     }
+    
+    var disposeBag: DisposeBag = DisposeBag()
     
     private let gifticonService: GifticonServiceProtocol
     private let usedGifticons = BehaviorRelay<[GifticonModel]>(value: [])

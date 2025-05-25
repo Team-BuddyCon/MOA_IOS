@@ -14,7 +14,7 @@ import FirebaseCore
 import GoogleSignIn
 import AuthenticationServices
 
-final class LoginViewModel: BaseViewModel, ViewModelType {
+final class LoginViewModel: BaseViewModel {
     struct Input {
         let successLogin: Signal<(AuthDataResult, OAuthService)>
         let errorLogin: Signal<Void>
@@ -24,6 +24,8 @@ final class LoginViewModel: BaseViewModel, ViewModelType {
         let loginIn: Signal<Bool>
         let showErrorPopup: Signal<Void>
     }
+    
+    var disposeBag: DisposeBag = DisposeBag()
     
     private let loginInByNewUserRelay = PublishRelay<Bool>()
     

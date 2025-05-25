@@ -10,14 +10,14 @@ import RxSwift
 import RxRelay
 import RxCocoa
 
-final class NotificationViewModel: BaseViewModel {
+final class NotificationViewModel {
     
     let notificationsRelay = BehaviorRelay<[NotificationModel]>(value: [])
     var notifcationModels: [NotificationModel] {
         notificationsRelay.value
     }
     
-    override init() {
+    init() {
         let notifications = LocalNotificationDataManager.shared.fetchNotification()
         notificationsRelay.accept(notifications)
     }

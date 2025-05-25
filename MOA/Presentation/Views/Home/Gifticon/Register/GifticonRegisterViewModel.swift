@@ -10,7 +10,7 @@ import RxSwift
 import RxRelay
 import RxCocoa
 
-final class GifticonRegisterViewModel: BaseViewModel, ViewModelType {
+final class GifticonRegisterViewModel: BaseViewModel {
     struct Input {
         let tapCancel: ControlEvent<Void>
         let tapImageZoomIn: ControlEvent<Void>
@@ -26,6 +26,8 @@ final class GifticonRegisterViewModel: BaseViewModel, ViewModelType {
         let registerSuccess: Signal<String>
         let registerFail: Signal<Void>
     }
+    
+    var disposeBag: DisposeBag = DisposeBag()
 
     private let gifticonService: GifticonServiceProtocol
     

@@ -10,7 +10,7 @@ import RxSwift
 import RxCocoa
 import RxRelay
 
-public class WalkThroughViewModel: BaseViewModel, ViewModelType {
+class WalkThroughViewModel: BaseViewModel {
     struct Input {
         let changeWalkThroughPage: BehaviorRelay<Int>
         
@@ -19,6 +19,8 @@ public class WalkThroughViewModel: BaseViewModel, ViewModelType {
     struct Output {
         let updateWalkThrough: Driver<Int>
     }
+    
+    var disposeBag: DisposeBag = DisposeBag()
     
     func transform(input: Input) -> Output {
         return Output(

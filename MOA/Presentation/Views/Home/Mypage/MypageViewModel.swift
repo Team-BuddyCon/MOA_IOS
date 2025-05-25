@@ -10,7 +10,7 @@ import RxSwift
 import RxCocoa
 import RxRelay
 
-final class MypageViewModel: BaseViewModel, ViewModelType {
+final class MypageViewModel: BaseViewModel {
     
     struct Input {
         let viewWillAppear: PublishRelay<Void>
@@ -35,6 +35,8 @@ final class MypageViewModel: BaseViewModel, ViewModelType {
         let showLogoutAlert: Signal<Void>
         let showSignOut: Signal<Void>
     }
+    
+    var disposeBag: DisposeBag = DisposeBag()
     
     private let gifticonService: GifticonServiceProtocol
     

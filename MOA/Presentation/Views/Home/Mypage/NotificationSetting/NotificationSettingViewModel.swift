@@ -10,7 +10,7 @@ import RxSwift
 import RxRelay
 import RxCocoa
 
-final class NotificationSettingViewModel: BaseViewModel, ViewModelType {
+final class NotificationSettingViewModel: BaseViewModel {
     struct Input {
         let viewWillAppear: PublishRelay<Void>
         let tapUnSwitchedView: ControlEvent<UITapGestureRecognizer>
@@ -31,6 +31,8 @@ final class NotificationSettingViewModel: BaseViewModel, ViewModelType {
         let updateNotiDday1: Signal<UITapGestureRecognizer>
         let updateNotiDday: Signal<UITapGestureRecognizer>
     }
+    
+    var disposeBag: DisposeBag = DisposeBag()
     
     private let gifticonService: GifticonServiceProtocol
     private let gifticons = BehaviorRelay<[GifticonModel]>(value: [])

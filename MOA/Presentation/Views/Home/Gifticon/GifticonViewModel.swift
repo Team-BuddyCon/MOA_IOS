@@ -10,7 +10,7 @@ import RxSwift
 import RxRelay
 import RxCocoa
 
-final class GifticonViewModel: BaseViewModel, ViewModelType {
+final class GifticonViewModel: BaseViewModel {
     
     struct Input {
         let viewWillAppear: PublishRelay<Void>
@@ -21,6 +21,8 @@ final class GifticonViewModel: BaseViewModel, ViewModelType {
     struct Output {
         let updateGifticons: Driver<[GifticonModel]>
     }
+    
+    var disposeBag: DisposeBag = DisposeBag()
     
     private let gifticonService: GifticonServiceProtocol
     private var isFirstFetch: Bool = true

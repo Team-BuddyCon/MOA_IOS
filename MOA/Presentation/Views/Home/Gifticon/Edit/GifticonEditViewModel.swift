@@ -10,7 +10,7 @@ import RxSwift
 import RxRelay
 import RxCocoa
 
-final class GifticonEditViewModel: BaseViewModel, ViewModelType {
+final class GifticonEditViewModel: BaseViewModel {
     
     struct Input {
         let tapImageZoomIn: ControlEvent<Void>
@@ -27,6 +27,8 @@ final class GifticonEditViewModel: BaseViewModel, ViewModelType {
         let showDeleteCompleteAlert: Signal<Void>
         let showUpdateCompleteAlert: Signal<Void>
     }
+    
+    var disposeBag: DisposeBag = DisposeBag()
     
     private let gifticonService: GifticonServiceProtocol
     private let deleteComplete = PublishRelay<Void>()
