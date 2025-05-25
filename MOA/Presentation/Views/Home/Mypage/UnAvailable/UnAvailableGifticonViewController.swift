@@ -24,7 +24,7 @@ final class UnAvailableGifticonViewController: BaseViewController {
         return label
     }()
     
-    private lazy var gifticonCollectionView: UICollectionView = {
+    fileprivate lazy var gifticonCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 24.0
         layout.minimumInteritemSpacing = 16.0
@@ -40,7 +40,10 @@ final class UnAvailableGifticonViewController: BaseViewController {
         return collectionView
     }()
     
-    private var isFirstEntry = true
+    
+    let viewWillAppear = PublishRelay<Void>()
+    let tapUsedGifticon = PublishRelay<String>()
+    
     let viewModel = UnAvailableGifticonViewModel(gifticonService: GifticonService.shared)
     
     weak var delegate: UnAvailableGifticonViewControllerDelegate?
@@ -49,18 +52,13 @@ final class UnAvailableGifticonViewController: BaseViewController {
         super.viewDidLoad()
         MOALogger.logd()
         setupLayout()
-        setupData()
         bind()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         MOALogger.logd()
-        
-        if !isFirstEntry {
-            viewModel.fetchUsedGifticons()
-        }
-        isFirstEntry = false
+        viewWillAppear.accept(())
     }
 }
 
@@ -83,13 +81,16 @@ private extension UnAvailableGifticonViewController {
         }
     }
     
-    func setupData() {
-        viewModel.fetchUsedGifticons()
-    }
-    
     func bind() {
-        viewModel.gifticonRelay
-            .bind(to: gifticonCollectionView.rx.items) { collectionView, row, gifticon in
+        let input = UnAvailableGifticonViewModel.Input (
+            viewWillAppear: viewWillAppear,
+            tapUsedGifticon: tapUsedGifticon
+        )
+        
+        let output = viewModel.transform(input: input)
+        
+        output.showUsedGifticons
+            .drive(gifticonCollectionView.rx.items) { collectionView, row, gifticon in
                 if gifticon.gifticonId.isEmpty {
                     guard let cell = collectionView.dequeueReusableCell(
                         withReuseIdentifier: GifticonSkeletonCell.identifier,
@@ -108,32 +109,34 @@ private extension UnAvailableGifticonViewController {
                 return cell
             }.disposed(by: disposeBag)
         
-        viewModel.gifticonRelay
-            .observe(on: MainScheduler())
-            .subscribe(onNext: { [weak self] _ in
-                guard let self = self else { return }
-                gifticonCollectionView.reloadData()
-                gifticonCollectionView.layoutIfNeeded()
-            }).disposed(by: disposeBag)
+        output.showUsedGifticons
+            .drive(self.rx.bindToUsedGifticon)
+            .disposed(by: disposeBag)
+        
+        output.showGifticonDetail
+            .emit(to: self.rx.showGifticonDetail)
+            .disposed(by: disposeBag)
         
         gifticonCollectionView.rx.modelSelected(GifticonModel.self)
-            .subscribe(onNext: { [weak self] gifticon in
-                guard let self = self else { return }
-                MOALogger.logd("\(gifticon.gifticonId)")
-                self.delegate?.navigateToGifticonDetail(gifticonId: gifticon.gifticonId)
+            .subscribe(onNext: { [unowned self] gifticon in
+                self.tapUsedGifticon.accept(gifticon.gifticonId)
             }).disposed(by: disposeBag)
-        
-        viewModel.gifticonRelay
-            .map { $0.count }
-            .bind(to: self.rx.bindCount)
-            .disposed(by: disposeBag)
     }
 }
 
 extension Reactive where Base: UnAvailableGifticonViewController {
-    var bindCount: Binder<Int> {
-        return Binder<Int>(self.base) { viewController, count in
-            viewController.titleLabel.text = String(format: UNAVAILABLE_GIFTICON_COUNT_TITLE_FORMAT, count)
+    var bindToUsedGifticon: Binder<[GifticonModel]> {
+        return Binder<[GifticonModel]>(self.base) { viewController, gifticons in
+            viewController.titleLabel.text = String(format: UNAVAILABLE_GIFTICON_COUNT_TITLE_FORMAT, gifticons.count)
+            viewController.gifticonCollectionView.reloadData()
+            viewController.gifticonCollectionView.layoutIfNeeded()
         }
     }
+    
+    var showGifticonDetail: Binder<String> {
+        return Binder<String>(self.base) { viewController, gifticonId in
+            viewController.delegate?.navigateToGifticonDetail(gifticonId: gifticonId)
+        }
+    }
+    
 }
