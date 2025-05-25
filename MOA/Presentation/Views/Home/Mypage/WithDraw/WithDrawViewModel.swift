@@ -10,7 +10,8 @@ import RxSwift
 import RxCocoa
 import RxRelay
 
-final class WithDrawViewModel: BaseViewModel {
+final class WithDrawViewModel {
+    let disposeBag = DisposeBag()
     
     let gifticonService: GifticonServiceProtocol
     let phrase = BehaviorRelay(value: WithDrawPhrase.Reason)

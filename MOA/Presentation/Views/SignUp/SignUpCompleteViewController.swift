@@ -7,6 +7,9 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
+import RxRelay
 
 protocol SignUpCompleteViewControllerDelegate: AnyObject {
     func navigateToHome()
@@ -40,9 +43,8 @@ final class SignUpCompleteViewController: BaseViewController {
         return label
     }()
     
-    private lazy var startButton: CommonButton = {
+    let startButton: CommonButton = {
         let button = CommonButton(title: LETS_START, fontSize: 16.0)
-        button.addTarget(self, action: #selector(tapStartButton), for: .touchUpInside)
         return button
     }()
     
@@ -56,11 +58,14 @@ final class SignUpCompleteViewController: BaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         MOALogger.logd()
-        setupAppearance()
+        setupLayout()
+        bind()
     }
     
-    private func setupAppearance() {
-        [imageView, titleLabel, subTitleLabel].forEach { infoView.addSubview($0) }
+    private func setupLayout() {
+        [imageView, titleLabel, subTitleLabel].forEach {
+            infoView.addSubview($0)
+        }
         
         imageView.snp.makeConstraints {
             $0.top.equalToSuperview()
@@ -75,7 +80,9 @@ final class SignUpCompleteViewController: BaseViewController {
             $0.top.equalTo(titleLabel.snp.bottom).offset(8)
         }
         
-        [infoView, startButton].forEach { view.addSubview($0) }
+        [infoView, startButton].forEach {
+            view.addSubview($0)
+        }
         
         infoView.snp.makeConstraints {
             $0.top.equalToSuperview().inset(280)
@@ -90,9 +97,19 @@ final class SignUpCompleteViewController: BaseViewController {
         }
     }
     
-    @objc func tapStartButton() {
-        MOALogger.logd()
-        UserPreferences.setSignUp(sign: true)
-        self.delegate?.navigateToHome()
+    private func bind() {
+        startButton.rx.tap
+            .asSignal()
+            .emit(to: self.rx.startButtonTapped)
+            .disposed(by: disposeBag)
+    }
+}
+
+extension Reactive where Base: SignUpCompleteViewController {
+    var startButtonTapped: Binder<Void> {
+        return Binder(self.base) { viewController, _ in
+            UserPreferences.setSignUp(sign: true)
+            viewController.delegate?.navigateToHome()
+        }
     }
 }

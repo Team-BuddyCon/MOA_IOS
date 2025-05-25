@@ -29,23 +29,24 @@ final class LoginViewController: BaseViewController {
         return imageView
     }()
     
-    private lazy var googleLoginButton: UIButton = {
+    private let googleLoginButton: UIButton = {
         let button = UIButton()
         button.setBackgroundImage(UIImage(named: GOOGLE_LOGIN_BUTTON), for: .normal)
-        button.addTarget(self, action: #selector(tapGoogleLogin), for: .touchUpInside)
         return button
     }()
     
-    private lazy var appleLoginButton: UIButton = {
+    private let appleLoginButton: UIButton = {
         let button = UIButton()
         button.setBackgroundImage(UIImage(named: APPLE_LOGIN_BUTTON), for: .normal)
-        button.addTarget(self, action: #selector(tapAppleLogin), for: .touchUpInside)
         return button
     }()
     
     fileprivate var currentNonce: String?
-    
     weak var delegate: LoginViewControllerDelegate?
+    
+    private let successLoginRelay = PublishRelay<(AuthDataResult, OAuthService)>()
+    private let errorLoginRelay = PublishRelay<Void>()
+    let loginViewModel = LoginViewModel()
     
     init(
         isLogout: Bool = false,
@@ -64,7 +65,9 @@ final class LoginViewController: BaseViewController {
         super.viewDidLoad()
         MOALogger.logd()
         UserPreferences.setShouldEntryLogin()
-        setupAppearance()
+        
+        setupLayout()
+        bind()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -90,8 +93,7 @@ final class LoginViewController: BaseViewController {
 }
 
 private extension LoginViewController {
-    func setupAppearance() {
-        view.backgroundColor = .white
+    func setupLayout() {
         [loginIconImageView, googleLoginButton, appleLoginButton].forEach {
             view.addSubview($0)
         }
@@ -114,59 +116,72 @@ private extension LoginViewController {
             $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(11.5)
         }
     }
-}
-
-private extension LoginViewController {
-    @objc func tapGoogleLogin() {
+    
+    func bind() {
+        let input = LoginViewModel.Input(
+            successLogin: successLoginRelay.asSignal(),
+            errorLogin: errorLoginRelay.asSignal()
+        )
+        
+        let output = loginViewModel.transform(input: input)
+        
+        output.loginIn
+            .emit(to: self.rx.loginIn)
+            .disposed(by: disposeBag)
+        
+        output.showErrorPopup
+            .emit(to: self.rx.showErrorPopup)
+            .disposed(by: disposeBag)
+        
+        googleLoginButton.rx.tap
+            .subscribe(onNext: { [weak self] in
+                self?.googleLogin()
+            }).disposed(by: disposeBag)
+        
+        appleLoginButton.rx.tap
+            .subscribe(onNext: { [weak self] in
+                self?.appleLogin()
+            }).disposed(by: disposeBag)
+    }
+    
+    func googleLogin() {
+        MOALogger.logd()
         guard let clientID = FirebaseApp.app()?.options.clientID else { return }
         let config = GIDConfiguration(clientID: clientID)
         GIDSignIn.sharedInstance.configuration = config
         
         GIDSignIn.sharedInstance.restorePreviousSignIn(completion: { user, error in
-            // 로그인 세션 없는 경우, 로그인 시도
+            // 로그인 세션 없는 경우
             if let error = error {
-                MOALogger.loge("restorePreviousSignIn error: \(String(describing: error))")
+                MOALogger.loge("GIDSignIn restorePreviousSignIn error: \(error.localizedDescription)")
                 
                 GIDSignIn.sharedInstance.signIn(withPresenting: self) { result, error in
                     guard error == nil else {
-                        MOALogger.loge("signIn error: \(String(describing: error))")
-                        self.showAlertModal(
-                            title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                            subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                            confirmText: CONFIRM
-                        )
+                        MOALogger.loge("GIDSignIn signIn error: \(String(describing: error))")
+                        self.errorLoginRelay.accept(Void())
                         return
                     }
                     
                     guard let user = result?.user,
                           let idToken = user.idToken?.tokenString else {
-                        MOALogger.loge("signIn user idToken is nil")
-                        self.showAlertModal(
-                            title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                            subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                            confirmText: CONFIRM
-                        )
+                        self.errorLoginRelay.accept(Void())
                         return
                     }
                     
-                    let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: user.accessToken.tokenString)
+                    let credential = GoogleAuthProvider.credential(
+                        withIDToken: idToken,
+                        accessToken: user.accessToken.tokenString
+                    )
+                    
                     Auth.auth().signIn(with: credential) { result, error in
                         guard error == nil else {
-                            MOALogger.loge(error?.localizedDescription)
-                            self.showAlertModal(
-                                title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                                subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                                confirmText: CONFIRM
-                            )
+                            MOALogger.loge("Auth signIn error: \(String(describing: error))")
+                            self.errorLoginRelay.accept(Void())
                             return
                         }
                         
                         if let result = result {
-                            UserPreferences.setOAuthService(service: OAuthService.Google.rawValue)
-                            UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
-                            UserPreferences.setUserID(userID: result.user.uid)
-                            
-                            self.delegate?.loginInSuccess(isNewUser: result.additionalUserInfo?.newUser() == true)
+                            self.successLoginRelay.accept((result, OAuthService.Google))
                         }
                     }
                 }
@@ -174,11 +189,7 @@ private extension LoginViewController {
                 guard let user = user,
                       let idToken = user.idToken?.tokenString else {
                     MOALogger.loge()
-                    self.showAlertModal(
-                        title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                        subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                        confirmText: CONFIRM
-                    )
+                    self.errorLoginRelay.accept(Void())
                     return
                 }
                 
@@ -186,30 +197,23 @@ private extension LoginViewController {
                 Auth.auth().signIn(with: credential) { result, error in
                     guard error == nil else {
                         MOALogger.loge(error?.localizedDescription)
-                        self.showAlertModal(
-                            title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                            subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                            confirmText: CONFIRM
-                        )
+                        self.errorLoginRelay.accept(Void())
                         return
                     }
                     
                     if let result = result {
-                        UserPreferences.setOAuthService(service: OAuthService.Google.rawValue)
-                        UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
-                        UserPreferences.setUserID(userID: result.user.uid)
-                        
-                        self.delegate?.loginInSuccess(isNewUser: result.additionalUserInfo?.newUser() == true)
+                        self.successLoginRelay.accept((result, OAuthService.Google))
                     }
                 }
             }
         })
     }
     
-    @objc func tapAppleLogin() {
+    func appleLogin() {
         MOALogger.logd()
         let nonce = CryptoUtils.randomNonceString()
         currentNonce = nonce
+        
         let appleIDProvider = ASAuthorizationAppleIDProvider()
         let request = appleIDProvider.createRequest()
         request.requestedScopes = [.fullName, .email]
@@ -222,38 +226,44 @@ private extension LoginViewController {
     }
 }
 
-// 애플 로그인 요청 응답 Delegate
+extension Reactive where Base: LoginViewController {
+    var showErrorPopup: Binder<Void> {
+        return Binder(self.base) { viewController, _ in
+            viewController.showAlertModal(
+                title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
+                subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
+                confirmText: CONFIRM
+            )
+        }
+    }
+    
+    var loginIn: Binder<Bool> {
+        return Binder(self.base) { viewController, newUser in
+            viewController.delegate?.loginInSuccess(isNewUser: newUser)
+        }
+    }
+}
+
+// 애플 로그인 인증과정(성공/실패) 처리하는 프로토콜
 extension LoginViewController: ASAuthorizationControllerDelegate {
     func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
         MOALogger.logd()
         if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
             guard let nonce = self.currentNonce else {
                 MOALogger.loge("Invalid state: A login callback was received, but no login request was sent.")
-                self.showAlertModal(
-                    title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                    subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                    confirmText: CONFIRM
-                )
+                self.errorLoginRelay.accept(Void())
                 return
             }
             
             guard let appleIDToken = appleIDCredential.identityToken else {
                 MOALogger.logd("Unable to fetch identity token")
-                self.showAlertModal(
-                    title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                    subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                    confirmText: CONFIRM
-                )
+                self.errorLoginRelay.accept(Void())
                 return
             }
             
             guard let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
                 MOALogger.loge("Unable to serialize token string from data: \(appleIDToken.debugDescription)")
-                self.showAlertModal(
-                    title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                    subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                    confirmText: CONFIRM
-                )
+                self.errorLoginRelay.accept(Void())
                 return
             }
             
@@ -265,20 +275,13 @@ extension LoginViewController: ASAuthorizationControllerDelegate {
             
             Auth.auth().signIn(with: credential) { result, error in
                 guard error == nil else {
-                    MOALogger.loge(error?.localizedDescription)
-                    self.showAlertModal(
-                        title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-                        subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-                        confirmText: CONFIRM
-                    )
+                    MOALogger.loge("Auth signIn error: \(String(describing: error))")
+                    self.errorLoginRelay.accept(Void())
                     return
                 }
                 
                 if let result = result {
-                    UserPreferences.setOAuthService(service: OAuthService.Apple.rawValue)
-                    UserPreferences.setLoginUserName(name: result.user.displayName ?? USER_NAME)
-                    UserPreferences.setUserID(userID: result.user.uid)
-                    self.delegate?.loginInSuccess(isNewUser: result.additionalUserInfo?.newUser() == true)
+                    self.successLoginRelay.accept((result, OAuthService.Apple))
                 }
             }
         }
@@ -286,14 +289,11 @@ extension LoginViewController: ASAuthorizationControllerDelegate {
     
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: any Error) {
         MOALogger.loge(error.localizedDescription)
-        self.showAlertModal(
-            title: GIFTICON_REGISTER_ERROR_POPUP_TITLE,
-            subTitle: GIFTICON_REGISTER_ERROR_POPUP_SUBTITLE,
-            confirmText: CONFIRM
-        )
+        self.errorLoginRelay.accept(Void())
     }
 }
 
+// Apple 로그인을 어떤 창 위에 표시할지 명시하는 프로토콜
 extension LoginViewController: ASAuthorizationControllerPresentationContextProviding {
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
         MOALogger.logd()

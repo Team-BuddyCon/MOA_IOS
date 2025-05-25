@@ -72,7 +72,10 @@ final class GifticonViewController: BaseViewController {
         return view
     }()
 
-    private var isFirstEntry = true
+    private let viewWillAppear = PublishRelay<Void>()
+    private let categoryRelay: BehaviorRelay<StoreCategory> = BehaviorRelay(value: .ALL)
+    private let sortTypeRelay: BehaviorRelay<SortType> = BehaviorRelay(value: .EXPIRE_DATE)
+    
     let gifticonViewModel = GifticonViewModel(gifticonService: GifticonService.shared)
     
     weak var delegate: GifticonViewControllerDelegate?
@@ -81,17 +84,13 @@ final class GifticonViewController: BaseViewController {
         super.viewDidLoad()
         MOALogger.logd()
         setupLayout()
-        setupData()
         bind()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         MOALogger.logd()
-        
-        if !gifticonViewModel.isFirstFetch {
-            gifticonViewModel.fetchAllGifticons()
-        }
+        viewWillAppear.accept(())
     }
 }
 
@@ -141,22 +140,18 @@ private extension GifticonViewController {
         }
     }
     
-    func setupData() {
-        gifticonViewModel.fetchAllGifticons()
-    }
-    
-    func bind() {                
-        gifticonViewModel.gifticons
-            .subscribe(onNext: { [weak self] _ in
-                guard let self = self else { return }
-                gifticonCollectionView.reloadData()
-                gifticonCollectionView.layoutIfNeeded()
-            }).disposed(by: disposeBag)
+    func bind() {
+        let input = GifticonViewModel.Input(
+            viewWillAppear: viewWillAppear,
+            changeCategory: categoryRelay,
+            changeSort: sortTypeRelay
+        )
         
-        gifticonViewModel.gifticons
-            .debounce(.milliseconds(50), scheduler: MainScheduler.asyncInstance)
-            .map { $0.isEmpty }
-            .bind(to: self.rx.isEmptyUI)
+        let output = gifticonViewModel.transform(input: input)
+        
+        output.updateGifticons
+            .debounce(.milliseconds(50))
+            .drive(self.rx.bindGifticons)
             .disposed(by: disposeBag)
                 
         floatingButton.rx.tap
@@ -168,11 +163,11 @@ private extension GifticonViewController {
 // MARK: UICollectionViewDataSource
 extension GifticonViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return gifticonViewModel.gifticons.value.count
+        return gifticonViewModel.gifticonCount
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let gifticon = gifticonViewModel.gifticons.value[indexPath.row]
+        let gifticon = gifticonViewModel.gifticons[indexPath.row]
         if gifticon.gifticonId.isEmpty {
             guard let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: GifticonSkeletonCell.identifier,
@@ -190,7 +185,7 @@ extension GifticonViewController: UICollectionViewDataSource {
             return UICollectionViewCell()
         }
         
-        cell.setData(gifticon: gifticon)
+        cell.gifticon = gifticon
         return cell
     }
     
@@ -204,7 +199,8 @@ extension GifticonViewController: UICollectionViewDataSource {
                 return UICollectionReusableView()
             }
             
-            headerView.gifticonViewModel = gifticonViewModel
+            headerView.sortTitle = sortTypeRelay.value.rawValue
+            headerView.delegate = self
             return headerView
         }
         
@@ -220,25 +216,49 @@ extension GifticonViewController: UICollectionViewDelegateFlowLayout {
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let gifticon = gifticonViewModel.gifticons.value[indexPath.row]
+        let gifticon = gifticonViewModel.gifticons[indexPath.row]
         MOALogger.logd("\(gifticon.gifticonId)")
         self.delegate?.navigateToGifticonDetail(gifticonId: gifticon.gifticonId)
     }
 }
 
+// MARK: GifticonCategoryViewDelegate
+extension GifticonViewController: GifticonCategoryViewDelegate {
+    func didSelectCategory(category: StoreCategory) {
+        self.categoryRelay.accept(category)
+    }
+    
+    func showSortTypePopup() {
+        let sortType = self.sortTypeRelay.value
+        let bottomSheetVC = BottomSheetViewController(sheetType: .Sort, sortType: sortType)
+        bottomSheetVC.delegate = self
+        UIApplication.shared.topViewController?.present(bottomSheetVC, animated: true)
+    }
+}
+
+// MARK: BottomSheetDelegate
+extension GifticonViewController: BottomSheetDelegate {
+    func selectSortType(type: SortType) {
+        MOALogger.logd(type.rawValue)
+        self.sortTypeRelay.accept(type)
+    }
+}
+
 // MARK: Reactive
 extension Reactive where Base: GifticonViewController {
+    var bindGifticons: Binder<[GifticonModel]> {
+        return Binder<[GifticonModel]>(self.base) { viewController, gifticons in
+            MOALogger.logd("\(gifticons.count)")
+            viewController.emptyView.isHidden = !gifticons.isEmpty
+            viewController.gifticonCollectionView.reloadData()
+            viewController.gifticonCollectionView.layoutIfNeeded()
+        }
+    }
+    
     var tapFloating: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             MOALogger.logd()
             viewController.delegate?.navigateToGifticonRegister()
-        }
-    }
-    
-    var isEmptyUI: Binder<Bool> {
-        return Binder<Bool>(self.base) { viewController, isEmpty in
-            MOALogger.logd("\(isEmpty)")
-            viewController.emptyView.isHidden = !isEmpty
         }
     }
 }

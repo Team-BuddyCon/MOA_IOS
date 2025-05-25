@@ -17,11 +17,6 @@ protocol GifticonEditViewControllerDelegate: AnyObject {
     func navigateBack()
 }
 
-enum EditResult {
-    case update
-    case delete
-}
-
 final class GifticonEditViewController: BaseViewController {
     
     private let scrollView: UIScrollView = {
@@ -109,6 +104,9 @@ final class GifticonEditViewController: BaseViewController {
     let gifticon: GifticonModel
     let gifticonImage: UIImage?
     let gifticonEditViewModel = GifticonEditViewModel(gifticonService: GifticonService.shared)
+    
+    fileprivate let deleteGifticon = PublishRelay<(String, String, String)>()
+    fileprivate let updateGifticon = PublishRelay<(GifticonModel, String, String, String, String?)>()
     
     weak var delegate: GifticonEditViewControllerDelegate?
     
@@ -227,20 +225,34 @@ private extension GifticonEditViewController {
             object: nil
         )
         
-        gifticonEditViewModel.navigationResult
-            .bind(to: self.rx.navigation)
+        let input = GifticonEditViewModel.Input(
+            tapImageZoomIn: imageZoomInButton.rx.tap,
+            tapDelete: deleteButton.rx.tap,
+            tapComplete: completeButton.rx.tap,
+            deleteGifticon: deleteGifticon,
+            updateGifticon: updateGifticon
+        )
+        
+        let output = gifticonEditViewModel.transform(input: input)
+        
+        output.showFullGifticonImage
+            .emit(to: self.rx.tapZoomInImage)
             .disposed(by: disposeBag)
         
-        imageZoomInButton.rx.tap
-            .bind(to: self.rx.tapZoomInImage)
+        output.showDeleteAlert
+            .emit(to: self.rx.tapDelete)
             .disposed(by: disposeBag)
         
-        deleteButton.rx.tap
-            .bind(to: self.rx.tapDelete)
+        output.showCompleteAlert
+            .emit(to: self.rx.tapComplete)
             .disposed(by: disposeBag)
         
-        completeButton.rx.tap
-            .bind(to: self.rx.tapComplete)
+        output.showDeleteCompleteAlert
+            .emit(to: self.rx.showDeleteComplete)
+            .disposed(by: disposeBag)
+        
+        output.showUpdateCompleteAlert
+            .emit(to: self.rx.showUpdateComplete)
             .disposed(by: disposeBag)
     }
 }
@@ -262,11 +274,11 @@ private extension Reactive where Base: GifticonEditViewController {
                 confirmText: DELETE_MODAL,
                 cancelText: CLOSE
             ) {
-                viewController.gifticonEditViewModel.deleteGifticon(
-                    gifticonId: viewController.gifticon.gifticonId,
-                    name: viewController.gifticon.name,
-                    expireDate: viewController.gifticon.expireDate
-                )
+                viewController.deleteGifticon.accept((
+                    viewController.gifticon.gifticonId,
+                    viewController.gifticon.name,
+                    viewController.gifticon.expireDate
+                ))
             }
             
             viewController.present(modalVC, animated: true)
@@ -287,44 +299,42 @@ private extension Reactive where Base: GifticonEditViewController {
                 confirmText: UPDATE_MODAL,
                 cancelText: CLOSE
             ) {
-                viewController.gifticonEditViewModel.updateGifticon(
+                viewController.updateGifticon.accept((
                     viewController.gifticon,
-                    gifticonId: viewController.gifticon.gifticonId,
-                    name: name,
-                    expireDate: expireDate,
-                    gifticonStore: gifticonStore,
-                    memo: memo
-                )
+                    name,
+                    expireDate,
+                    gifticonStore,
+                    memo
+                ))
             }
             
             viewController.present(modalVC, animated: true)
         }
     }
     
-    var navigation: Binder<EditResult> {
-        return Binder<EditResult>(self.base) { viewController, result in
-            MOALogger.logd()
-            
-            switch result {
-            case .delete:
-                let modalVC = ModalViewController(
-                    modalType: .alert,
-                    title: GIFTICON_DELETE_SUCCESS_MODAL_TITLE,
-                    confirmText: GIFTICON_DELETE_NAVIGATION_HOME_MODAL_TITLE
-                ) {
-                    viewController.delegate?.navigateToHomeTab()
-                }
-                viewController.present(modalVC, animated: true)
-            case .update:
-                let modalVC = ModalViewController(
-                    modalType: .alert,
-                    title: GIFTICON_UPDATE_SUCCESS_MODAL_TITLE,
-                    confirmText: CONFIRM
-                ) {
-                    viewController.delegate?.navigateBack()
-                }
-                viewController.present(modalVC, animated: true)
+    var showDeleteComplete: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            let modalVC = ModalViewController(
+                modalType: .alert,
+                title: GIFTICON_DELETE_SUCCESS_MODAL_TITLE,
+                confirmText: GIFTICON_DELETE_NAVIGATION_HOME_MODAL_TITLE
+            ) {
+                viewController.delegate?.navigateToHomeTab()
             }
+            viewController.present(modalVC, animated: true)
+        }
+    }
+    
+    var showUpdateComplete: Binder<Void> {
+        return Binder<Void>(self.base) { viewController, _ in
+            let modalVC = ModalViewController(
+                modalType: .alert,
+                title: GIFTICON_UPDATE_SUCCESS_MODAL_TITLE,
+                confirmText: CONFIRM
+            ) {
+                viewController.delegate?.navigateBack()
+            }
+            viewController.present(modalVC, animated: true)
         }
     }
 }

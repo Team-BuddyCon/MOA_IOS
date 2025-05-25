@@ -12,69 +12,91 @@ import RxCocoa
 
 final class GifticonEditViewModel: BaseViewModel {
     
+    struct Input {
+        let tapImageZoomIn: ControlEvent<Void>
+        let tapDelete: ControlEvent<Void>
+        let tapComplete: ControlEvent<Void>
+        let deleteGifticon: PublishRelay<(String, String, String)>
+        let updateGifticon: PublishRelay<(GifticonModel, String, String, String, String?)>
+    }
+    
+    struct Output {
+        let showFullGifticonImage: Signal<Void>
+        let showDeleteAlert: Signal<Void>
+        let showCompleteAlert: Signal<Void>
+        let showDeleteCompleteAlert: Signal<Void>
+        let showUpdateCompleteAlert: Signal<Void>
+    }
+    
+    var disposeBag: DisposeBag = DisposeBag()
+    
     private let gifticonService: GifticonServiceProtocol
-    let navigationResult = PublishRelay<EditResult>()
+    private let deleteComplete = PublishRelay<Void>()
+    private let updateComplete = PublishRelay<Void>()
     
     init(gifticonService: GifticonServiceProtocol) {
         self.gifticonService = gifticonService
     }
     
-    func updateGifticon(
-        _ prev_model: GifticonModel,
-        gifticonId: String,
-        name: String,
-        expireDate: String,
-        gifticonStore: String,
-        memo: String?
-    ) {
-        gifticonService.updateGifticon(
-            gifticonId: gifticonId,
-            name: name,
-            expireDate: expireDate,
-            gifticonStore: gifticonStore,
-            memo: memo,
-            used: nil
-        ).subscribe(
-            onNext: { [unowned self] isSuccess in
-                if isSuccess {
-                    updateNotification(
-                        prev_expireDate: prev_model.expireDate,
-                        prev_name: prev_model.name,
-                        prev_gifticonId: prev_model.gifticonId,
-                        next_expireDate: expireDate,
-                        next_name: name,
-                        next_gifticonId: gifticonId
-                    )
-                    navigationResult.accept(.update)
-                }
-            },
-            onError: { error in
-                MOALogger.loge(error.localizedDescription)
-            }
-        ).disposed(by: disposeBag)
+    func transform(input: Input) -> Output {
+        handleDeleteGifticon(input: input)
+        handleUpdateGifticon(input: input)
+        
+        return Output(
+            showFullGifticonImage: input.tapImageZoomIn.asSignal(),
+            showDeleteAlert: input.tapDelete.asSignal(),
+            showCompleteAlert: input.tapComplete.asSignal(),
+            showDeleteCompleteAlert: deleteComplete.asSignal(),
+            showUpdateCompleteAlert: updateComplete.asSignal()
+        )
     }
     
-    func deleteGifticon(
-        gifticonId: String,
-        name: String,
-        expireDate: String
-    ) {
-        gifticonService.deleteGifticon(gifticonId: gifticonId)
-            .subscribe(
-                onNext: { [unowned self] isSuccess in
+    private func handleUpdateGifticon(input: GifticonEditViewModel.Input) {
+        input.updateGifticon
+            .flatMap { [unowned self] gifticon, name, expireDate, gifticonStore, memo in
+                gifticonService.updateGifticon(
+                    gifticonId: gifticon.gifticonId,
+                    name: name,
+                    expireDate: expireDate,
+                    gifticonStore: gifticonStore,
+                    memo: memo,
+                    used: nil
+                ).map { isSuccess in
+                    (isSuccess, gifticon, expireDate, name)
+                }
+            }.subscribe(onNext: { [unowned self] isSuccess, gifticon, expireDate, name in
+                if isSuccess {
+                    updateNotification(
+                        prev_expireDate: gifticon.expireDate,
+                        prev_name: gifticon.name,
+                        prev_gifticonId: gifticon.gifticonId,
+                        next_expireDate: expireDate,
+                        next_name: name,
+                        next_gifticonId: gifticon.gifticonId
+                    )
+                    updateComplete.accept(())
+                }
+            }).disposed(by: disposeBag)
+    }
+    
+    private func handleDeleteGifticon(input: GifticonEditViewModel.Input) {
+        input.deleteGifticon
+            .flatMap { [unowned self] gifticonId, name, expireDate in
+                gifticonService.deleteGifticon(gifticonId: gifticonId).map { isSuccess in
+                    (isSuccess, gifticonId, name, expireDate)
+                }
+            }.subscribe(onNext: { [unowned self] isSuccess, gifticonId, name, expireDate in
+                if isSuccess {
                     NotificationManager.shared.remove(
                         expireDate,
                         name: name,
                         gifticonId: gifticonId
                     )
-                    navigationResult.accept(.delete)
-                },
-                onError: { error in
-                    MOALogger.loge(error.localizedDescription)
+                    deleteComplete.accept(())
                 }
-            ).disposed(by: disposeBag)
+            }).disposed(by: disposeBag)
     }
-    
+      
     private func updateNotification(
         prev_expireDate: String,
         prev_name: String,

@@ -14,7 +14,8 @@ import RxSwift
 final class SignUpCheckBox: UIView {
     
     private let disposeBag = DisposeBag()
-    private let checkButton: CheckButton = {
+    
+    fileprivate var checkButton: CheckButton = {
         let button = CheckButton()
         return button
     }()
@@ -26,44 +27,32 @@ final class SignUpCheckBox: UIView {
         return label
     }()
     
-    private lazy var detailButton: UIButton = {
+    fileprivate let detailButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: FORWARD_BUTTON_IMAGE_ASSET), for: .normal)
-        button.addTarget(self, action: #selector(tapDetailButton), for: .touchUpInside)
         return button
     }()
     
-    private var tapDetailClosure: (() -> Void)?
     var isChecked = BehaviorRelay<Bool>(value: false)
-    var tap: ControlEvent<Void>
     
-    init(
-        frame: CGRect,
-        text: String,
-        hasMore: Bool = false,
-        onDetailClosure: @escaping () -> Void = {}
-    ) {
+    init(text: String, hasMore: Bool = false) {
         isChecked = checkButton.isChecked
-        tap = checkButton.rx.tap
+        super.init(frame: .zero)
         
-        super.init(frame: frame)
         textLabel.text = text
         detailButton.isHidden = !hasMore
-        tapDetailClosure = onDetailClosure
-        
-        setupApperance()
-        subscribe()
+        setup()
+        bind()
     }
     
     required init?(coder: NSCoder) {
         isChecked = checkButton.isChecked
-        tap = checkButton.rx.tap
         super.init(coder: coder)
-        setupApperance()
-        subscribe()
+        setup()
+        bind()
     }
     
-    private func setupApperance() {
+    private func setup() {
         [checkButton, textLabel, detailButton].forEach {
             addSubview($0)
         }
@@ -91,14 +80,19 @@ final class SignUpCheckBox: UIView {
         }
     }
     
-    private func subscribe() {
+    private func bind() {
         isChecked
             .bind(to: checkButton.rx.isChecked)
             .disposed(by: disposeBag)
     }
+}
+
+extension Reactive where Base: SignUpCheckBox {
+    var tap: ControlEvent<Void> {
+        self.base.checkButton.rx.tap
+    }
     
-    @objc func tapDetailButton() {
-        MOALogger.logd()
-        tapDetailClosure?()
+    var detailTap: ControlEvent<Void> {
+        self.base.detailButton.rx.tap
     }
 }

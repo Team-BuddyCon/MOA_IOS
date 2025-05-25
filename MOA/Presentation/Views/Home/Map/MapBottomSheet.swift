@@ -19,9 +19,9 @@ enum BottomSheetState {
     var height: Double {
         switch self {
         case .Collapsed:
-            return Double(UIScreen.main.bounds.height) / 852.0 * 120.0
+            return Double(UIScreen.main.bounds.height) / 852.0 * 36.0
         case .PartiallyExpanded:
-            return Double(UIScreen.main.bounds.height) / 852.0 * 201.0
+            return Double(UIScreen.main.bounds.height) / 852.0 * 120.0
         case .Expanded:
             return Double(UIScreen.main.bounds.height) / 852.0 * 623.0 - 16.0
         }
@@ -30,10 +30,6 @@ enum BottomSheetState {
 
 final class MapBottomSheet: UIView {
     let disposeBag = DisposeBag()
-    
-    var state: BehaviorRelay<BottomSheetState> = BehaviorRelay(value: BottomSheetState.PartiallyExpanded)
-    var sheetHeight: BehaviorRelay<Double> = BehaviorRelay(value: BottomSheetState.PartiallyExpanded.height)
-    var isDrag: Bool = false
     
     private let lineView: UIView = {
         let view = UIView()
@@ -84,16 +80,17 @@ final class MapBottomSheet: UIView {
         collectionView.showsVerticalScrollIndicator = false
         return collectionView
     }()
+
+    var state: BehaviorRelay<BottomSheetState> = BehaviorRelay(value: BottomSheetState.PartiallyExpanded)
+    var sheetHeight: BehaviorRelay<Double> = BehaviorRelay(value: BottomSheetState.PartiallyExpanded.height)
+    var isDrag: Bool = false
+    
+    let storeType = BehaviorRelay<StoreType>(value: .ALL)
+    let gifticons = BehaviorRelay<[GifticonModel]>(value: [])
+    let tapGifticon = PublishRelay<String>()
     
     let panGesture: UIPanGestureRecognizer
     var onTapGifticon: ((String) -> Void)? = nil
-    
-    // 생성자를 사용하지 않고 프로퍼티로 초기화 -> SnapKit Warning으로 인해 변경
-    var mapViewModel: MapViewModel? = nil {
-        didSet {
-            bind()
-        }
-    }
 
     init(state: BottomSheetState = .PartiallyExpanded) {
         self.panGesture = UIPanGestureRecognizer()
@@ -154,7 +151,7 @@ final class MapBottomSheet: UIView {
             $0.leading.equalTo(countLabel.snp.trailing).offset(8)
         }
         
-        gifticonCollectionView.snp.makeConstraints {
+        gifticonCollectionView.snp.remakeConstraints {
             $0.top.equalTo(iconImageView.snp.bottom).offset(20)
             $0.horizontalEdges.equalToSuperview()
             $0.bottom.equalToSuperview()
@@ -164,27 +161,21 @@ final class MapBottomSheet: UIView {
     private func bind() {
         addGestureRecognizer(panGesture)
         
-        guard let mapViewModel = mapViewModel else { return }
-        mapViewModel.selectStoreTypeRelay
-            .bind(to: self.rx.bindToStoreType)
+        sheetHeight.asDriver()
+            .drive(self.rx.visiblityGifticons)
             .disposed(by: disposeBag)
         
-        mapViewModel.gifticons
-            .map { $0.count }
-            .bind(to: self.rx.bindToGifticonCount)
+        gifticons.asDriver()
+            .drive(self.rx.bindToGifticons)
             .disposed(by: disposeBag)
         
-        mapViewModel.gifticons
-            .map { gifticons in
-                gifticons.map { $0.expireDate }
-                    .filter { $0.toDday() >= 0 && $0.toDday() <= 14 }
-                    .count
-            }.bind(to: self.rx.bindToImminentCount)
+        storeType.asDriver()
+            .drive(self.rx.bindToStoreType)
             .disposed(by: disposeBag)
         
-        mapViewModel.gifticons
-            .bind(to: gifticonCollectionView.rx.items) { collectionView, row, gifticon in
-                if gifticon.gifticonId == "" {
+        gifticons.asDriver()
+            .drive(gifticonCollectionView.rx.items) { collectionView, row, gifticon in
+                if gifticon.gifticonId.isEmpty {
                     guard let cell = collectionView.dequeueReusableCell(
                         withReuseIdentifier: GifticonSkeletonCell.identifier,
                         for: IndexPath(row: row, section: 0)
@@ -201,23 +192,14 @@ final class MapBottomSheet: UIView {
                     return UICollectionViewCell()
                 }
                 
-                cell.setData(gifticon: gifticon)
+                cell.gifticon = gifticon
                 return cell
             }.disposed(by: disposeBag)
-        
-        mapViewModel.gifticons
-            .observe(on: MainScheduler())
-            .subscribe(onNext: { [weak self] _ in
-                guard let self = self else { return }
-                gifticonCollectionView.reloadData()
-                gifticonCollectionView.layoutIfNeeded()
-            }).disposed(by: disposeBag)
         
         gifticonCollectionView.rx.modelSelected(GifticonModel.self)
             .withUnretained(self)
             .subscribe(onNext: { owner, gifticon in
-                guard let onTapGifticon = owner.onTapGifticon else { return }
-                onTapGifticon(gifticon.gifticonId)
+                owner.tapGifticon.accept(gifticon.gifticonId)
             }).disposed(by: disposeBag)
     }
     
@@ -265,6 +247,23 @@ final class MapBottomSheet: UIView {
 }
 
 extension Reactive where Base: MapBottomSheet {
+    var visiblityGifticons: Binder<Double> {
+        return Binder<Double>(self.base) { sheet, height in
+            if height <= BottomSheetState.PartiallyExpanded.height {
+                sheet.gifticonCollectionView.snp.remakeConstraints {
+                    $0.top.equalTo(sheet.iconImageView.snp.bottom).offset(20)
+                    $0.horizontalEdges.equalToSuperview()
+                }
+            } else {
+                sheet.gifticonCollectionView.snp.remakeConstraints {
+                    $0.top.equalTo(sheet.iconImageView.snp.bottom).offset(20)
+                    $0.horizontalEdges.equalToSuperview()
+                    $0.bottom.equalToSuperview()
+                }
+            }
+        }
+    }
+    
     var bindToStoreType: Binder<StoreType> {
         return Binder<StoreType>(self.base) { sheet, storeType in
             if storeType == .ALL || storeType == .OTHERS {
@@ -275,15 +274,19 @@ extension Reactive where Base: MapBottomSheet {
         }
     }
     
-    var bindToGifticonCount: Binder<Int> {
-        return Binder<Int>(self.base) { sheetView, count in
-            sheetView.countLabel.text = String(format: MAP_BOTTOM_SHEET_GIFTICON_COUNT_FORMAT, count)
-        }
-    }
-    
-    var bindToImminentCount: Binder<Int> {
-        return Binder<Int>(self.base) { sheetView, count in
-            sheetView.imminentCountLabel.text = String(format: MAP_BOTTOM_SHEET_IMMINENT_GIFTICON_COUNT_FORMAT, count)
+    var bindToGifticons: Binder<[GifticonModel]> {
+        return Binder<[GifticonModel]>(self.base) { sheetView, gifticons in
+            let imminentCount = gifticons.map {
+                $0.expireDate
+            }.filter {
+                $0.toDday() >= 0 && $0.toDday() <= 14
+            }.count
+            
+            sheetView.countLabel.text = String(format: MAP_BOTTOM_SHEET_GIFTICON_COUNT_FORMAT, gifticons.count)
+            sheetView.imminentCountLabel.text = String(format: MAP_BOTTOM_SHEET_GIFTICON_COUNT_FORMAT, imminentCount)
+            
+            sheetView.gifticonCollectionView.reloadData()
+            sheetView.gifticonCollectionView.layoutIfNeeded()
         }
     }
 }

@@ -68,6 +68,14 @@ final class GifticonCell: UICollectionViewCell {
         return imageView
     }()
     
+    var gifticon: GifticonModel? {
+        didSet {
+            if let gifticon = gifticon {
+                configure(gifticon: gifticon)
+            }
+        }
+    }
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupLayout()
@@ -75,40 +83,6 @@ final class GifticonCell: UICollectionViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    func setData(
-        gifticon: GifticonModel
-    ) {
-        ddayButton.dday = gifticon.expireDate.toDday()
-        storeLabel.text = gifticon.gifticonStore.rawValue
-        titleLabel.text = gifticon.name
-        dateLabel.text = gifticon.expireDate
-        
-        ImageLoadManager.shared.load(
-                url: gifticon.imageUrl,
-                identifier: gifticon.gifticonId,
-                expireDate: gifticon.expireDate
-            )
-            .observe(on: MainScheduler())
-            .subscribe(onNext: { [weak self] image in
-                guard let self = self else {
-                    MOALogger.loge()
-                    return
-                }
-                
-                if let image = image {
-                    dimView.isHidden = !gifticon.used
-                    imageView.image = image
-                    
-                }
-            }).disposed(by: disposeBag)
-        
-        if gifticon.used {
-            ddayButton.isHidden = true
-            storeLabel.textColor = .grey70
-            dateLabel.textColor = .grey70
-        }
     }
     
     private func setupLayout() {
@@ -158,6 +132,38 @@ final class GifticonCell: UICollectionViewCell {
         dateLabel.snp.makeConstraints {
             $0.top.equalTo(titleLabel.snp.bottom).offset(8)
             $0.horizontalEdges.equalToSuperview()
+        }
+    }
+    
+    private func configure(gifticon: GifticonModel) {
+        ddayButton.dday = gifticon.expireDate.toDday()
+        storeLabel.text = gifticon.gifticonStore.rawValue
+        titleLabel.text = gifticon.name
+        dateLabel.text = gifticon.expireDate
+        
+        ImageLoadManager.shared.load(
+                url: gifticon.imageUrl,
+                identifier: gifticon.gifticonId,
+                expireDate: gifticon.expireDate
+            )
+            .observe(on: MainScheduler())
+            .subscribe(onNext: { [weak self] image in
+                guard let self = self else {
+                    MOALogger.loge()
+                    return
+                }
+                
+                if let image = image {
+                    dimView.isHidden = !gifticon.used
+                    imageView.image = image
+                    
+                }
+            }).disposed(by: disposeBag)
+        
+        if gifticon.used {
+            ddayButton.isHidden = true
+            storeLabel.textColor = .grey70
+            dateLabel.textColor = .grey70
         }
     }
 }

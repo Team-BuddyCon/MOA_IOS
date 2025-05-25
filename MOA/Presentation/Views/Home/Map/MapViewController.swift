@@ -122,12 +122,15 @@ final class MapViewController: BaseViewController {
     
     private var kmAuth: Bool = false
     var mapManager: KakaoMapManager?
+    var isActive: Bool = true
+    
+    let searchPlaces = PublishRelay<StoreType>()
+    let refreshGifticons = PublishRelay<Void>()
+    
     let mapViewModel = MapViewModel(
         gifticonService: GifticonService.shared,
         kakaoService: KakaoService.shared
     )
-    
-    var isActive: Bool = true
     
     weak var delegate: MapViewControllerDelegate?
     
@@ -156,8 +159,7 @@ final class MapViewController: BaseViewController {
             if mapManager?.isEngineActive == false {
                 mapManager?.activateEngine()
             }
-            
-            mapViewModel.refresh()
+            refreshGifticons.accept(())
         }
     }
     
@@ -234,18 +236,9 @@ private extension MapViewController {
     }
     
     func setupData() {
-        // mapBottomSheet 초기화
-        mapBottomSheet.mapViewModel = mapViewModel
-        mapBottomSheet.onTapGifticon = { gifticonId in
-            self.delegate?.navigateToGifticonDetail(gifticonId: gifticonId)
-        }
-        
         // storeTypeCollectionView 초기화
         let firstIndexPath = IndexPath(item: 0, section: 0)
         storeTypeCollectionView.selectItem(at: firstIndexPath, animated: false, scrollPosition: .centeredHorizontally)
-        
-        // 초기 데이터 호출
-        mapViewModel.fetchAllGifticons()
     }
     
     func bind() {
@@ -263,33 +256,40 @@ private extension MapViewController {
             object: nil
         )
         
-        mapViewModel.searchPlaceRelay
-            .bind(to: self.rx.bindToSearchPlaces)
+        let input = MapViewModel.Input(
+            selectStoreType: mapBottomSheet.storeType,
+            refreshGifticons: refreshGifticons,
+            tapGifticon: mapBottomSheet.tapGifticon,
+            searchPlaces: searchPlaces,
+            panGestureOnBottomSheet: mapBottomSheet.panGesture.rx.event,
+            changeBottomSheetState: mapBottomSheet.state,
+            changeBottomSheetHeight: mapBottomSheet.sheetHeight
+        )
+        
+        let output = mapViewModel.transform(input: input)
+        
+        output.updateGifticons
+            .drive(self.mapBottomSheet.gifticons)
             .disposed(by: disposeBag)
         
-        mapBottomSheet.panGesture.rx.event
-            .withUnretained(self)
-            .subscribe(onNext: { this, gesture in
-                gesture.translation(in: this.view)
-                
-                let velocity = gesture.velocity(in: self.view)
-                let offset = velocity.y / 50
-                switch gesture.state {
-                case .began, .changed:
-                    this.mapBottomSheet.setSheetHeight(offset: offset)
-                case .ended:
-                    this.mapBottomSheet.endSheetGesture(offset: offset)
-                default:
-                    break
-                }
-            }).disposed(by: disposeBag)
-        
-        mapBottomSheet.state
-            .bind(to: self.rx.bindToBottomSheetState)
+        output.updateGifticons
+            .drive(self.rx.updateGifticons)
             .disposed(by: disposeBag)
         
-        mapBottomSheet.sheetHeight
-            .bind(to: self.rx.bindToBottomSheetHeight)
+        output.markSearchPlaces
+            .drive(self.rx.bindToSearchPlaces)
+            .disposed(by: disposeBag)
+        
+        output.moveBottomSheet
+            .emit(to: self.rx.moveToBottomSheet)
+            .disposed(by: disposeBag)
+        
+        output.changeBottomSheetState
+            .drive(self.rx.bindToBottomSheetState)
+            .disposed(by: disposeBag)
+        
+        output.changeBottomSheetHeight
+            .drive(self.rx.bindToBottomSheetHeight)
             .disposed(by: disposeBag)
         
         LocationManager.shared.isGranted
@@ -309,7 +309,7 @@ extension MapViewController: KakaoMapEventDelegate {
         
         let x = String(String(position.wgsCoord.longitude).prefix(10))
         let y = String(String(position.wgsCoord.latitude).prefix(10))
-        let searchPlace = mapViewModel.searchPlaceRelay.value.first {
+        let searchPlace = mapViewModel.searchPlaces.first {
             String($0.x.prefix(10)) == x && String($0.y.prefix(10)) == y
         }
         
@@ -373,7 +373,7 @@ extension MapViewController: UICollectionViewDataSource, UICollectionViewDelegat
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let storeType = storeTypes[indexPath.row]
-        mapViewModel.changeStoreType(storeType: storeType)
+        mapBottomSheet.storeType.accept(storeType)
 
         // 기타는 마커 표시하지 않음
         if storeType == .OTHERS {
@@ -383,16 +383,39 @@ extension MapViewController: UICollectionViewDataSource, UICollectionViewDelegat
 }
 
 extension Reactive where Base: MapViewController {
+    var updateGifticons: Binder<[GifticonModel]> {
+        return Binder<[GifticonModel]>(self.base) { viewController, _ in
+            viewController.searchPlaces.accept(viewController.mapBottomSheet.storeType.value)
+        }
+    }
+    
     var bindToSearchPlaces: Binder<[SearchPlace]> {
         return Binder<[SearchPlace]>(self.base) { viewController, searchPlaces in
             guard viewController.mapManager?.isEngineActive == true else { return }
-            let storeType = viewController.mapViewModel.selectStoreTypeRelay.value
+            let storeType = viewController.mapBottomSheet.storeType.value
             viewController.mapManager?.createPois(
                 searchPlaces: searchPlaces,
                 storeType: storeType,
                 scale: 0.3,
                 upScale: 0.5
             )
+        }
+    }
+    
+    var moveToBottomSheet: Binder<UIPanGestureRecognizer> {
+        return Binder<UIPanGestureRecognizer>(self.base) { viewController, gesture in
+            gesture.translation(in: viewController.view)
+            
+            let velocity = gesture.velocity(in: viewController.view)
+            let offset = velocity.y / 50
+            switch gesture.state {
+            case .began, .changed:
+                viewController.mapBottomSheet.setSheetHeight(offset: offset)
+            case .ended:
+                viewController.mapBottomSheet.endSheetGesture(offset: offset)
+            default:
+                break
+            }
         }
     }
     
@@ -412,7 +435,6 @@ extension Reactive where Base: MapViewController {
     var bindToBottomSheetHeight: Binder<Double> {
         return Binder<Double>(self.base) { viewController, height in
             if !viewController.mapBottomSheet.isDrag {
-                viewController.mapBottomSheet.isDrag = false
                 return
             }
             
@@ -432,7 +454,7 @@ extension Reactive where Base: MapViewController {
             
             // 설정을 들어가지 않고 위치 권한 팝업에서 허용 시에 refresh
             if isGranted && viewController.mapManager?.isEngineActive == true {
-                viewController.mapViewModel.refresh()
+                viewController.refreshGifticons.accept(())
             }
             viewController.mapManager?.updateLocation()
         }
@@ -458,7 +480,7 @@ extension MapViewController {
             
             // 선택된 마커가 있는 경우에는 마커 갱신을 하지 않기 위해 refresh 막기, refresh는 권한이 설정에서 부여되면 현재 위치 기반 마커를 표시해주기 위해
             if mapViewModel.selectedPoiID == nil && mapViewModel.selectedLayerID == nil {
-                mapViewModel.refresh()
+                refreshGifticons.accept(())
             }
         }
     }

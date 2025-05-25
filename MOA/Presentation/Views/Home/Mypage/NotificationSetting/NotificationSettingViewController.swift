@@ -7,6 +7,9 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
+import RxRelay
 
 enum NotificationDday: Int {
     case day14 = 14
@@ -51,7 +54,7 @@ final class NotificationSettingViewController: BaseViewController {
         return label
     }()
     
-    private lazy var notiSwitch: UISwitch = {
+    fileprivate lazy var notiSwitch: UISwitch = {
         let noti = UISwitch()
         noti.onTintColor = .pink100
         noti.tintColor = .grey40
@@ -82,27 +85,27 @@ final class NotificationSettingViewController: BaseViewController {
         return label
     }()
     
-    private lazy var notiDday14: SelectCheckButton = {
+    fileprivate lazy var notiDday14: SelectCheckButton = {
         let view = SelectCheckButton(title: NOTIFICATION_D_DAY_14)
         return view
     }()
     
-    private lazy var  notiDday7: SelectCheckButton = {
+    fileprivate lazy var  notiDday7: SelectCheckButton = {
         let view = SelectCheckButton(title: NOTIFICATION_D_DAY_7)
         return view
     }()
     
-    private lazy var  notiDday3: SelectCheckButton = {
+    fileprivate lazy var  notiDday3: SelectCheckButton = {
         let view = SelectCheckButton(title: NOTIFICATION_D_DAY_3)
         return view
     }()
     
-    private lazy var  notiDday1: SelectCheckButton = {
+    fileprivate lazy var  notiDday1: SelectCheckButton = {
         let view = SelectCheckButton(title: NOTIFICATION_D_DAY_1)
         return view
     }()
     
-    private lazy var  notiDday: SelectCheckButton = {
+    fileprivate lazy var  notiDday: SelectCheckButton = {
         let view = SelectCheckButton(title: NOTIFICATION_D_DAY)
         return view
     }()
@@ -128,6 +131,7 @@ final class NotificationSettingViewController: BaseViewController {
     let prevTriggerDays: [NotificationDday] = UserPreferences.getNotificationTriggerDays()
     var triggerDays: [NotificationDday] = UserPreferences.getNotificationTriggerDays()
     
+    private let viewWillAppear = PublishRelay<Void>()
     private let notificationViewModel = NotificationSettingViewModel(gifticonService: GifticonService.shared)
     
     override func viewDidLoad() {
@@ -136,12 +140,12 @@ final class NotificationSettingViewController: BaseViewController {
         setupLayout()
         bind()
         isOnNotification = UserPreferences.isCheckNotificationAuthorization() && UserPreferences.isNotificationOn()
-        switchView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tapSwitch)))
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        notificationViewModel.fetchAllGifticons()
+        viewWillAppear.accept(())
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -242,72 +246,56 @@ private extension NotificationSettingViewController {
     }
     
     func bind() {
-        notiSwitch.rx.isOn
-            .subscribe(onNext: { [unowned self] isOn in
-                self.isOnNotification = isOn
-            }).disposed(by: disposeBag)
-        
-        notiDday14.tapGesture.rx.event
-            .subscribe(onNext: { [unowned self] _ in
-                notiDday14.isSelect = !notiDday14.isSelect
-                
-                if notiDday14.isSelect {
-                    triggerDays.append(.day14)
-                } else {
-                    triggerDays.removeAll(where: { $0 == .day14 })
-                }
-            }).disposed(by: disposeBag)
-        
-        notiDday7.tapGesture.rx.event
-            .subscribe(onNext: { [unowned self] _ in
-                notiDday7.isSelect = !notiDday7.isSelect
-                
-                if notiDday7.isSelect {
-                    triggerDays.append(.day7)
-                } else {
-                    triggerDays.removeAll(where: { $0 == .day7 })
-                }
-            }).disposed(by: disposeBag)
-        
-        notiDday3.tapGesture.rx.event
-            .subscribe(onNext: { [unowned self] _ in
-                notiDday3.isSelect = !notiDday3.isSelect
-                
-                if notiDday3.isSelect {
-                    triggerDays.append(.day3)
-                } else {
-                    triggerDays.removeAll(where: { $0 == .day3 })
-                }
-            }).disposed(by: disposeBag)
-        
-        notiDday1.tapGesture.rx.event
-            .subscribe(onNext: { [unowned self] _ in
-                notiDday1.isSelect = !notiDday1.isSelect
-                
-                if notiDday1.isSelect {
-                    triggerDays.append(.day1)
-                } else {
-                    triggerDays.removeAll(where: { $0 == .day1 })
-                }
-            }).disposed(by: disposeBag)
-        
-        notiDday.tapGesture.rx.event
-            .subscribe(onNext: { [unowned self] _ in
-                notiDday.isSelect = !notiDday.isSelect
-                
-                if notiDday.isSelect {
-                    triggerDays.append(.day)
-                } else {
-                    triggerDays.removeAll(where: { $0 == .day })
-                }
-            }).disposed(by: disposeBag)
-        
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(didBecomeActive),
             name: UIApplication.didBecomeActiveNotification,
             object: nil
         )
+        
+        let tapGesture = UITapGestureRecognizer()
+        switchView.addGestureRecognizer(tapGesture)
+        
+        let input = NotificationSettingViewModel.Input(
+            viewWillAppear: viewWillAppear,
+            tapUnSwitchedView: tapGesture.rx.event,
+            changeNotiSwitch: notiSwitch.rx.isOn,
+            tapNotiDday14: notiDday14.tapGesture.rx.event,
+            tapNotiDday7: notiDday7.tapGesture.rx.event,
+            tapNotiDday3: notiDday3.tapGesture.rx.event,
+            tapNotiDday1: notiDday1.tapGesture.rx.event,
+            tapNotiDday: notiDday.tapGesture.rx.event
+        )
+        
+        let output = notificationViewModel.transform(input: input)
+        
+        output.goNotificationSetting
+            .emit(to: self.rx.goNotificationSetting)
+            .disposed(by: disposeBag)
+        
+        output.updateNotiSwitch
+            .emit(to: self.rx.updateNotiSwitch)
+            .disposed(by: disposeBag)
+        
+        output.updateNotiDday14
+            .emit(to: self.rx.updateNotiDday14)
+            .disposed(by: disposeBag)
+        
+        output.updateNotiDday7
+            .emit(to: self.rx.updateNotiDday7)
+            .disposed(by: disposeBag)
+        
+        output.updateNotiDday3
+            .emit(to: self.rx.updateNotiDday3)
+            .disposed(by: disposeBag)
+        
+        output.updateNotiDday1
+            .emit(to: self.rx.updateNotiDday1)
+            .disposed(by: disposeBag)
+        
+        output.updateNotiDday
+            .emit(to: self.rx.updateNotiDday)
+            .disposed(by: disposeBag)
     }
     
     @objc func didBecomeActive() {
@@ -346,3 +334,87 @@ private extension NotificationSettingViewController {
     }
 }
 
+extension Reactive where Base: NotificationSettingViewController {
+    var goNotificationSetting: Binder<UITapGestureRecognizer> {
+        return Binder<UITapGestureRecognizer>(self.base) { viewController, _ in
+            MOALogger.logd()
+            
+            viewController.showSelectModal(
+                title: NOTIFICATION_AUTHORIZATION_POPUP_TITLE,
+                subTitle: NOTIFICATION_AUTHORIZATION_POPUP_SUBTITLE,
+                confirmText: NOTIFICATION_AUTHORIZATION_POPUP_CONFIRM,
+                cancelText: CANCEL
+            ) {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+        }
+    }
+    
+    var updateNotiSwitch: Binder<Bool> {
+        return Binder<Bool>(self.base) { viewController, isOn in
+            viewController.isOnNotification = isOn
+        }
+    }
+    
+    var updateNotiDday14: Binder<UITapGestureRecognizer> {
+        return Binder<UITapGestureRecognizer>(self.base) { viewController, _ in
+            viewController.notiDday14.isSelect = !viewController.notiDday14.isSelect
+            
+            if viewController.notiDday14.isSelect {
+                viewController.triggerDays.append(.day14)
+            } else {
+                viewController.triggerDays.removeAll(where: { $0 == .day14 })
+            }
+        }
+    }
+    
+    var updateNotiDday7: Binder<UITapGestureRecognizer> {
+        return Binder<UITapGestureRecognizer>(self.base) { viewController, _ in
+            viewController.notiDday7.isSelect = !viewController.notiDday7.isSelect
+            
+            if viewController.notiDday7.isSelect {
+                viewController.triggerDays.append(.day7)
+            } else {
+                viewController.triggerDays.removeAll(where: { $0 == .day7 })
+            }
+        }
+    }
+    
+    var updateNotiDday3: Binder<UITapGestureRecognizer> {
+        return Binder<UITapGestureRecognizer>(self.base) { viewController, _ in
+            viewController.notiDday3.isSelect = !viewController.notiDday3.isSelect
+            
+            if viewController.notiDday3.isSelect {
+                viewController.triggerDays.append(.day3)
+            } else {
+                viewController.triggerDays.removeAll(where: { $0 == .day3 })
+            }
+        }
+    }
+    
+    var updateNotiDday1: Binder<UITapGestureRecognizer> {
+        return Binder<UITapGestureRecognizer>(self.base) { viewController, _ in
+            viewController.notiDday1.isSelect = !viewController.notiDday1.isSelect
+            
+            if viewController.notiDday1.isSelect {
+                viewController.triggerDays.append(.day1)
+            } else {
+                viewController.triggerDays.removeAll(where: { $0 == .day1 })
+            }
+        }
+    }
+    
+    var updateNotiDday: Binder<UITapGestureRecognizer> {
+        return Binder<UITapGestureRecognizer>(self.base) { viewController, _ in
+            viewController.notiDday.isSelect = !viewController.notiDday.isSelect
+            
+            if viewController.notiDday.isSelect {
+                viewController.triggerDays.append(.day)
+            } else {
+                viewController.triggerDays.removeAll(where: { $0 == .day })
+            }
+        }
+    }
+}

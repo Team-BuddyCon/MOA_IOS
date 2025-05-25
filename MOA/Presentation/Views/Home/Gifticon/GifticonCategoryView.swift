@@ -9,6 +9,11 @@ import UIKit
 import SnapKit
 import RxSwift
 
+protocol GifticonCategoryViewDelegate: AnyObject {
+    func didSelectCategory(category: StoreCategory)
+    func showSortTypePopup()
+}
+
 final class GifticonCategoryView: UICollectionReusableView {
     static let identifier = "GifticonCategoryView"
     
@@ -17,13 +22,14 @@ final class GifticonCategoryView: UICollectionReusableView {
     let categoryStackView: UIStackView = {
         let stackView = UIStackView()
         StoreCategory.allCases.forEach {
-            let button = CategoryButton(frame: .zero, category: $0)
+            let button = CategoryButton(category: $0, isClick: $0 == StoreCategory.ALL)
             button.titleLabel?.font = UIFont(name: pretendard_medium, size: 14.0)
             button.contentEdgeInsets = UIEdgeInsets(top: 6.0, left: 12.0, bottom: 6.0, right: 12.0)
-            button.snp.makeConstraints { $0.height.equalTo(32) }
+            button.snp.makeConstraints {
+                $0.height.equalTo(32)
+            }
             stackView.addArrangedSubview(button)
         }
-        
         return stackView
     }()
     
@@ -37,12 +43,10 @@ final class GifticonCategoryView: UICollectionReusableView {
         return button
     }()
     
-    weak var gifticonViewModel: GifticonViewModel? {
+    weak var delegate: GifticonCategoryViewDelegate?
+    var sortTitle: String = SortType.EXPIRE_DATE.rawValue {
         didSet {
-            gifticonViewModel?.sortTitle
-                .asObservable()
-                .bind(to: sortButton.rx.title())
-                .disposed(by: disposeBag)
+            sortButton.setTitle(sortTitle, for: .normal)
         }
     }
     
@@ -70,10 +74,6 @@ final class GifticonCategoryView: UICollectionReusableView {
             $0.trailing.equalToSuperview().inset(20)
             $0.centerY.equalToSuperview()
         }
-        
-        if let button = categoryStackView.arrangedSubviews.first as? CategoryButton {
-            button.isClicked.accept(true)
-        }
     }
     
     private func bind() {
@@ -96,32 +96,19 @@ extension Reactive where Base: GifticonCategoryView {
     var tapCategory: Binder<CategoryButton> {
         return Binder<CategoryButton>(self.base) { view, button in
             button.isClicked.accept(true)
-            view.gifticonViewModel?.changeCategory(category: button.category)
             view.categoryStackView.arrangedSubviews
                 .filter { $0 != button }
-                .map { $0 as? CategoryButton }
-                .forEach { $0?.isClicked.accept(false) }
+                .compactMap { $0 as? CategoryButton }
+                .forEach { $0.isClicked.accept(false) }
+            
+            view.delegate?.didSelectCategory(category: button.category)
         }
     }
     
     var tapSort: Binder<Void> {
         return Binder<Void>(self.base) { view, _ in
             MOALogger.logd()
-            guard let sortType = view.gifticonViewModel?.sortType else { return }
-            let bottomSheetVC = BottomSheetViewController(
-                sheetType: .Sort,
-                sortType: sortType
-            )
-            bottomSheetVC.delegate = view
-            UIApplication.shared.topViewController?.present(bottomSheetVC, animated: true)
+            view.delegate?.showSortTypePopup()
         }
-    }
-}
-
-// MARK: BottomSheetDelegate
-extension GifticonCategoryView: BottomSheetDelegate {
-    func selectSortType(type: SortType) {
-        MOALogger.logd(type.rawValue)
-        gifticonViewModel?.changeSort(type: type)
     }
 }
