@@ -22,6 +22,8 @@ class AuthCoordinator: Coordinator, WalkThroughViewControllerDelegate, LoginView
     
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
+        
+        MOAContainer.shared.registerAuthDependencies()
     }
     
     deinit {
@@ -46,7 +48,7 @@ class AuthCoordinator: Coordinator, WalkThroughViewControllerDelegate, LoginView
     
     func navigateToWalkThrough() {
         MOALogger.logd()
-        let walkThroughVC = WalkThroughViewController()
+        guard let walkThroughVC = MOAContainer.shared.resolve(WalkThroughViewController.self) else { return }
         walkThroughVC.delegate = self
         self.navigationController.viewControllers = [walkThroughVC]
     }
@@ -54,7 +56,8 @@ class AuthCoordinator: Coordinator, WalkThroughViewControllerDelegate, LoginView
     // MARK: WalkThroughViewControllerDelegate
     func navigateToLogin() {
         MOALogger.logd()
-        let loginVC = LoginViewController()
+        
+        guard let loginVC = MOAContainer.shared.resolve(LoginViewController.self, arguments: false, false) else { return }
         loginVC.delegate = self
         self.navigationController.viewControllers = [loginVC]
     }
@@ -87,13 +90,13 @@ class AuthCoordinator: Coordinator, WalkThroughViewControllerDelegate, LoginView
     }
     
     func navigateToLoginFromWithLogout() {
-        let loginVC = LoginViewController(isLogout: true)
+        guard let loginVC = MOAContainer.shared.resolve(LoginViewController.self, arguments: true, false) else { return }
         loginVC.delegate = self
         self.navigationController.viewControllers = [loginVC]
     }
     
     func navigateToLoginFromWithDraw() {
-        let loginVC = LoginViewController(isWithDraw: true)
+        guard let loginVC = MOAContainer.shared.resolve(LoginViewController.self, arguments: false, true) else { return }
         loginVC.delegate = self
         self.navigationController.viewControllers = [loginVC]
     }

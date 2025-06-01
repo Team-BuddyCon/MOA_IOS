@@ -44,9 +44,18 @@ final class UnAvailableGifticonViewController: BaseViewController {
     let viewWillAppear = PublishRelay<Void>()
     let tapUsedGifticon = PublishRelay<String>()
     
-    let viewModel = UnAvailableGifticonViewModel(gifticonService: GifticonService.shared)
+    let viewModel: UnAvailableGifticonViewModel
     
     weak var delegate: UnAvailableGifticonViewControllerDelegate?
+    
+    init(viewModel: UnAvailableGifticonViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    @MainActor required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()

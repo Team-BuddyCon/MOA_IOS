@@ -76,9 +76,18 @@ final class GifticonViewController: BaseViewController {
     private let categoryRelay: BehaviorRelay<StoreCategory> = BehaviorRelay(value: .ALL)
     private let sortTypeRelay: BehaviorRelay<SortType> = BehaviorRelay(value: .EXPIRE_DATE)
     
-    let gifticonViewModel = GifticonViewModel(gifticonService: GifticonService.shared)
+    let gifticonViewModel: GifticonViewModel
     
     weak var delegate: GifticonViewControllerDelegate?
+    
+    init(gifticonViewModel: GifticonViewModel) {
+        self.gifticonViewModel = gifticonViewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    @MainActor required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()

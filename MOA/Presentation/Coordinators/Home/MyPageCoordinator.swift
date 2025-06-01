@@ -23,6 +23,8 @@ class MyPageCoordinator: NSObject, Coordinator, MypageViewControllerDelegate, Wi
     
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
+        
+        MOAContainer.shared.registerMypageDependencies()
     }
     
     deinit {
@@ -35,13 +37,13 @@ class MyPageCoordinator: NSObject, Coordinator, MypageViewControllerDelegate, Wi
     
     // MARK: MypageViewControllerDelegate
     func navigateToUnavailableGifticon() {
-        let unavailableVC = UnAvailableGifticonViewController()
+        guard let unavailableVC = MOAContainer.shared.resolve(UnAvailableGifticonViewController.self) else { return }
         unavailableVC.delegate = self
         self.navigationController.pushViewController(unavailableVC, animated: true)
     }
     
     func navigateToNotificationSetting() {
-        let notificationVC = NotificationSettingViewController()
+        guard let notificationVC = MOAContainer.shared.resolve(NotificationSettingViewController.self) else { return }
         self.navigationController.pushViewController(notificationVC, animated: true)
     }
     
@@ -54,15 +56,12 @@ class MyPageCoordinator: NSObject, Coordinator, MypageViewControllerDelegate, Wi
     }
     
     func navigateToVersion() {
-        let versionVC = VersionViewController()
+        guard let versionVC = MOAContainer.shared.resolve(VersionViewController.self) else { return }
         self.navigationController.pushViewController(versionVC, animated: true)
     }
     
     func navigateToPolicy() {
-        let policyVC = PolicyWebViewController(
-            policyUrl: SERVICE_TERMS_URL,
-            privacyUrl: PRIVACY_INFORMATION_URL
-        )
+        guard let policyVC = MOAContainer.shared.resolve(PolicyWebViewController.self, arguments: SERVICE_TERMS_URL, PRIVACY_INFORMATION_URL) else { return }
         self.navigationController.pushViewController(policyVC, animated: true)
     }
     
@@ -71,7 +70,7 @@ class MyPageCoordinator: NSObject, Coordinator, MypageViewControllerDelegate, Wi
     }
     
     func navigateToWithDraw() {
-        let withDrawVC = WithDrawViewController()
+        guard let withDrawVC = MOAContainer.shared.resolve(WithDrawViewController.self) else { return }
         withDrawVC.delegate = self
         self.navigationController.pushViewController(withDrawVC, animated: true)
     }

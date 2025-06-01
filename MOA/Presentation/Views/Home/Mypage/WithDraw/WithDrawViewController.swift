@@ -142,9 +142,18 @@ final class WithDrawViewController: BaseViewController {
     let storage = Storage.storage()
     let store = Firestore.firestore()
     fileprivate var currentNonce: String?
-    let withDrawViewModel = WithDrawViewModel(gifticonService: GifticonService.shared)
+    let withDrawViewModel: WithDrawViewModel
     
     weak var delegate: WithDrawViewControllerDelegate?
+    
+    init(withDrawViewModel: WithDrawViewModel) {
+        self.withDrawViewModel = withDrawViewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    @MainActor required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()

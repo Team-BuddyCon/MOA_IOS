@@ -14,6 +14,8 @@ class AppCoordinator: Coordinator, AuthCoordinatorDelegate, HomeCoordinatorDeleg
     
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
+        
+        MOAContainer.shared.registerAppDependencies()
     }
     
     deinit {
@@ -21,7 +23,8 @@ class AppCoordinator: Coordinator, AuthCoordinatorDelegate, HomeCoordinatorDeleg
     }
     
     func start() {
-        self.navigationController.pushViewController(SplashViewController(), animated: true)
+        guard let splachVC = MOAContainer.shared.resolve(SplashViewController.self) else { return }
+        self.navigationController.pushViewController(splachVC, animated: true)
         NotificationManager.shared.delegate = self
     }
     

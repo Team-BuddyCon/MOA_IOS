@@ -155,19 +155,18 @@ final class GifticonDetailViewController: BaseViewController {
     
     private var isActive: Bool = true
     
-    let gifticonDetailViewModel = GifticonDetailViewModel(
-        gifticonService: GifticonService.shared,
-        kakaoService: KakaoService.shared
-    )
+    let gifticonDetailViewModel: GifticonDetailViewModel
 
     let viewWillAppear = PublishRelay<String>()
     let navigateFromRegister = BehaviorRelay(value: false)
     let searchGifticonPlaces = PublishRelay<Void>()
     
     init(
+        gifticonDetailViewModel: GifticonDetailViewModel,
         gifticonId: String,
         isRegistered: Bool = false
     ) {
+        self.gifticonDetailViewModel = gifticonDetailViewModel
         self.gifticonId = gifticonId
         self.navigateFromRegister.accept(isRegistered)
         super.init(nibName: nil, bundle: nil)

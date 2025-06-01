@@ -46,12 +46,14 @@ final class LoginViewController: BaseViewController {
     
     private let successLoginRelay = PublishRelay<(AuthDataResult, OAuthService)>()
     private let errorLoginRelay = PublishRelay<Void>()
-    let loginViewModel = LoginViewModel()
+    let loginViewModel: LoginViewModel
     
     init(
+        loginViewModel: LoginViewModel,
         isLogout: Bool = false,
         isWithDraw: Bool = false
     ) {
+        self.loginViewModel = loginViewModel
         self.isLogout = isLogout
         self.isWithDraw = isWithDraw
         super.init(nibName: nil, bundle: nil)

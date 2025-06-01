@@ -27,6 +27,7 @@ final class MapViewModel: BaseViewModel {
         let updateStoreType: Driver<StoreType>
         let updateGifticons: Driver<[GifticonModel]>
         let markSearchPlaces: Driver<[SearchPlace]>
+        let showGifticonDetail: Driver<String>
         let moveBottomSheet: Signal<UIPanGestureRecognizer>
         let changeBottomSheetState: Driver<BottomSheetState>
         let changeBottomSheetHeight: Driver<Double>
@@ -69,6 +70,7 @@ final class MapViewModel: BaseViewModel {
             updateStoreType: input.selectStoreType.asDriver(),
             updateGifticons: gifticons.asDriver(),
             markSearchPlaces: searchPlacesRelay.asDriver().debounce(RxTimeInterval.milliseconds(100)),
+            showGifticonDetail: input.tapGifticon.asDriver(onErrorJustReturn: ""),
             moveBottomSheet: input.panGestureOnBottomSheet.asSignal(),
             changeBottomSheetState: input.changeBottomSheetState.asDriver(),
             changeBottomSheetHeight: input.changeBottomSheetHeight.asDriver()

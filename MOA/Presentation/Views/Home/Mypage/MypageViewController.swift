@@ -64,9 +64,17 @@ final class MypageViewController: BaseViewController {
     let tapLogout = PublishRelay<Void>()
     let tapSignOut = PublishRelay<Void>()
     
-    let mypageViewModel = MypageViewModel(gifticonService: GifticonService.shared)
-    
+    let mypageViewModel: MypageViewModel
     weak var delegate: MypageViewControllerDelegate?
+    
+    init(mypageViewModel: MypageViewModel) {
+        self.mypageViewModel = mypageViewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    @MainActor required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()

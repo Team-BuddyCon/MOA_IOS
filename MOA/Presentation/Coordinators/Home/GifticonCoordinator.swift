@@ -23,6 +23,8 @@ class GifticonCoordinator: Coordinator, GifticonViewControllerDelegate, Gifticon
     
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
+        
+        MOAContainer.shared.registerGifticonDependencies()
     }
     
     deinit {
@@ -35,7 +37,7 @@ class GifticonCoordinator: Coordinator, GifticonViewControllerDelegate, Gifticon
     
     // MARK: GifticonViewControllerDelegate
     func navigateToGifticonDetail(gifticonId: String) {
-        let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
+        guard let detailVC = MOAContainer.shared.resolve(GifticonDetailViewController.self, arguments: gifticonId, false) else { return }
         detailVC.delegate = self
         navigationController.pushViewController(detailVC, animated: true)
     }
@@ -57,16 +59,13 @@ class GifticonCoordinator: Coordinator, GifticonViewControllerDelegate, Gifticon
     }
     
     func navigateToGifticonDetailMap(searchPlaces: [SearchPlace], storeType: StoreType) {
-        let gifticonMapVC = GifticonDetailMapViewController(
-            searchPlaces: searchPlaces,
-            storeType: storeType
-        )
+        guard let gifticonMapVC = MOAContainer.shared.resolve(GifticonDetailMapViewController.self, arguments: searchPlaces, storeType) else { return }
         gifticonMapVC.delegate = self
         self.navigationController.pushViewController(gifticonMapVC, animated: true)
     }
     
     func navigateBackFromGifticonDetail() {
-        if let viewController = self.navigationController.viewControllers.first(where: { $0 is UnAvailableGifticonViewController }) {
+        if let _ = self.navigationController.viewControllers.first(where: { $0 is UnAvailableGifticonViewController }) {
             navigateBack()
         } else {
             navigateToHomeTab()
@@ -78,10 +77,7 @@ class GifticonCoordinator: Coordinator, GifticonViewControllerDelegate, Gifticon
     }
     
     func navigateToGifticonEdit(gifticon: GifticonModel, image: UIImage?) {
-        let editVC = GifticonEditViewController(
-            gifticon: gifticon,
-            gifticonImage: image
-        )
+        guard let editVC = MOAContainer.shared.resolve(GifticonEditViewController.self, arguments: gifticon, image) else { return }
         editVC.delegate = self
         self.navigationController.pushViewController(editVC, animated: false)
     }
@@ -94,15 +90,12 @@ class GifticonCoordinator: Coordinator, GifticonViewControllerDelegate, Gifticon
     
     // MARK: GifticonRegisterViewControllerDelegate
     func navigateRegisterLoading() {
-        let loadingVC = RegisterLoadingViewController()
+        guard let loadingVC = MOAContainer.shared.resolve(RegisterLoadingViewController.self) else { return }
         self.navigationController.present(loadingVC, animated: false)
     }
     
     func navigateToGifticonDetail(gifticonId: String, isRegistered: Bool) {
-        let detailVC = GifticonDetailViewController(
-            gifticonId: gifticonId,
-            isRegistered: isRegistered
-        )
+        guard let detailVC = MOAContainer.shared.resolve(GifticonDetailViewController.self, arguments: gifticonId, isRegistered) else { return }
         detailVC.delegate = self
         self.navigationController.pushViewController(detailVC, animated: true)
     }
@@ -177,7 +170,8 @@ extension GifticonCoordinator: PHPickerViewControllerDelegate {
             }
             
             MOALogger.logd()
-            let registerVC = GifticonRegisterViewController(image: image)
+            
+            guard let registerVC = MOAContainer.shared.resolve(GifticonRegisterViewController.self, argument: image) else { return }
             registerVC.delegate = self
             navigationController.pushViewController(registerVC, animated: true)
         }

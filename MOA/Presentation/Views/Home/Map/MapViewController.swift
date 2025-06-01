@@ -127,12 +127,18 @@ final class MapViewController: BaseViewController {
     let searchPlaces = PublishRelay<StoreType>()
     let refreshGifticons = PublishRelay<Void>()
     
-    let mapViewModel = MapViewModel(
-        gifticonService: GifticonService.shared,
-        kakaoService: KakaoService.shared
-    )
+    let mapViewModel: MapViewModel
     
     weak var delegate: MapViewControllerDelegate?
+    
+    init(mapViewModel: MapViewModel) {
+        self.mapViewModel = mapViewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    @MainActor required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -280,6 +286,10 @@ private extension MapViewController {
             .drive(self.rx.bindToSearchPlaces)
             .disposed(by: disposeBag)
         
+        output.showGifticonDetail
+            .drive(self.rx.showGifticonDetail)
+            .disposed(by: disposeBag)
+        
         output.moveBottomSheet
             .emit(to: self.rx.moveToBottomSheet)
             .disposed(by: disposeBag)
@@ -416,6 +426,13 @@ extension Reactive where Base: MapViewController {
             default:
                 break
             }
+        }
+    }
+    
+    var showGifticonDetail: Binder<String> {
+        return Binder<String>(self.base) { viewController, gifticonId in
+            guard !gifticonId.isEmpty else { return }
+            viewController.delegate?.navigateToGifticonDetail(gifticonId: gifticonId)
         }
     }
     

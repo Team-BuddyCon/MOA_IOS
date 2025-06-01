@@ -88,9 +88,7 @@ final class MapBottomSheet: UIView {
     let storeType = BehaviorRelay<StoreType>(value: .ALL)
     let gifticons = BehaviorRelay<[GifticonModel]>(value: [])
     let tapGifticon = PublishRelay<String>()
-    
     let panGesture: UIPanGestureRecognizer
-    var onTapGifticon: ((String) -> Void)? = nil
 
     init(state: BottomSheetState = .PartiallyExpanded) {
         self.panGesture = UIPanGestureRecognizer()

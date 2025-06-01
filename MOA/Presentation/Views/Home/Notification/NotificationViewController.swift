@@ -24,14 +24,12 @@ final class NotificationViewController: BaseViewController {
         return tableView
     }()
     
-    private let viewModel = NotificationViewModel()
-    
-    private var eventID: String?
+    private let viewModel: NotificationViewModel
     
     weak var delegate: NotificationViewControllerDelegate?
     
-    init(eventID: String? = nil) {
-        self.eventID = eventID
+    init(viewModel: NotificationViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     

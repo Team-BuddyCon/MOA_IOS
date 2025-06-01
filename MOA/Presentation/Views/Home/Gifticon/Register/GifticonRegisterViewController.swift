@@ -79,13 +79,16 @@ final class GifticonRegisterViewController: BaseViewController {
     var image: UIImage?
     
     let registerGifticon = PublishRelay<(UIImage, String, String, String, String?)>()
-    let viewModel: GifticonRegisterViewModel = GifticonRegisterViewModel(
-        gifticonService: GifticonService.shared
-    )
+    
+    let viewModel: GifticonRegisterViewModel
     
     weak var delegate: GifticonRegisterViewControllerDelegate?
     
-    init(image: UIImage) {
+    init(
+        viewModel: GifticonRegisterViewModel,
+        image: UIImage
+    ) {
+        self.viewModel = viewModel
         self.image = image
         super.init(nibName: nil, bundle: nil)
     }

@@ -60,7 +60,16 @@ final class SignUpViewController: BaseViewController {
     
     weak var delegate: SignUpViewControllerDelegate?
     
-    var signUpViewModel = SignUpViewModel()
+    var signUpViewModel: SignUpViewModel
+    
+    init(signUpViewModel: SignUpViewModel) {
+        self.signUpViewModel = signUpViewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    @MainActor required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
