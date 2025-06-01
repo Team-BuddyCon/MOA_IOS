@@ -20,6 +20,8 @@ class SignUpCoordinator: Coordinator, SignUpViewControllerDelegate, SignUpComple
     
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
+        
+        MOAContainer.shared.registerSignUpDependencies()
     }
     
     deinit {
@@ -27,24 +29,24 @@ class SignUpCoordinator: Coordinator, SignUpViewControllerDelegate, SignUpComple
     }
     
     func start() {
-        let signUpVC = SignUpViewController()
+        guard let signUpVC = MOAContainer.shared.resolve(SignUpViewController.self) else { return }
         signUpVC.delegate = self
         self.navigationController.pushViewController(signUpVC, animated: true)
     }
     
     // MARK: SignUpViewControllerDelegate
     func navigateToTermsOfUse() {
-        let termsOfUseVC = SignUpWebViewController(title: SIGNUP_MOA_TERMS_OF_USE_TITLE, url: SERVICE_TERMS_URL)
+        guard let termsOfUseVC = MOAContainer.shared.resolve(SignUpWebViewController.self, arguments: SIGNUP_MOA_TERMS_OF_USE_TITLE, SERVICE_TERMS_URL) else { return }
         self.navigationController.pushViewController(termsOfUseVC, animated: true)
     }
     
     func navigateToPrivacyPolicy() {
-        let privacyPolicyVC = SignUpWebViewController(title: SIGNUP_PRIVACY_POLICY_TITLE, url: PRIVACY_INFORMATION_URL)
+        guard let privacyPolicyVC = MOAContainer.shared.resolve(SignUpWebViewController.self, arguments: SIGNUP_PRIVACY_POLICY_TITLE, PRIVACY_INFORMATION_URL) else { return }
         self.navigationController.pushViewController(privacyPolicyVC, animated: true)
     }
     
     func navigateToSignUpComplete() {
-        let signUpCompleteVC = SignUpCompleteViewController()
+        guard let signUpCompleteVC = MOAContainer.shared.resolve(SignUpCompleteViewController.self) else { return }
         signUpCompleteVC.delegate = self
         signUpCompleteVC.modalPresentationStyle = .fullScreen
         signUpCompleteVC.modalTransitionStyle = .crossDissolve

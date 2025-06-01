@@ -20,6 +20,8 @@ class MapCoordinator: Coordinator, MapViewControllerDelegate {
     
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
+        
+        MOAContainer.shared.registerMapDependencies()
     }
     
     deinit {

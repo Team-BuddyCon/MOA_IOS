@@ -45,32 +45,4 @@ extension UIApplication {
         }
         return nil
     }
-    
-    func navigateGifticonDetail(gifticonId: String) {
-        MOALogger.logd()
-        if let windowScene = connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first(where: { $0.isKeyWindow }) {
-            
-            let navigationController = UINavigationController(rootViewController: HomeTabBarController())
-            let detailVC = GifticonDetailViewController(gifticonId: gifticonId)
-            navigationController.pushViewController(detailVC, animated: false)
-            
-            window.rootViewController = navigationController
-            window.makeKeyAndVisible()
-        }
-    }
-    
-    func navigateNotification() {
-        MOALogger.logd()
-        if let windowScene = connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first(where: { $0.isKeyWindow }) {
-            
-            let navigationController = UINavigationController(rootViewController: HomeTabBarController())
-            let notificationDataVC = NotificationViewController()
-            navigationController.pushViewController(notificationDataVC, animated: false)
-            
-            window.rootViewController = navigationController
-            window.makeKeyAndVisible()
-        }
-    }
 }

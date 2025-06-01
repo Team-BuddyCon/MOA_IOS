@@ -125,13 +125,14 @@ final class HomeTabBarController: UITabBarController, UITabBarControllerDelegate
     }
     
     private func setupViewControllers() {
-        let gifticonViewController = GifticonViewController()
+        
+        guard let gifticonViewController = MOAContainer.shared.resolve(GifticonViewController.self) else { return }
         gifticonViewController.delegate = gifticonDelegate
         
-        let mapViewController = MapViewController()
+        guard let mapViewController = MOAContainer.shared.resolve(MapViewController.self) else { return }
         mapViewController.delegate = mapDelegate
         
-        let mypageViewController = MypageViewController()
+        guard let mypageViewController = MOAContainer.shared.resolve(MypageViewController.self) else { return }
         mypageViewController.delegate = mypageDelegate
         
         setViewControllers([gifticonViewController, mapViewController, mypageViewController], animated: true)

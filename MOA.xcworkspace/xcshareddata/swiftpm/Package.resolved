@@ -1,5 +1,5 @@
 {
-  "originHash" : "856ffe0aabb515e91d84b64be7c385cd74f3b5a33ed08864afcdd51c5be5ad06",
+  "originHash" : "72b499139607ae7a49f21a03df82853b28a3eb8e124dca79429de79e99f14db5",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -251,6 +251,15 @@
       "state" : {
         "revision" : "ebc7251dd5b37f627c93698e4374084d98409633",
         "version" : "1.28.2"
+      }
+    },
+    {
+      "identity" : "swinject",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Swinject/Swinject.git",
+      "state" : {
+        "revision" : "be9dbcc7b86811bc131539a20c6f9c2d3e56919f",
+        "version" : "2.9.1"
       }
     }
   ],

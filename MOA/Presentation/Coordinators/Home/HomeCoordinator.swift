@@ -23,6 +23,8 @@ class HomeCoordinator: Coordinator, HomeTabBarControllerDelegate, GifticonCoordi
     
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
+        
+        MOAContainer.shared.registerHomeDependencies()
     }
     
     deinit {
@@ -88,7 +90,7 @@ class HomeCoordinator: Coordinator, HomeTabBarControllerDelegate, GifticonCoordi
     }
     
     func navigateToNotification() {
-        let notificationVC = NotificationViewController()
+        guard let notificationVC = MOAContainer.shared.resolve(NotificationViewController.self) else { return }
         notificationVC.delegate = self
         self.navigationController.pushViewController(notificationVC, animated: true)
     }

@@ -103,7 +103,7 @@ final class GifticonEditViewController: BaseViewController {
     
     let gifticon: GifticonModel
     let gifticonImage: UIImage?
-    let gifticonEditViewModel = GifticonEditViewModel(gifticonService: GifticonService.shared)
+    let gifticonEditViewModel: GifticonEditViewModel
     
     fileprivate let deleteGifticon = PublishRelay<(String, String, String)>()
     fileprivate let updateGifticon = PublishRelay<(GifticonModel, String, String, String, String?)>()
@@ -111,9 +111,11 @@ final class GifticonEditViewController: BaseViewController {
     weak var delegate: GifticonEditViewControllerDelegate?
     
     init(
+        gifticonEditViewModel: GifticonEditViewModel,
         gifticon: GifticonModel,
         gifticonImage: UIImage?
     ) {
+        self.gifticonEditViewModel = gifticonEditViewModel
         self.gifticon = gifticon
         self.gifticonImage = gifticonImage
         super.init(nibName: nil, bundle: nil)
