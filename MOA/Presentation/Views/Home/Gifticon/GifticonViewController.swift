@@ -239,15 +239,15 @@ extension GifticonViewController: GifticonCategoryViewDelegate {
     
     func showSortTypePopup() {
         let sortType = self.sortTypeRelay.value
-        let bottomSheetVC = BottomSheetViewController(sheetType: .Sort, sortType: sortType)
-        bottomSheetVC.delegate = self
-        UIApplication.shared.topViewController?.present(bottomSheetVC, animated: true)
+        let sortBottomSheet = SortBottomSheetViewController(sortType: sortType)
+        sortBottomSheet.delegate = self
+        UIApplication.shared.topViewController?.present(sortBottomSheet, animated: true)
     }
 }
 
 // MARK: BottomSheetDelegate
-extension GifticonViewController: BottomSheetDelegate {
-    func selectSortType(type: SortType) {
+extension GifticonViewController: SortBottomSheetViewControllerDelegate {
+    func didSelectSort(type: SortType) {
         MOALogger.logd(type.rawValue)
         self.sortTypeRelay.accept(type)
     }

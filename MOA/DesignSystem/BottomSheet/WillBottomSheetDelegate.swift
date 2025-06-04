@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol BottomSheetDelegate {
+protocol WillBottomSheetDelegate {
     func selectSortType(type: SortType)
     func selectDate(date: Date)
     func selectStore(type: StoreType)
@@ -15,7 +15,7 @@ protocol BottomSheetDelegate {
 }
 
 // optional
-extension BottomSheetDelegate {
+extension WillBottomSheetDelegate {
     func selectSortType(type: SortType) {}
     func selectDate(date: Date) {}
     func selectStore(type: StoreType) {}

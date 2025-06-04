@@ -249,12 +249,12 @@ final class RegisterInputView: UIView {
         switch inputType {
         case .expireDate:
             let topVC = UIApplication.shared.topViewController
-            let bottomVC = BottomSheetViewController(sheetType: .Date, date: selectDate)
-            bottomVC.delegate = self
-            topVC?.present(bottomVC, animated: true)
+            let expireDateBottomSheet = ExpireDateBottomSheetViewController(date: selectDate)
+            expireDateBottomSheet.delegate = self
+            topVC?.present(expireDateBottomSheet, animated: true)
         case .store:
             let topVC = UIApplication.shared.topViewController
-            let bottomVC = BottomSheetViewController(sheetType: .Store)
+            let bottomVC = WillBottomSheetViewController(sheetType: .Store)
             bottomVC.delegate = self
             topVC?.present(bottomVC, animated: true)
         default:
@@ -264,7 +264,20 @@ final class RegisterInputView: UIView {
 }
 
 // MARK: BottomSheetDelegate
-extension RegisterInputView: BottomSheetDelegate {
+extension RegisterInputView: WillBottomSheetDelegate, ExpireDateBottomSheetViewControllerDelegate {
+    func didSelectDate(date: Date) {
+        MOALogger.logd("\(date)")
+        hasInput = true
+        selectDate = date
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = AVAILABLE_GIFTICON_TIME_FORMAT
+        inputLabel.text = formatter.string(from: date)
+        requestInput = formatter.string(from: date)
+        
+        UIApplication.shared.topViewController?.dismiss(animated: false)
+    }
+    
     func selectDate(date: Date) {
         MOALogger.logd("\(date)")
         hasInput = true
