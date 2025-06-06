@@ -7,7 +7,8 @@
 
 import Foundation
 
-protocol BottomSheetViewControllerDelegate {
+@objc protocol BottomSheetViewControllerDelegate {
+    @objc optional func dismiss()
 }
 
 protocol SortBottomSheetViewControllerDelegate: BottomSheetViewControllerDelegate {

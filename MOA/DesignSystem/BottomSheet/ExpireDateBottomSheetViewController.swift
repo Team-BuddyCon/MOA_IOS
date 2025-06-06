@@ -35,9 +35,14 @@ final class ExpireDateBottomSheetViewController: BottomSheetViewController {
         return picker
     }()
     
-    init(date: Date = Date()) {
-        datePicker.setDate(date, animated: false)
-        super.init(sheetType: .Date)
+    override init(sheetType: BottomSheetType) {
+        switch sheetType {
+        case .Date(let date):
+            datePicker.setDate(date, animated: false)
+            super.init(sheetType: sheetType)
+        default:
+            fatalError()
+        }
     }
     
     @MainActor required init?(coder: NSCoder) {

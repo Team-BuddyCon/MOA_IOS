@@ -1,8 +1,8 @@
 //
-//  MapStoreBottomSheetViewController.swift
+//  MapLocationBottomSheetVIewController.swift
 //  MOA
 //
-//  Created by 오원석 on 1/24/25.
+//  Created by 오원석 on 6/6/25.
 //
 
 import UIKit
@@ -11,13 +11,7 @@ import RxSwift
 import RxCocoa
 import RxRelay
 
-protocol MapStoreBottomSheetDelegate {
-    func dismiss()
-}
-
-final class MapStoreBottomSheetViewController: BaseViewController {
-    
-    var delegate: MapStoreBottomSheetDelegate?
+final class MapLocationBottomSheetViewController: BottomSheetViewController {
     
     private let lineView: UIView = {
         let view = UIView()
@@ -84,11 +78,6 @@ final class MapStoreBottomSheetViewController: BaseViewController {
         return view
     }()
     
-    lazy var contentView: UIView = {
-        let view = UIView()
-        return view
-    }()
-    
     var searchPlace: SearchPlace? {
         didSet {
             guard let searchPlace = searchPlace else { return }
@@ -97,36 +86,42 @@ final class MapStoreBottomSheetViewController: BaseViewController {
         }
     }
     
-    init() {
-        super.init(nibName: nil, bundle: nil)
-        self.modalPresentationStyle = .overFullScreen
-        self.modalTransitionStyle = .crossDissolve
+    override var sheetType: BottomSheetType {
+        didSet {
+            switch sheetType {
+            case .MapStore(let place):
+                infoView.isHidden = false
+                linkView.isHidden = true
+            case .MapDeepLink:
+                infoView.isHidden = true
+                linkView.isHidden = false
+            default:
+                fatalError()
+            }
+            
+            contentView.snp.remakeConstraints {
+                $0.horizontalEdges.equalToSuperview()
+                $0.height.equalTo(self.sheetType.height)
+                $0.bottom.equalToSuperview()
+            }
+        }
     }
     
-    required init?(coder: NSCoder) {
+    override init(sheetType: BottomSheetType) {
+        switch sheetType {
+        case .MapStore(let place):
+            super.init(sheetType: sheetType)
+        default:
+            fatalError()
+        }
+    }
+    
+    @MainActor required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupLayout()
-        bind()
-    }
-}
-
-private extension MapStoreBottomSheetViewController {
-    func setupLayout() {
-        view.backgroundColor = .black.withAlphaComponent(0.2)
-        view.addSubview(contentView)
-        contentView.layer.cornerRadius = 24
-        contentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        contentView.backgroundColor = .white
-        
-        contentView.snp.makeConstraints {
-            $0.bottom.equalToSuperview()
-            $0.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(180)
-        }
+    override func setupLayout() {
+        super.setupLayout()
         
         [
             titleLabel,
@@ -222,10 +217,8 @@ private extension MapStoreBottomSheetViewController {
         }
     }
     
-    func bind() {
-        let dismissTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapDismiss))
-        dismissTapGesture.delegate = self
-        view.addGestureRecognizer(dismissTapGesture)
+    override func bind() {
+        super.bind()
         
         addressCopyButton.rx.tap
             .bind(to: self.rx.bindAddressCopy)
@@ -249,7 +242,7 @@ private extension MapStoreBottomSheetViewController {
     }
 }
 
-extension Reactive where Base: MapStoreBottomSheetViewController {
+extension Reactive where Base: MapLocationBottomSheetViewController {
     var bindAddressCopy: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
             UIPasteboard.general.string = viewController.searchPlace?.address_name
@@ -259,18 +252,12 @@ extension Reactive where Base: MapStoreBottomSheetViewController {
     
     var bindFindPath: Binder<Void> {
         return Binder<Void>(self.base) { viewController, _ in
-            viewController.infoView.isHidden = true
-            viewController.linkView.isHidden = false
-            viewController.contentView.snp.remakeConstraints {
-                $0.bottom.equalToSuperview()
-                $0.horizontalEdges.equalToSuperview()
-                $0.height.equalTo(254)
-            }
+            viewController.sheetType = .MapDeepLink
         }
     }
     
     var bindNaverLink: Binder<UITapGestureRecognizer> {
-        return Binder<UITapGestureRecognizer>(self.base) { (viewController: MapStoreBottomSheetViewController, gesture) in
+        return Binder<UITapGestureRecognizer>(self.base) { viewController, gesture in
             MOALogger.logd()
             guard let slat = LocationManager.shared.latitude else { return }
             guard let slng = LocationManager.shared.longitude else { return }
@@ -343,19 +330,5 @@ extension Reactive where Base: MapStoreBottomSheetViewController {
                 }
             }
         }
-    }
-}
-
-
-extension MapStoreBottomSheetViewController: UIGestureRecognizerDelegate {
-    @objc func tapDismiss() {
-        MOALogger.logd()
-        delegate?.dismiss()
-        dismiss(animated: true)
-    }
-    
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        guard touch.view?.isDescendant(of: self.contentView) == false else { return false }
-        return true
     }
 }

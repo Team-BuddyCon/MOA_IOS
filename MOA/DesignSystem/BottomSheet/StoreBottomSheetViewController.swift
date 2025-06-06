@@ -112,15 +112,20 @@ final class StoreBottomSheetViewController: BottomSheetViewController {
             
             contentView.snp.updateConstraints {
                 $0.horizontalEdges.equalToSuperview()
-                $0.height.equalTo(self.sheetType.rawValue)
+                $0.height.equalTo(self.sheetType.height)
                 $0.bottom.equalToSuperview().offset(0)
             }
             contentView.layoutIfNeeded()
         }
     }
     
-    init() {
-        super.init(sheetType: .Store)
+    override init(sheetType: BottomSheetType) {
+        switch sheetType {
+        case .Store:
+            super.init(sheetType: sheetType)
+        default:
+            fatalError()
+        }
     }
     
     @MainActor required init?(coder: NSCoder) {

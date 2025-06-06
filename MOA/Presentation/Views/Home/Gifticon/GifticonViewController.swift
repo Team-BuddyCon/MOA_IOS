@@ -239,9 +239,8 @@ extension GifticonViewController: GifticonCategoryViewDelegate {
     
     func showSortTypePopup() {
         let sortType = self.sortTypeRelay.value
-        let sortBottomSheet = SortBottomSheetViewController(sortType: sortType)
-        sortBottomSheet.delegate = self
-        UIApplication.shared.topViewController?.present(sortBottomSheet, animated: true)
+        let bottomSheet = BottomSheetFactory.create(sheetType: BottomSheetType.Sort(type: sortType), delegate: self)
+        UIApplication.shared.topViewController?.present(bottomSheet, animated: true)
     }
 }
 

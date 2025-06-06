@@ -36,19 +36,24 @@ final class SortBottomSheetViewController: BottomSheetViewController {
         return button
     }()
     
-    init(sortType: SortType) {
-        self.sortType.accept(sortType)
-        
-        switch sortType {
-        case .EXPIRE_DATE:
-            expirationButton.isSelected.accept(true)
-        case .CREATED_AT:
-            registrationButton.isSelected.accept(true)
-        case .NAME:
-            nameButton.isSelected.accept(true)
+    override init(sheetType: BottomSheetType) {
+        switch sheetType {
+        case .Sort(let sortType):
+            self.sortType.accept(sortType)
+            
+            switch sortType {
+            case .EXPIRE_DATE:
+                expirationButton.isSelected.accept(true)
+            case .CREATED_AT:
+                registrationButton.isSelected.accept(true)
+            case .NAME:
+                nameButton.isSelected.accept(true)
+            }
+            
+            super.init(sheetType: sheetType)
+        default:
+            fatalError()
         }
-        
-        super.init(sheetType: .Sort)
     }
     
     @MainActor required init?(coder: NSCoder) {

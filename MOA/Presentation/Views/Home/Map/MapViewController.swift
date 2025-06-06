@@ -14,7 +14,7 @@ import KakaoMapsSDK
 
 protocol MapViewControllerDelegate: AnyObject {
     func navigateToGifticonDetail(gifticonId: String)
-    func navigateTpMapStoreBottomSheet(searchPlace: SearchPlace, delegate: MapStoreBottomSheetDelegate)
+    func navigateToMapLocationBottomSheet(searchPlace: SearchPlace, delegate: BottomSheetViewControllerDelegate)
 }
 
 final class MapViewController: BaseViewController {
@@ -324,7 +324,7 @@ extension MapViewController: KakaoMapEventDelegate {
         }
         
         if let searchPlace = searchPlace {
-            self.delegate?.navigateTpMapStoreBottomSheet(searchPlace: searchPlace, delegate: self)
+            self.delegate?.navigateToMapLocationBottomSheet(searchPlace: searchPlace, delegate: self)
         }
         
         let manager = kakaoMap.getLabelManager()
@@ -341,7 +341,7 @@ extension MapViewController: KakaoMapEventDelegate {
     }
 }
 
-extension MapViewController: MapStoreBottomSheetDelegate {
+extension MapViewController: BottomSheetViewControllerDelegate {
     func dismiss() {
         MOALogger.logd()
         guard let layerID = mapViewModel.selectedLayerID else { return }

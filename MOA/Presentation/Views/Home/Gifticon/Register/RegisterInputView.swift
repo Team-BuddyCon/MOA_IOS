@@ -249,14 +249,18 @@ final class RegisterInputView: UIView {
         switch inputType {
         case .expireDate:
             let topVC = UIApplication.shared.topViewController
-            let expireDateBottomSheet = ExpireDateBottomSheetViewController(date: selectDate)
-            expireDateBottomSheet.delegate = self
-            topVC?.present(expireDateBottomSheet, animated: true)
+            let bottomSheetVC = BottomSheetFactory.create(
+                sheetType: BottomSheetType.Date(date: selectDate),
+                delegate: self
+            )
+            topVC?.present(bottomSheetVC, animated: true)
         case .store:
             let topVC = UIApplication.shared.topViewController
-            let storeBottomSheet = StoreBottomSheetViewController()
-            storeBottomSheet.delegate = self
-            topVC?.present(storeBottomSheet, animated: true)
+            let bottomSheetVC = BottomSheetFactory.create(
+                sheetType: BottomSheetType.Store,
+                delegate: self
+            )
+            topVC?.present(bottomSheetVC, animated: true)
         default:
             break
         }

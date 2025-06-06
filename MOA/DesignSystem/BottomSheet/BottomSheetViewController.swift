@@ -16,7 +16,7 @@ class BottomSheetViewController : UIViewController, UIGestureRecognizerDelegate 
     lazy var contentView: UIView = {
         let view = UIView()
         let width = Int(UIScreen.main.bounds.width)
-        let height = sheetType.rawValue
+        let height = sheetType.height
         view.frame = CGRect(x: 0, y: 0, width: width, height: height)
         view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         view.layer.cornerRadius = 16
@@ -85,7 +85,7 @@ class BottomSheetViewController : UIViewController, UIGestureRecognizerDelegate 
             }
             contentView.snp.updateConstraints {
                 $0.horizontalEdges.equalToSuperview()
-                $0.height.equalTo(self.sheetType.rawValue)
+                $0.height.equalTo(self.sheetType.height)
                 $0.bottom.equalToSuperview().offset(0)
             }
             contentView.layoutIfNeeded()
@@ -101,6 +101,7 @@ class BottomSheetViewController : UIViewController, UIGestureRecognizerDelegate 
     
     @objc func tapDismiss() {
         MOALogger.logd()
+        delegate?.dismiss?()
         dismiss(animated: true)
     }
     
