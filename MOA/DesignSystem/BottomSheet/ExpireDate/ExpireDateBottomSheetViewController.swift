@@ -83,5 +83,14 @@ final class ExpireDateBottomSheetViewController: BottomSheetViewController {
                 guard let delegate = delegate as? ExpireDateBottomSheetViewControllerDelegate else { return }
                 delegate.didSelectDate(date: date)
             }).disposed(by: disposeBag)
+        
+        closeButton.rx.tap
+            .subscribe(onNext: { [weak self] in
+                guard let self = self else { return }
+                let date = datePicker.date
+                
+                guard let delegate = delegate as? ExpireDateBottomSheetViewControllerDelegate else { return }
+                delegate.didSelectDate(date: date)
+            }).disposed(by: disposeBag)
     }
 }

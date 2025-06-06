@@ -254,17 +254,36 @@ final class RegisterInputView: UIView {
             topVC?.present(expireDateBottomSheet, animated: true)
         case .store:
             let topVC = UIApplication.shared.topViewController
-            let bottomVC = WillBottomSheetViewController(sheetType: .Store)
-            bottomVC.delegate = self
-            topVC?.present(bottomVC, animated: true)
+            let storeBottomSheet = StoreBottomSheetViewController()
+            storeBottomSheet.delegate = self
+            topVC?.present(storeBottomSheet, animated: true)
         default:
             break
         }
     }
 }
 
-// MARK: BottomSheetDelegate
-extension RegisterInputView: WillBottomSheetDelegate, ExpireDateBottomSheetViewControllerDelegate {
+extension RegisterInputView: StoreBottomSheetViewControllerDelegate, ExpireDateBottomSheetViewControllerDelegate {
+    func didSelectStore(store: StoreType) {
+        MOALogger.logd(store.rawValue)
+        hasInput = true
+        inputLabel.text = store.rawValue
+        requestInput = store.code
+        
+        UIApplication.shared.topViewController?.dismiss(animated: false)
+    }
+    
+    func didSelectOther(store: String) {
+        MOALogger.logd("기타 - \(store)")
+        let input = "기타" + (store.isEmpty ? "" : "- \(store)")
+        
+        hasInput = true
+        inputLabel.text = input
+        requestInput = StoreType.OTHERS.code
+        
+        UIApplication.shared.topViewController?.dismiss(animated: false)
+    }
+    
     func didSelectDate(date: Date) {
         MOALogger.logd("\(date)")
         hasInput = true
@@ -274,39 +293,6 @@ extension RegisterInputView: WillBottomSheetDelegate, ExpireDateBottomSheetViewC
         formatter.dateFormat = AVAILABLE_GIFTICON_TIME_FORMAT
         inputLabel.text = formatter.string(from: date)
         requestInput = formatter.string(from: date)
-        
-        UIApplication.shared.topViewController?.dismiss(animated: false)
-    }
-    
-    func selectDate(date: Date) {
-        MOALogger.logd("\(date)")
-        hasInput = true
-        selectDate = date
-        
-        let formatter = DateFormatter()
-        formatter.dateFormat = AVAILABLE_GIFTICON_TIME_FORMAT
-        inputLabel.text = formatter.string(from: date)
-        requestInput = formatter.string(from: date)
-        
-        UIApplication.shared.topViewController?.dismiss(animated: false)
-    }
-    
-    func selectStore(type: StoreType) {
-        MOALogger.logd(type.rawValue)
-        hasInput = true
-        inputLabel.text = type.rawValue
-        requestInput = type.code
-        
-        UIApplication.shared.topViewController?.dismiss(animated: false)
-    }
-    
-    func selectOtherStore(store: String) {
-        MOALogger.logd("기타 - \(store)")
-        let input = "기타" + (store.isEmpty ? "" : "- \(store)")
-        
-        hasInput = true
-        inputLabel.text = input
-        requestInput = StoreType.OTHERS.code
         
         UIApplication.shared.topViewController?.dismiss(animated: false)
     }

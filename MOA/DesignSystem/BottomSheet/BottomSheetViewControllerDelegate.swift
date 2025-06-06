@@ -17,3 +17,8 @@ protocol SortBottomSheetViewControllerDelegate: BottomSheetViewControllerDelegat
 protocol ExpireDateBottomSheetViewControllerDelegate: BottomSheetViewControllerDelegate {
     func didSelectDate(date: Date)
 }
+
+protocol StoreBottomSheetViewControllerDelegate: BottomSheetViewControllerDelegate {
+    func didSelectStore(store: StoreType)
+    func didSelectOther(store: String)
+}
