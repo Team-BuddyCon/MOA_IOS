@@ -249,23 +249,46 @@ final class RegisterInputView: UIView {
         switch inputType {
         case .expireDate:
             let topVC = UIApplication.shared.topViewController
-            let bottomVC = BottomSheetViewController(sheetType: .Date, date: selectDate)
-            bottomVC.delegate = self
-            topVC?.present(bottomVC, animated: true)
+            let bottomSheetVC = BottomSheetFactory.create(
+                sheetType: BottomSheetType.Date(date: selectDate),
+                delegate: self
+            )
+            topVC?.present(bottomSheetVC, animated: true)
         case .store:
             let topVC = UIApplication.shared.topViewController
-            let bottomVC = BottomSheetViewController(sheetType: .Store)
-            bottomVC.delegate = self
-            topVC?.present(bottomVC, animated: true)
+            let bottomSheetVC = BottomSheetFactory.create(
+                sheetType: BottomSheetType.Store,
+                delegate: self
+            )
+            topVC?.present(bottomSheetVC, animated: true)
         default:
             break
         }
     }
 }
 
-// MARK: BottomSheetDelegate
-extension RegisterInputView: BottomSheetDelegate {
-    func selectDate(date: Date) {
+extension RegisterInputView: StoreBottomSheetViewControllerDelegate, ExpireDateBottomSheetViewControllerDelegate {
+    func didSelectStore(store: StoreType) {
+        MOALogger.logd(store.rawValue)
+        hasInput = true
+        inputLabel.text = store.rawValue
+        requestInput = store.code
+        
+        UIApplication.shared.topViewController?.dismiss(animated: false)
+    }
+    
+    func didSelectOther(store: String) {
+        MOALogger.logd("기타 - \(store)")
+        let input = "기타" + (store.isEmpty ? "" : "- \(store)")
+        
+        hasInput = true
+        inputLabel.text = input
+        requestInput = StoreType.OTHERS.code
+        
+        UIApplication.shared.topViewController?.dismiss(animated: false)
+    }
+    
+    func didSelectDate(date: Date) {
         MOALogger.logd("\(date)")
         hasInput = true
         selectDate = date
@@ -274,26 +297,6 @@ extension RegisterInputView: BottomSheetDelegate {
         formatter.dateFormat = AVAILABLE_GIFTICON_TIME_FORMAT
         inputLabel.text = formatter.string(from: date)
         requestInput = formatter.string(from: date)
-        
-        UIApplication.shared.topViewController?.dismiss(animated: false)
-    }
-    
-    func selectStore(type: StoreType) {
-        MOALogger.logd(type.rawValue)
-        hasInput = true
-        inputLabel.text = type.rawValue
-        requestInput = type.code
-        
-        UIApplication.shared.topViewController?.dismiss(animated: false)
-    }
-    
-    func selectOtherStore(store: String) {
-        MOALogger.logd("기타 - \(store)")
-        let input = "기타" + (store.isEmpty ? "" : "- \(store)")
-        
-        hasInput = true
-        inputLabel.text = input
-        requestInput = StoreType.OTHERS.code
         
         UIApplication.shared.topViewController?.dismiss(animated: false)
     }

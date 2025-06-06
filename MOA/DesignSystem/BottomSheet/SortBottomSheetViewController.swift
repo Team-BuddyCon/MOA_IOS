@@ -1,8 +1,8 @@
 //
-//  SortBottomSheetView.swift
+//  SortBottomSheetViewController.swift
 //  MOA
 //
-//  Created by 오원석 on 11/9/24.
+//  Created by 오원석 on 6/3/25.
 //
 
 import UIKit
@@ -11,10 +11,9 @@ import RxSwift
 import RxCocoa
 import RxRelay
 
-final class SortBottomSheetView: UIView {
-    private let disposeBag = DisposeBag()
-    private let _sortType: PublishRelay<SortType> = PublishRelay()
-    let sortType: Signal<SortType>
+final class SortBottomSheetViewController: BottomSheetViewController {
+    
+    private let sortType = BehaviorRelay<SortType>(value: .EXPIRE_DATE)
     
     private let indicatorView: UIView = {
         let view = UIView()
@@ -22,43 +21,50 @@ final class SortBottomSheetView: UIView {
         return view
     }()
     
-    private lazy var expirationButton: SortButton = {
+    private let expirationButton: SortButton = {
         let button = SortButton(type: .EXPIRE_DATE)
         return button
     }()
     
-    private lazy var registrationButton: SortButton = {
+    private let registrationButton: SortButton = {
         let button = SortButton(type: .CREATED_AT)
         return button
     }()
     
-    private lazy var nameButton: SortButton = {
+    private let nameButton: SortButton = {
         let button = SortButton(type: .NAME)
         return button
     }()
     
-    init(type: SortType) {
-        sortType = _sortType.asSignal(onErrorJustReturn: type)
-        super.init(frame: .zero)
-        setupLayout()
-        setupData(type: type)
-        bind()
+    override init(sheetType: BottomSheetType) {
+        switch sheetType {
+        case .Sort(let sortType):
+            self.sortType.accept(sortType)
+            
+            switch sortType {
+            case .EXPIRE_DATE:
+                expirationButton.isSelected.accept(true)
+            case .CREATED_AT:
+                registrationButton.isSelected.accept(true)
+            case .NAME:
+                nameButton.isSelected.accept(true)
+            }
+            
+            super.init(sheetType: sheetType)
+        default:
+            fatalError()
+        }
     }
     
-    required init?(coder: NSCoder) {
+    @MainActor required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func setupLayout() {
-        let width = Int(UIScreen.main.bounds.width)
-        let heith = BottomSheetType.Sort.rawValue
-        frame = CGRect(x: 0, y: 0, width: width, height: heith)
-        layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        layer.cornerRadius = 16
-        backgroundColor = .white
+    override func setupLayout() {
+        super.setupLayout()
         
         [indicatorView, expirationButton, registrationButton, nameButton].forEach {
-            addSubview($0)
+            contentView.addSubview($0)
         }
         
         indicatorView.snp.makeConstraints {
@@ -88,8 +94,10 @@ final class SortBottomSheetView: UIView {
         }
     }
     
-    func bind() {
-        let sortButtons = subviews
+    override func bind() {
+        super.bind()
+        
+        let sortButtons = contentView.subviews
             .filter { $0 is SortButton }
             .map { $0 as? SortButton }
         
@@ -105,7 +113,7 @@ final class SortBottomSheetView: UIView {
                         }
                         
                         if isSelect {
-                            _sortType.accept(button.type)
+                            sortType.accept(button.type)
                             sortButtons
                                 .filter { $0 != button }
                                 .forEach { $0?.isSelected.accept(false) }
@@ -113,16 +121,16 @@ final class SortBottomSheetView: UIView {
                     }).disposed(by: disposeBag)
                 }
             }
-    }
-    
-    func setupData(type: SortType) {
-        switch type {
-        case .EXPIRE_DATE:
-            expirationButton.isSelected.accept(true)
-        case .CREATED_AT:
-            registrationButton.isSelected.accept(true)
-        case .NAME:
-            nameButton.isSelected.accept(true)
-        }
+        
+        sortType.subscribe(onNext: { [weak self] type in
+            guard let self = self else {
+                MOALogger.loge()
+                return
+            }
+            
+            guard let delegate = self.delegate as? SortBottomSheetViewControllerDelegate else { return }
+            delegate.didSelectSort(type: type)
+            dismiss(animated: true)
+        }).disposed(by: disposeBag)
     }
 }

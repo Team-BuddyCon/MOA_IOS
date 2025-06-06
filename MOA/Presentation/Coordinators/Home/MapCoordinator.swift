@@ -37,10 +37,11 @@ class MapCoordinator: Coordinator, MapViewControllerDelegate {
         self.delegate?.navigateToGifticonDetail(gifticonId: gifticonId)
     }
     
-    func navigateTpMapStoreBottomSheet(searchPlace: SearchPlace, delegate: MapStoreBottomSheetDelegate) {
-        let storeBottomSheetVC = MapStoreBottomSheetViewController()
-        storeBottomSheetVC.searchPlace = searchPlace
-        storeBottomSheetVC.delegate = delegate
-        self.navigationController.present(storeBottomSheetVC, animated: true)
+    func navigateToMapLocationBottomSheet(searchPlace: SearchPlace, delegate: BottomSheetViewControllerDelegate) {
+        let bottomSheetVC = BottomSheetFactory.create(
+            sheetType: BottomSheetType.MapStore(place: searchPlace),
+            delegate: delegate
+        )
+        self.navigationController.present(bottomSheetVC, animated: true)
     }
 }
