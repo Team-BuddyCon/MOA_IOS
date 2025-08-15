@@ -29,6 +29,12 @@ struct MOAContainer {
         container.resolve(serviceType, argument: argument)
     }
     
+    /// Resolves a registered service from the container using two runtime arguments.
+    /// - Parameters:
+    ///   - serviceType: The type of service to resolve.
+    ///   - arg1: First argument forwarded to the registered factory when constructing the service.
+    ///   - arg2: Second argument forwarded to the registered factory when constructing the service.
+    /// - Returns: The resolved service instance, or `nil` if no registration matches.
     func resolve<Service, Arg1, Arg2>(
         _ serviceType: Service.Type,
         arguments arg1: Arg1, _ arg2: Arg2
@@ -36,6 +42,15 @@ struct MOAContainer {
         container.resolve(serviceType, arguments: arg1, arg2)
     }
     
+    /// Resolves a registered service from the container using three runtime arguments.
+    /// 
+    /// Use this when the service's registration requires three constructor parameters; the provided `arg1`, `arg2`, and `arg3` are forwarded to the underlying resolver.
+    /// - Parameters:
+    ///   - serviceType: The type of the service to resolve.
+    ///   - arg1: The first argument passed into the service's registration factory.
+    ///   - arg2: The second argument passed into the service's registration factory.
+    ///   - arg3: The third argument passed into the service's registration factory.
+    /// - Returns: An instance of the requested service type, or `nil` if no matching registration exists.
     func resolve<Service, Arg1, Arg2, Arg3>(
         _ serviceType: Service.Type,
         arguments arg1: Arg1, _ arg2: Arg2, _ arg3: Arg3
@@ -43,6 +58,11 @@ struct MOAContainer {
         container.resolve(serviceType, arguments: arg1, arg2, arg3)
     }
     
+    /// Registers core singleton services into the internal DI container.
+    /// 
+    /// Maps protocol types to their shared singleton implementations so they can be resolved elsewhere:
+    /// - `GifticonServiceProtocol` -> `GifticonService.shared`
+    /// - `KakaoServiceProtocol` -> `KakaoService.shared`
     private func registerServices() {
         container.register(GifticonServiceProtocol.self) { _ in
             GifticonService.shared
@@ -115,6 +135,17 @@ struct MOAContainer {
         }
     }
     
+    /// Registers all Gifticon-related dependencies into the internal Swinject container.
+    /// 
+    /// This wires view models and view controllers used by the Gifticon feature:
+    /// - `GifticonViewModel`, `GifticonViewController`
+    /// - `GifticonRegisterViewModel`, `GifticonRegisterViewController` (accepts `image: UIImage`, `expireDate: Date?`, `storeType: StoreType?` at resolution time)
+    /// - `RegisterLoadingViewController`
+    /// - `GifticonEditViewModel`, `GifticonEditViewController` (accepts `gifticon: GifticonModel`, `image: UIImage?`)
+    /// - `GifticonDetailViewModel`, `GifticonDetailViewController` (accepts `gifticonId: String`, `isRegistered: Bool`)
+    /// - `GifticonDetailMapViewController` (accepts `searchPlaces: [SearchPlace]`, `storeType: StoreType`)
+    ///
+    /// Note: several registrations resolve other services using force-unwrap (`!`). If required dependencies are not registered, resolution will crash at runtime.
     func registerGifticonDependencies() {
         container.register(GifticonViewModel.self) { r in
             GifticonViewModel(

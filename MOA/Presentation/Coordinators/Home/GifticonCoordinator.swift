@@ -104,6 +104,12 @@ class GifticonCoordinator: Coordinator, GifticonViewControllerDelegate, Gifticon
 
 // MARK: PHPickerViewControllerDelegate
 extension GifticonCoordinator: PHPickerViewControllerDelegate {
+    /// Handles the PHPicker result, dismissing the picker, loading the first selected UIImage (if available), and routing the loaded image into the coordinator's image analysis flow.
+    /// 
+    /// If image loading fails, presents a modal alert describing a non-barcode-image error. If an image is successfully loaded, calls `imageAnalysis(image:)` on the coordinator to continue OCR/barcode processing.
+    /// - Parameters:
+    ///   - picker: The PHPickerViewController instance that finished picking.
+    ///   - results: An array of PHPickerResult produced by the picker; only the first result is used.
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         MOALogger.logd()
         picker.dismiss(animated: true)
@@ -133,6 +139,16 @@ extension GifticonCoordinator: PHPickerViewControllerDelegate {
         }
     }
     
+    /// Analyze a picked image for barcode/receipt data and navigate to the register flow or show an error.
+    /// 
+    /// If `image` is nil, presents an alert modal indicating the image is not a valid barcode/receipt image.
+    /// Otherwise, calls `checkBarcodeImage` which on error presents the same alert. On success, runs OCR (`operateOCR`) to extract recognized text, then:
+    /// - extracts the first date found (tries two formats) and converts it to `Date` as `expireDate` if possible,
+    /// - extracts the first store type found and maps it to `StoreType` if possible,
+    /// - resolves `GifticonRegisterViewController` with `(image, expireDate, storeType)`, sets its delegate to the coordinator, and pushes it onto the navigation stack.
+    /// 
+    /// Side effects: may present an alert modal and will push a view controller when OCR parsing succeeds.
+    /// - Parameter image: The selected UIImage to analyze; `nil` triggers an error modal.
     private func imageAnalysis(image: UIImage?) {
         guard let image = image else {
             MOALogger.loge("PHPicker load Image is nil")

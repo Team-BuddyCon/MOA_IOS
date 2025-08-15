@@ -10,6 +10,11 @@ import MLKitBarcodeScanning
 import MLKitVision
 import Vision
 
+/// Checks whether the provided image contains at least one barcode and invokes the appropriate callback.
+/// - Parameters:
+///   - image: The UIImage to scan for barcodes.
+///   - onError: Called if scanning fails or no barcode is found. Receives an optional Error (may be nil). Defaults to a no-op.
+///   - completion: Called with the original image when one or more barcodes are successfully detected.
 func checkBarcodeImage(
     _ image: UIImage,
     onError: @escaping (Error?) -> Void = { _ in },
@@ -34,6 +39,10 @@ func checkBarcodeImage(
 }
 
 
+/// Performs optical character recognition on the provided image using Vision's text recognizer configured for Korean (ko-KR) with `.accurate` recognition level.
+/// - Parameters:
+///   - image: The image to analyze. Must contain a valid `cgImage`; if not, the completion will be called with `nil`.
+///   - completion: Completion handler invoked with an array of recognized text strings (top candidate per observation) on success, or `nil` if recognition fails.
 func operateOCR(
     _ image: UIImage,
     completion: @escaping ([String]?) -> Void
