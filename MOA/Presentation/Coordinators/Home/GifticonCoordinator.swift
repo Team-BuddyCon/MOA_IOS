@@ -159,7 +159,19 @@ extension GifticonCoordinator: PHPickerViewControllerDelegate {
             },
             completion: { [weak self] image in
                 operateOCR(image) { recognizedStrings in
-                    guard let registerVC = MOAContainer.shared.resolve(GifticonRegisterViewController.self, argument: image) else { return }
+                    guard let recognizedStrings = recognizedStrings else {
+                        MOALogger.loge("recognizedStrings is nil")
+                        return
+                    }
+                    
+                    let date = recognizedStrings.compactMap { Regex<String>.extractDate(str: $0) }.first
+                    var expireDate = (date != nil) ? date!.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT) : nil
+                    expireDate = expireDate ?? ((date != nil) ? date!.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT2) : nil)
+                    
+                    let type = recognizedStrings.compactMap { Regex<String>.extractStoreType(str: $0) }.first
+                    let storeType = (type != nil) ? StoreType(rawValue: type!) : nil
+                    
+                    guard let registerVC = MOAContainer.shared.resolve(GifticonRegisterViewController.self, arguments: image, expireDate, storeType) else { return }
                     registerVC.delegate = self
                     self?.navigationController.pushViewController(registerVC, animated: true)
                 }
