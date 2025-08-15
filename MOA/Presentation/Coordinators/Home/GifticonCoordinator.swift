@@ -9,6 +9,7 @@ import UIKit
 import PhotosUI
 import MLKitBarcodeScanning
 import MLKitVision
+import Vision
 
 protocol GifticonCoordinatorDelegate: AnyObject {
     func navigateToHomeTab()
@@ -107,8 +108,7 @@ extension GifticonCoordinator: PHPickerViewControllerDelegate {
         MOALogger.logd()
         picker.dismiss(animated: true)
         
-        let itemProvider = results.first?.itemProvider
-        if let itemProvider = itemProvider,
+        if let itemProvider = results.first?.itemProvider,
            itemProvider.canLoadObject(ofClass: UIImage.self) {
             itemProvider.loadObject(ofClass: UIImage.self) { [weak self] (image, error) in
                 guard let self = self else {
@@ -128,12 +128,12 @@ extension GifticonCoordinator: PHPickerViewControllerDelegate {
                     return
                 }
                 
-                checkBarcodeImage(image: image as? UIImage)
+                imageAnalysis(image: image as? UIImage)
             }
         }
     }
     
-    private func checkBarcodeImage(image: UIImage?) {
+    private func imageAnalysis(image: UIImage?) {
         guard let image = image else {
             MOALogger.loge("PHPicker load Image is nil")
             let modalVC = ModalViewController(
@@ -146,34 +146,36 @@ extension GifticonCoordinator: PHPickerViewControllerDelegate {
             return
         }
         
-        let barcodeOptions = BarcodeScannerOptions()
-        let visionImage = VisionImage(image: image)
-        visionImage.orientation = image.imageOrientation
-        
-        let barcodeScanner = BarcodeScanner.barcodeScanner(options: barcodeOptions)
-        barcodeScanner.process(visionImage) { [weak self] features, error in
-            guard let self = self else {
-                MOALogger.loge()
-                return
-            }
-            
-            guard error == nil, let features = features, !features.isEmpty else {
-                MOALogger.loge("PHPicker image is not contained barcode")
+        checkBarcodeImage(
+            image,
+            onError: { [weak self] error in
                 let modalVC = ModalViewController(
                     modalType: .alertDetail,
                     title: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_TITLE,
                     subTitle: GIFTICON_REGISTER_NOT_BARCODE_IMAGE_ERROR_SUBTITLE,
                     confirmText: CONFIRM
                 )
-                navigationController.present(modalVC, animated: true)
-                return
+                self?.navigationController.present(modalVC, animated: true)
+            },
+            completion: { [weak self] image in
+                operateOCR(image) { recognizedStrings in
+                    guard let recognizedStrings = recognizedStrings else {
+                        MOALogger.loge("recognizedStrings is nil")
+                        return
+                    }
+                    
+                    let date = recognizedStrings.compactMap { Regex<String>.extractDate(str: $0) }.first
+                    var expireDate = (date != nil) ? date!.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT) : nil
+                    expireDate = expireDate ?? ((date != nil) ? date!.toDate(format: AVAILABLE_GIFTICON_TIME_FORMAT2) : nil)
+                    
+                    let type = recognizedStrings.compactMap { Regex<String>.extractStoreType(str: $0) }.first
+                    let storeType = (type != nil) ? StoreType(rawValue: type!) : nil
+                    
+                    guard let registerVC = MOAContainer.shared.resolve(GifticonRegisterViewController.self, arguments: image, expireDate, storeType) else { return }
+                    registerVC.delegate = self
+                    self?.navigationController.pushViewController(registerVC, animated: true)
+                }
             }
-            
-            MOALogger.logd()
-            
-            guard let registerVC = MOAContainer.shared.resolve(GifticonRegisterViewController.self, argument: image) else { return }
-            registerVC.delegate = self
-            navigationController.pushViewController(registerVC, animated: true)
-        }
+        )
     }
 }

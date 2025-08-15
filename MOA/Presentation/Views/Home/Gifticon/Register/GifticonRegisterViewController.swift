@@ -61,13 +61,21 @@ final class GifticonRegisterViewController: BaseViewController {
         return inputView
     }()
     
-    let expireDateInputView: RegisterInputView = {
-        let inputView = RegisterInputView(inputType: .expireDate)
+    lazy var expireDateInputView: RegisterInputView = {
+        let inputView = RegisterInputView(
+            inputType: .expireDate,
+            hasInput: expireDate != nil,
+            expireDate: expireDate
+        )
         return inputView
     }()
     
-    let storeInputView: RegisterInputView = {
-        let inputView = RegisterInputView(inputType: .store)
+    lazy var storeInputView: RegisterInputView = {
+        let inputView = RegisterInputView(
+            inputType: .store,
+            hasInput: storeType != nil,
+            gifticonStore: storeType
+        )
         return inputView
     }()
     
@@ -78,6 +86,9 @@ final class GifticonRegisterViewController: BaseViewController {
     
     var image: UIImage?
     
+    private var expireDate: Date?
+    private var storeType: StoreType?
+    
     let registerGifticon = PublishRelay<(UIImage, String, String, String, String?)>()
     
     let viewModel: GifticonRegisterViewModel
@@ -86,10 +97,14 @@ final class GifticonRegisterViewController: BaseViewController {
     
     init(
         viewModel: GifticonRegisterViewModel,
-        image: UIImage
+        image: UIImage,
+        expireDate: Date? = nil,
+        storeType: StoreType? = nil
     ) {
         self.viewModel = viewModel
         self.image = image
+        self.expireDate = expireDate
+        self.storeType = storeType
         super.init(nibName: nil, bundle: nil)
     }
     

@@ -36,6 +36,13 @@ struct MOAContainer {
         container.resolve(serviceType, arguments: arg1, arg2)
     }
     
+    func resolve<Service, Arg1, Arg2, Arg3>(
+        _ serviceType: Service.Type,
+        arguments arg1: Arg1, _ arg2: Arg2, _ arg3: Arg3
+    ) -> Service? {
+        container.resolve(serviceType, arguments: arg1, arg2, arg3)
+    }
+    
     private func registerServices() {
         container.register(GifticonServiceProtocol.self) { _ in
             GifticonService.shared
@@ -127,10 +134,12 @@ struct MOAContainer {
             )
         }
         
-        container.register(GifticonRegisterViewController.self) { (r, image: UIImage) in
+        container.register(GifticonRegisterViewController.self) { (r, image: UIImage, expireDate: Date?, storeType: StoreType?) in
             GifticonRegisterViewController(
                 viewModel: r.resolve(GifticonRegisterViewModel.self)!,
-                image: image
+                image: image,
+                expireDate: expireDate,
+                storeType: storeType
             )
         }
         

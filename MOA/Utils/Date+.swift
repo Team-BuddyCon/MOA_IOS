@@ -11,6 +11,7 @@ import Foundation
 // 상세 기프티콘 조회 API : yyyy-MM-dd 형태로 반환
 let AVAILABLE_GIFTICON_RESPONSE_TIME_FORMAT = "yyyy-MM-dd"
 let AVAILABLE_GIFTICON_TIME_FORMAT = "yyyy.MM.dd"
+let AVAILABLE_GIFTICON_TIME_FORMAT2 = "yyyy년 MM월 dd일"
 
 extension Date {
     var timeInMills: Int {
